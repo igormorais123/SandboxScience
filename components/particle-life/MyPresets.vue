@@ -1,17 +1,20 @@
 <template>
-    <div mt-4>
-        <div flex justify-between>
-            <p underline text-gray-300 class="-mt-0.5" mb-2>Saved Presets :</p>
+    <div>
+        <div flex justify-between items-end mb-3>
+            <button type="button" btn pl-2 pr-3 rounded-lg flex justify-center items-center class="bg-cyan-800/80 hover:cyan-900/50">
+                <span mr-1 i-tabler-plus></span>
+                New Preset
+            </button>
             <button type="button" @click="matchPresetCount = !matchPresetCount" text-xs btn px-2 rounded-full flex justify-center items-center
-                    :class="matchPresetCount ? 'bg-red-800/80 hover:bg-red-800/60' : 'bg-slate-700/80 hover:bg-slate-700/50'">
-                <span i-tabler-lock mr-1></span>
-                Species
+                    :class="!matchPresetCount ? 'bg-red-800/80 hover:bg-red-800/60' : 'bg-slate-700/80 hover:bg-slate-700/50'">
+                <span mr-1 :class="!matchPresetCount ? 'i-tabler-lock' : 'i-tabler-lock-open'"></span>
+                {{ !matchPresetCount ? 'Keep' : 'Align' }} Species
             </button>
         </div>
 
 
-        <div v-if="Object.keys(particleLife.savedPresets).length > 0" mb-3>
-            <span text-xs text-gray-300 underline mb-1>Sort by type:</span>
+        <div v-if="Object.keys(particleLife.savedPresets).length > 0" flex justify-between items-end>
+            <span text-sm text-gray-400 underline>Filters:</span>
 
             <div flex items-center gap-1 text-xs>
                 <button type="button" v-for="meta in PRESET_TYPE_META" :key="meta.id"
@@ -23,25 +26,27 @@
                     <span>{{ meta.label }}</span>
                 </button>
             </div>
-
         </div>
+
+        <hr border-gray-500 my-2>
 
         <div v-if="Object.keys(particleLife.savedPresets).length === 0" text-sm text-gray-400 italic>
             No presets saved yet.
         </div>
-        <div v-else flex flex-col gap-2>
+        <div v-else flex flex-col gap-2 overflow-y-auto -mr-1 pr-1 class="preset-scroll max-h-[39vh]">
             <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" p-2 rounded-lg flex justify-between items-center class="bg-slate-700/30">
                 <div flex-1 min-w-0 pr-2>
                     <p font-bold text-slate-200 text-sm truncate capitalize>{{ preset.meta.name }}</p>
+                    <p text-xs text-slate-400>{{ getPresetSpeciesCount(preset) }} species</p>
                 </div>
                 <div flex items-center gap-2 flex-shrink-0>
                     <div flex gap-1>
-                            <span v-for="meta in PRESET_TYPE_META" :key="meta.id"
-                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-500 text-slate-50"
-                                  :class="preset.types.includes(meta.id) ? meta.color : 'bg-slate-600/40 opacity-60'"
-                            >
-                                <span v-if="meta.icon" :class="meta.icon" text-sm></span>
-                            </span>
+                        <span v-for="meta in PRESET_TYPE_META" :key="meta.id"
+                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-500 text-slate-50"
+                              :class="preset.types.includes(meta.id) ? meta.color : 'bg-slate-600/40 opacity-60'"
+                        >
+                            <span v-if="meta.icon" :class="meta.icon" text-sm></span>
+                        </span>
                     </div>
                     <div w-px h-5 bg-slate-700></div>
 
@@ -119,6 +124,21 @@ export default defineComponent({
             }
             return result
         })
+        const getPresetSpeciesCount = (preset: Preset): number | undefined => {
+            let typeCount: number | undefined = undefined
+            if (preset.matrices) {
+                if (preset.matrices.forces && preset.matrices.forces.length > 0) {
+                    typeCount = preset.matrices.forces.length
+                } else if (preset.matrices.minRadius && preset.matrices.minRadius.length > 0) {
+                    typeCount = preset.matrices.minRadius.length
+                } else if (preset.matrices.maxRadius && preset.matrices.maxRadius.length > 0) {
+                    typeCount = preset.matrices.maxRadius.length
+                }
+            } else if (preset.colors && preset.colors.length > 0) {
+                typeCount = preset.colors.length
+            }
+            return typeCount
+        }
         const toggleTypeFilter = (typeId: string) => {
             const idx = activeTypeFilters.value.indexOf(typeId)
             if (idx === -1) {
@@ -130,6 +150,8 @@ export default defineComponent({
         const loadPreset = (id: string) => {
             const preset: Preset | undefined = getPresetByID(id)
             if (!preset) return
+
+            const presetTypeCount = getPresetSpeciesCount(preset) || particleLife.numColors
 
             const options: {
                 presetRules?: number[][],
@@ -149,16 +171,6 @@ export default defineComponent({
                     options.presetMaxRadius = clone2D(preset.matrices.maxRadius)
                 }
             }
-            let presetTypeCount: number = particleLife.numColors
-            if (options.presetRules && options.presetRules.length > 0) {
-                presetTypeCount = options.presetRules.length
-            } else if (options.presetMinRadius && options.presetMinRadius.length > 0) {
-                presetTypeCount = options.presetMinRadius.length
-            } else if (options.presetMaxRadius && options.presetMaxRadius.length > 0) {
-                presetTypeCount = options.presetMaxRadius.length
-            } else if (options.presetColors && options.presetColors.length > 0 && options.presetColors.length % 4 === 0) {
-                presetTypeCount = options.presetColors.length / 4
-            }
 
             emit("loadPreset", options, presetTypeCount, matchPresetCount.value)
             success("Preset loaded.")
@@ -167,12 +179,29 @@ export default defineComponent({
         return {
             particleLife, PRESET_TYPE_META,
             activeTypeFilters, filteredPresets, matchPresetCount,
-            toggleTypeFilter, getPresetByID, copyToClipboard, download, removePreset, loadPreset,
+            getPresetSpeciesCount, toggleTypeFilter, getPresetByID,
+            copyToClipboard, download, removePreset, loadPreset,
         }
     }
 })
 </script>
 
 <style scoped>
-
+.preset-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 transparent;
+}
+.preset-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.preset-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.preset-scroll::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 9999px;
+}
+.preset-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #64748b;
+}
 </style>

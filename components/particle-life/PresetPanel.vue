@@ -17,7 +17,7 @@
             </button>
         </div>
 
-        <div mt-2>
+        <div mt-3>
             <!--------------------------------------------------------------------------------------------------------->
             <div v-if="openTab === 1">
                 <div>
@@ -76,7 +76,7 @@
                 </div>
             </div>
             <!--------------------------------------------------------------------------------------------------------->
-            <div v-if="openTab === 2" class="p-2 rounded-lg shadow-md bg-slate-700/40">
+            <div v-if="openTab === 2">
                 <div>
                     <MyPresets :store="particleLife" @loadPreset="loadPreset"></MyPresets>
                 </div>
