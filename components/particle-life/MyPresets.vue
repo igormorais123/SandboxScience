@@ -1,7 +1,7 @@
 <template>
     <div>
         <div flex justify-between items-end mb-3>
-            <button type="button" btn pl-2 pr-3 rounded-lg flex justify-center items-center class="bg-cyan-800/80 hover:cyan-900/50">
+            <button type="button" @click="particleLife.isSaveModalOpen = true" btn pl-2 pr-3 rounded-lg flex justify-center items-center class="bg-cyan-800/80 hover:cyan-900/50">
                 <span mr-1 i-tabler-plus></span>
                 New Preset
             </button>
@@ -83,7 +83,7 @@ import { usePresetUtils } from "~/composables/usePresetUtils";
 import type { Preset } from "~/composables/usePresetUtils";
 
 export default defineComponent({
-    name: 'SaveOptions',
+    name: 'MyPresets',
     props: {
         store: {
             type: Object,
@@ -186,7 +186,18 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
+<style>
+.dropdownPresetOptions {
+    transition: none !important;
+    .v-popper__inner {
+        background: none !important;
+        @apply border-slate-400;
+    }
+    .v-popper__arrow-outer, .v-popper__arrow-inner {
+        @apply border-slate-300;
+    }
+}
+
 .preset-scroll {
     scrollbar-width: thin;
     scrollbar-color: #4b5563 transparent;

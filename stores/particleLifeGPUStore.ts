@@ -68,6 +68,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const selectedColorPaletteOption = ref<number>(0) // Default to 'random'
 
     const savedPresets = ref<Record<string, Preset>>({}) // Saved presets from localStorage
+    const isSaveModalOpen = ref<boolean>(false) // Is the save preset modal open
 
     function $reset() {
         sidebarLeftOpen.value = false
@@ -86,7 +87,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
         repel, forceFactor, frictionFactor, useSpatialHash,
         isBrushActive, brushes, brushRadius, brushIntensity, brushType, attractForce, repulseForce, brushDirectionalForce, showBrushCircle,
         glowSize, glowIntensity, glowSteepness, particleOpacity,
-        selectedSpawnPositionOption, selectedRulesOption, selectedColorPaletteOption, savedPresets,
+        selectedSpawnPositionOption, selectedRulesOption, selectedColorPaletteOption, savedPresets, isSaveModalOpen,
         $reset
     }
 })

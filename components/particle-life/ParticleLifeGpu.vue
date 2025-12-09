@@ -26,9 +26,6 @@
                                          @loadPreset="loadPreset">
                             </PresetPanel>
                         </Collapse>
-                        <Collapse label="Save & Share" icon="i-carbon-save text-yellow-500">
-                            <SaveOptions :store="particleLife" @loadPreset="loadPreset"></SaveOptions>
-                        </Collapse>
                         <Collapse label="Matrix Settings" icon="i-tabler-grid-4x4 text-indigo-500"
                                   tooltip="Modify matrix values by clicking on cells in the grid. <br>
                                   Adjust individual cell values with the slider, or click and drag to change them directly. <br>
@@ -186,6 +183,7 @@
             </template>
         </SidebarLeft>
         <canvas ref="canvasRef" id="canvasRef" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
+        <SaveModal :store="particleLife"></SaveModal>
         <div absolute top-0 right-0 flex flex-col items-end text-right pointer-events-none>
             <div flex items-center text-start text-xs pl-4 pr-1 bg-slate-800 rounded-bl-xl style="padding-bottom: 1px; opacity: 75%" >
                 <div flex>Fps: <div ml-1 min-w-8>{{ fps }}</div></div>
@@ -242,7 +240,7 @@ import WallStateSelection from "~/components/particle-life/WallStateSelection.vu
 import WrapModeSelection from "~/components/particle-life/WrapModeSelection.vue";
 import MatrixSettings from "~/components/particle-life/MatrixSettings.vue";
 import BrushSettings from "~/components/particle-life/BrushSettings.vue";
-import SaveOptions from "~/components/particle-life/SaveOptions.vue";
+import SaveModal from "~/components/particle-life/SaveModal.vue";
 import PresetPanel from "~/components/particle-life/PresetPanel.vue";
 import { RULES_OPTIONS, generateRules } from '~/helpers/utils/rulesGenerator';
 import { PALETTE_OPTIONS, generateColors } from "~/helpers/utils/colorsGenerator";
@@ -275,7 +273,7 @@ import renderBinsShaderCode from 'assets/particle-life-gpu/shaders/render/render
 
 export default defineComponent({
     name: 'ParticleLifeGpu',
-    components: { PresetPanel, SaveOptions, BrushSettings, MatrixSettings, WallStateSelection, WrapModeSelection },
+    components: { PresetPanel, SaveModal, BrushSettings, MatrixSettings, WallStateSelection, WrapModeSelection },
     setup() {
         // Define refs and variables
         const mainContainer = ref<HTMLElement | null>(null)
