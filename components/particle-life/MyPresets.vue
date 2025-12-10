@@ -33,7 +33,7 @@
         <div v-if="Object.keys(particleLife.savedPresets).length === 0" text-sm text-gray-400 italic>
             No presets saved yet.
         </div>
-        <div v-else flex flex-col gap-2 overflow-y-auto -mr-1 pr-1 class="preset-scroll max-h-[39vh]">
+        <div v-else flex flex-col gap-2 overflow-y-auto -mr-1 pr-1 class="thin-scrollbar max-h-[39vh]">
             <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" p-2 rounded-lg flex justify-between items-center class="bg-slate-700/30">
                 <div flex-1 min-w-0 pr-2>
                     <p font-bold text-slate-200 text-sm truncate capitalize>{{ preset.meta.name }}</p>
@@ -196,23 +196,5 @@ export default defineComponent({
     .v-popper__arrow-outer, .v-popper__arrow-inner {
         @apply border-slate-300;
     }
-}
-
-.preset-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: #4b5563 transparent;
-}
-.preset-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-.preset-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-.preset-scroll::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
-    border-radius: 9999px;
-}
-.preset-scroll::-webkit-scrollbar-thumb:hover {
-    background-color: #64748b;
 }
 </style>

@@ -85,35 +85,6 @@
                             Save Preset
                         </button>
                     </div>
-
-<!--                    <div flex flex-col gap-2>-->
-<!--                        <ToggleSwitch label="Force Matrix" colorful-label v-model="forceMatrix"-->
-<!--                                      tooltip="Save force Matrix">-->
-<!--                        </ToggleSwitch>-->
-<!--                        <ToggleSwitch label="Radius Matrices" colorful-label v-model="radiusMatrices"-->
-<!--                                      tooltip="Save min/max radius matrices">-->
-<!--                        </ToggleSwitch>-->
-<!--                        <ToggleSwitch label="Color Palette" colorful-label v-model="colors"-->
-<!--                                      tooltip="Save species colors">-->
-<!--                        </ToggleSwitch>-->
-<!--                        <ToggleSwitch label="General settings" colorful-label v-model="generalSettings"-->
-<!--                                      tooltip="Save simulation settings such as particle count, friction, and global forces.">-->
-<!--                        </ToggleSwitch>-->
-<!--                    </div>-->
-<!--                    <div flex gap-2 justify-end text-sm mt-2>-->
-<!--                        <button type="button" @click="copyToClipboard(buildPresetData())" :disabled="!canSave" btn px-3 rounded-full flex justify-center items-center bg="slate-800/80 hover:slate-800/50 disabled:slate-800/30" class="disabled:cursor-not-allowed">-->
-<!--                            <span i-tabler-copy mr-1></span>-->
-<!--                            Copy-->
-<!--                        </button>-->
-<!--                        <button type="button" @click="download(buildPresetData())" :disabled="!canSave" btn px-3 rounded-full flex justify-center items-center bg="slate-800/80 hover:slate-800/50 disabled:slate-800/30" class="disabled:cursor-not-allowed">-->
-<!--                            <span i-tabler-download mr-1></span>-->
-<!--                            Download-->
-<!--                        </button>-->
-<!--                        <button type="button" @click="save(buildPresetData())" :disabled="!canSave" btn px-3 rounded-full flex justify-center items-center bg="cyan-900/80 hover:cyan-900/50 disabled:cyan-900/30" class="disabled:cursor-not-allowed">-->
-<!--                            <span i-carbon-save mr-1></span>-->
-<!--                            Save-->
-<!--                        </button>-->
-<!--                    </div>-->
                 </div>
 
                 <div class="hidden md:block w-px bg-slate-700/80"></div>
@@ -122,6 +93,21 @@
                     <div flex items-center mb-3>
                         <span i-tabler-file-upload text-2xl mr-2 class="text-slate-300/80"></span>
                         <h2 text-xl pt-px>Load From JSON</h2>
+                    </div>
+                    <div flex flex-col gap-2>
+                        <JsonEditor v-model="jsonText" v-model:internalError="jsonSyntaxError" :external-error="jsonBusinessError" />
+
+                        <div flex items-center justify-between class="text-[0.75rem]">
+                            <span v-if="jsonSyntaxError" text-red-500>Invalid JSON syntax : {{ jsonSyntaxError }}</span>
+                            <span v-if="jsonBusinessError" text-red-500>Invalid JSON : {{ jsonBusinessError }}</span>
+                            <span v-else text-emerald-500>JSON OK</span>
+
+                            <button type="button" @click="loadFromJson" :disabled="hasJsonErrors" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center text-base
+                                    bg="cyan-800/80 hover:cyan-800/50 disabled:cyan-800/30" class="disabled:cursor-not-allowed">
+                                <span i-tabler-file-upload mr-1></span>
+                                Load Preset
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -204,6 +190,23 @@ export default defineComponent({
             return presetData
         }
         // -------------------------------------------------------------------------------------------------------------
+        // --- JSON Editor ---------------------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------------------------------------
+        const jsonText = ref<string>("")
+        const jsonSyntaxError = ref<string | null>(null)
+        const jsonBusinessError = ref<string | null>(null)
+        const hasJsonErrors = computed(() => !!jsonSyntaxError.value || !!jsonBusinessError.value);
+
+        onMounted(async () => {
+            jsonText.value = JSON.stringify(buildPresetData(), null, 2);
+        })
+        const loadFromJson = () => {
+            if (hasJsonErrors.value) return
+            const data = JSON.parse(jsonText.value) as Preset
+            save(data)
+            closeModal()
+        }
+        // -------------------------------------------------------------------------------------------------------------
         // --- Watchers ------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
         watch(forceMatrix, (newVal) => {
@@ -215,9 +218,9 @@ export default defineComponent({
 
         return {
             particleLife, closeModal,
-            name, description, forceMatrix, radiusMatrices, colors, generalSettings,
-            canSave,
-            buildPresetData, copyToClipboard, download, save,
+            name, description, forceMatrix, radiusMatrices, colors, generalSettings, canSave,
+            buildPresetData, copyToClipboard, download, save, loadFromJson,
+            jsonText, jsonSyntaxError, jsonBusinessError, hasJsonErrors,
         }
     },
 })
