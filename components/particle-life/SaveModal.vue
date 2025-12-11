@@ -95,12 +95,28 @@
                         <h2 text-xl pt-px>Load From JSON</h2>
                     </div>
                     <div flex flex-col gap-2>
+                        <h3 text-slate-400>Upload a .json file exported from Particle Life or paste JSON data directly.</h3>
+                        <div flex flex-col gap-1>
+                            <div class="flex items-center w-full">
+                                <button type="button" @click="fileInput?.click()" w-full btn px-3 rounded-lg flex justify-center items-center border border-slate-600 class="bg-slate-800 hover:bg-slate-700/80 transition text-slate-100">
+                                    <span i-tabler-file text-base mr-1></span>
+                                    Upload JSON File
+                                </button>
+                                <input ref="fileInput" type="file" accept="application/json,.json" class="hidden" @change="onJsonFileSelected"/>
+                            </div>
+                            <div v-if="fileError" px-2 py-1 rounded-lg text-sm text-red-600 border border-red-600 class="bg-red-800/20">
+                                {{ fileError }}
+                            </div>
+                            <div v-if="fileWarning" px-2 py-1 rounded-lg text-sm text-amber-600 border border-amber-600 class="bg-amber-800/20">
+                                {{ fileWarning }}
+                            </div>
+                        </div>
                         <JsonEditor v-model="jsonText" v-model:internalError="jsonSyntaxError" :external-error="jsonBusinessError" />
-
-                        <div flex items-center justify-between class="text-[0.75rem]">
-                            <span v-if="jsonSyntaxError" text-red-500>Invalid JSON syntax : {{ jsonSyntaxError }}</span>
-                            <span v-if="jsonBusinessError" text-red-500>Invalid JSON : {{ jsonBusinessError }}</span>
-                            <span v-else text-emerald-500>JSON OK</span>
+                        <span v-if="jsonSyntaxError" class="text-[0.75rem]" text-red-600>Invalid JSON syntax : {{ jsonSyntaxError }}</span>
+                        <span v-if="jsonBusinessError" class="text-[0.75rem]" text-red-600>Invalid JSON : {{ jsonBusinessError }}</span>
+                        <div flex items-center justify-between>
+                            <span v-if="!jsonSyntaxError && !jsonBusinessError" class="text-[0.75rem]" text-emerald-500>JSON OK</span>
+                            <span v-else></span>
 
                             <button type="button" @click="loadFromJson" :disabled="hasJsonErrors" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center text-base
                                     bg="cyan-800/80 hover:cyan-800/50 disabled:cyan-800/30" class="disabled:cursor-not-allowed">
@@ -195,7 +211,7 @@ export default defineComponent({
         const jsonText = ref<string>("")
         const jsonSyntaxError = ref<string | null>(null)
         const jsonBusinessError = ref<string | null>(null)
-        const hasJsonErrors = computed(() => !!jsonSyntaxError.value || !!jsonBusinessError.value);
+        const hasJsonErrors = computed(() => !!jsonSyntaxError.value || !!jsonBusinessError.value)
 
         onMounted(async () => {
             jsonText.value = JSON.stringify(buildPresetData(), null, 2);
@@ -206,6 +222,41 @@ export default defineComponent({
             save(data)
             closeModal()
         }
+
+        const fileInput = ref<HTMLInputElement | null>(null)
+        const fileWarning = ref<string | null>(null)
+        const fileError = ref<string | null>(null)
+
+        const onJsonFileSelected = (event: Event) => {
+            const target = event.target as HTMLInputElement
+            const file = target.files?.[0]
+            if (!file) return
+
+            const reader = new FileReader()
+            reader.onload = () => {
+                try {
+                    const text = String(reader.result || "")
+                    JSON.parse(text)
+                    jsonText.value = text
+                    fileError.value = null
+                    fileWarning.value = null
+                    jsonSyntaxError.value = null
+                    jsonBusinessError.value = null
+                } catch (e: any) {
+                    // fileError.value = e?.message ?? "Error parsing JSON file"
+                    fileWarning.value = "The JSON file contains errors. Please review and correct them."
+                    jsonText.value = String(reader.result || "")
+                } finally {
+                    target.value = ""
+                }
+            }
+            reader.onerror = () => {
+                console.log("Error reading JSON file:", reader.error)
+                fileError.value = "Unable to read the JSON file."
+                target.value = ""
+            }
+            reader.readAsText(file, "utf-8")
+        }
         // -------------------------------------------------------------------------------------------------------------
         // --- Watchers ------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
@@ -215,12 +266,15 @@ export default defineComponent({
         watch(radiusMatrices, (newVal) => {
             if (newVal) forceMatrix.value = true
         })
+        watch(hasJsonErrors, (newVal) => {
+            if (!newVal) fileWarning.value = null
+        })
 
         return {
             particleLife, closeModal,
             name, description, forceMatrix, radiusMatrices, colors, generalSettings, canSave,
-            buildPresetData, copyToClipboard, download, save, loadFromJson,
-            jsonText, jsonSyntaxError, jsonBusinessError, hasJsonErrors,
+            buildPresetData, copyToClipboard, download, save, loadFromJson, onJsonFileSelected, fileInput,
+            jsonText, jsonSyntaxError, jsonBusinessError, hasJsonErrors, fileError, fileWarning
         }
     },
 })

@@ -1,17 +1,17 @@
 <template>
     <div relative text-xs font-mono>
-        <div flex rounded overflow-hidden border class="bg-slate-950/80" :class="hasError ? 'border-red-500/80' : 'border-slate-700'">
-            <div ref="lineNumbers" h-64 w-8 pl-1 pr-2 py-2 select-none text-right bg-transparent text-slate-500 overflow-hidden
+        <div flex rounded overflow-hidden border class="bg-slate-950/75" :class="hasError ? 'border-red-500/80' : 'border-slate-700'">
+            <div ref="lineNumbers" h-64 w-8 pl-1 pr-2 py-2 select-none text-right bg-transparent text-slate-500 overflow-hidden translate-y-px
                  :style="{ height: editorHeight + 'px' }">
                 <pre leading-5 flex flex-col>
                     <span v-for="n in lineCount" :key="n" block>{{ n }}</span>
                 </pre>
             </div>
 
-            <textarea ref="jsonTextarea" v-model="jsonText" @input="onInput" @scroll="onScroll" spellcheck="false"
+            <textarea ref="jsonTextarea" v-model="jsonText" @input="onInput" @scroll="onScroll" spellcheck="false" placeholder="Paste JSON here..."
                       h-64 min-h-28 w-full leading-5 px-3 py-2 rounded-r text-xs font-mono
                       bg-transparent text-slate-100 border-l border-slate-700
-                      whitespace-pre overflow-auto resize-y outline-none class="thin-scrollbar">
+                      whitespace-pre overflow-auto resize-y class="thin-scrollbar" style="outline: none;">
             </textarea>
         </div>
     </div>
@@ -43,7 +43,6 @@ export default defineComponent({
 
         const jsonTextarea = ref<HTMLTextAreaElement | null>(null)
         const lineNumbers = ref<HTMLDivElement | null>(null)
-        const resizeObserver = ref<ResizeObserver | null>(null)
 
         // -- Lifecycle Hooks ------------------------------------------------------------------------------------------
         onMounted(async () => {
@@ -52,18 +51,7 @@ export default defineComponent({
             syncHeight()
             validateJson()
 
-            if (jsonTextarea.value) {
-                resizeObserver.value = new ResizeObserver(() => {
-                    syncHeight()
-                })
-                resizeObserver.value.observe(jsonTextarea.value)
-            }
-        })
-        onBeforeUnmount(() => {
-            if (resizeObserver.value && jsonTextarea.value) {
-                resizeObserver.value.unobserve(jsonTextarea.value)
-                resizeObserver.value.disconnect()
-            }
+            useResizeObserver(jsonTextarea, () => syncHeight())
         })
         // -- Computed -------------------------------------------------------------------------------------------------
         const hasError = computed<boolean>(() => {
@@ -92,12 +80,17 @@ export default defineComponent({
         // -- Line Count Helpers ---------------------------------------------------------------------------------------
         const updateLineCount = () => {
             lineCount.value = jsonText.value.split('\n').length || 1
-            syncHeight()
+            // syncHeight()
         }
         const syncHeight = () => {
-            if (jsonTextarea.value) {
-                editorHeight.value = jsonTextarea.value.offsetHeight
-            }
+            const el = jsonTextarea.value
+            if (!el) return
+
+            const totalHeight = el.offsetHeight
+            const innerHeight = el.clientHeight // without scrollbar
+            const horizontalScrollbarHeight = Math.max(totalHeight - innerHeight, 0)
+
+            editorHeight.value = totalHeight - horizontalScrollbarHeight
         }
         const onScroll = (event: Event) => {
             const target = event.target as HTMLTextAreaElement
