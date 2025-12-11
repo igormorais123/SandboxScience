@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Preset } from "~/composables/usePresetUtils";
+import type { Preset } from "~/composables/usePresetManager";
 
 export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const sidebarLeftOpen = ref<boolean>(false) // Is sidebar left open

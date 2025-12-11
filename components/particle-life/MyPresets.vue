@@ -79,8 +79,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { usePresetUtils } from "~/composables/usePresetUtils";
-import type { Preset } from "~/composables/usePresetUtils";
+import { usePresetManager } from "~/composables/usePresetManager";
+import type { Preset } from "~/composables/usePresetManager";
 
 export default defineComponent({
     name: 'MyPresets',
@@ -94,7 +94,7 @@ export default defineComponent({
         const particleLife = props.store
 
         const { success, error } = useToasts()
-        const { getSavedPresets, getPresetByID, copyToClipboard, download, removePreset, hexListToFlatRgba, clone2D } = usePresetUtils(particleLife)
+        const { getSavedPresets, getPresetByID, copyToClipboard, download, removePreset, hexListToFlatRgba, clone2D } = usePresetManager(particleLife)
 
         const activeTypeFilters = ref<string[]>([])
         const matchPresetCount = ref<boolean>(false)

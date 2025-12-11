@@ -167,7 +167,18 @@ const  unflattenMatrix = (array: number[], size: number): number[][] => {
     return result
 }
 
-export const usePresetUtils = (particleLife: any) => {
+
+
+export type PresetValidationResult = {
+    valid: boolean
+    errors: string[]
+}
+const validatePreset = (preset: any): PresetValidationResult => {
+    return { valid: true, errors: [] }
+}
+
+
+export const usePresetManager = (particleLife: any) => {
     const getSavedPresets = () => {
         // Load existing presets from localStorage
         const localPresets = localStorage.getItem("particleLife.presets")
@@ -205,5 +216,6 @@ export const usePresetUtils = (particleLife: any) => {
         copyToClipboard, download, save, getSavedPresets, safeHideAllPoppers,
         formatPresetJson, getPresetByID, removePreset,
         clone1D, clone2D, flatRgbaToHexList, hexListToFlatRgba, flattenMatrix, unflattenMatrix,
+        validatePreset
     }
 }

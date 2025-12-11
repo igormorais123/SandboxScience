@@ -133,8 +133,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { usePresetUtils } from "~/composables/usePresetUtils";
-import type { Preset } from "~/composables/usePresetUtils";
+import { usePresetManager } from "~/composables/usePresetManager";
+import type { Preset } from "~/composables/usePresetManager";
 export default defineComponent({
     name: 'SaveModal',
     props: {
@@ -145,7 +145,7 @@ export default defineComponent({
     },
     setup(props, { emit }) {
         const particleLife = props.store
-        const { copyToClipboard, download, save, flatRgbaToHexList, clone2D } = usePresetUtils(particleLife)
+        const { copyToClipboard, download, save, flatRgbaToHexList, clone2D, validatePreset } = usePresetManager(particleLife)
 
         const name = ref<string>("")
         const description = ref<string>("")
@@ -236,12 +236,21 @@ export default defineComponent({
             reader.onload = () => {
                 try {
                     const text = String(reader.result || "")
-                    JSON.parse(text)
+                    const parsed = JSON.parse(text)
+
+                    jsonSyntaxError.value = null
+
+                    const result = validatePreset(parsed)
+                    if (!result.valid) {
+                        jsonBusinessError.value = result.errors.join(" || ")
+                        fileWarning.value = "The JSON file is invalid for a Particle Life preset."
+                    } else {
+                        jsonBusinessError.value = null
+                        fileWarning.value = null
+                    }
+
                     jsonText.value = text
                     fileError.value = null
-                    fileWarning.value = null
-                    jsonSyntaxError.value = null
-                    jsonBusinessError.value = null
                 } catch (e: any) {
                     // fileError.value = e?.message ?? "Error parsing JSON file"
                     fileWarning.value = "The JSON file contains errors. Please review and correct them."
@@ -269,6 +278,29 @@ export default defineComponent({
         watch(hasJsonErrors, (newVal) => {
             if (!newVal) fileWarning.value = null
         })
+        watch(jsonText, (newVal) => {
+            // Reset des erreurs à chaque modification
+            jsonSyntaxError.value = null
+            jsonBusinessError.value = null
+
+            // Si champ vide, on ne valide pas
+            if (!newVal.trim()) return
+
+            try {
+                const parsed = JSON.parse(newVal)
+                // JSON syntaxiquement valide, on passe à la validation métier
+                const result = validatePreset(parsed)
+                if (!result.valid) {
+                    jsonBusinessError.value = result.errors.join(" || ")
+                } else {
+                    jsonBusinessError.value = null
+                }
+            } catch (e: any) {
+                // Erreur de syntaxe JSON
+                jsonSyntaxError.value = e?.message ?? "Invalid JSON."
+                jsonBusinessError.value = null
+            }
+        }, { immediate: false })
 
         return {
             particleLife, closeModal,
