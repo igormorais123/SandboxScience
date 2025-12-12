@@ -1,6 +1,6 @@
 <template>
     <div relative text-xs font-mono>
-        <div flex rounded overflow-hidden border class="bg-slate-950/75" :class="hasError ? 'border-red-500/80' : 'border-slate-700'">
+        <div flex rounded overflow-hidden border class="bg-slate-950/75" :class="hasError ? 'border-red-800/80' : 'border-slate-700'">
             <div ref="lineNumbers" h-64 w-8 pl-1 pr-2 py-2 select-none text-right bg-transparent text-slate-500 overflow-hidden translate-y-px
                  :style="{ height: editorHeight + 'px' }">
                 <pre leading-5 flex flex-col>
@@ -19,6 +19,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import type { PresetValidationError } from "~/composables/usePresetManager";
 export default defineComponent({
     name: 'JsonEditor',
     props: {
@@ -30,8 +31,8 @@ export default defineComponent({
             type: String as () => string | null,
             default: null,
         },
-        externalError: {
-            type: String as () => string | null,
+        externalErrors: {
+            type: Array as () => PresetValidationError[] | null,
             default: null,
         },
     },
@@ -55,7 +56,7 @@ export default defineComponent({
         })
         // -- Computed -------------------------------------------------------------------------------------------------
         const hasError = computed<boolean>(() => {
-            return !!props.internalError || !!props.externalError
+            return !!props.internalError || !!props.externalErrors?.length
         })
         // -- Event Handlers -------------------------------------------------------------------------------------------
         const onInput = () => {

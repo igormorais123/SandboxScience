@@ -13,7 +13,7 @@
             <div class="flex flex-col md:flex-row gap-2">
                 <div class="md:w-6/12 pr-0 md:pr-3">
                     <div flex items-center mb-3>
-                        <span i-carbon-save text-2xl mr-2 class="text-slate-300/80"></span>
+                        <span i-carbon-save text-2xl mr-2 class="text-gray-400/80"></span>
                         <h2 text-xl pt-px>Save New Preset</h2>
                     </div>
                     <div mb-2>
@@ -80,7 +80,8 @@
                                 Download
                             </button>
                         </div>
-                        <button type="button" @click="save(buildPresetData())" :disabled="!canSave" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center bg="cyan-800/80 hover:cyan-800/50 disabled:cyan-800/30" class="disabled:cursor-not-allowed">
+                        <button type="button" @click="save(buildPresetData())" :disabled="!canSave" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center
+                                bg="cyan-800/80 hover:cyan-800/60 disabled:cyan-800/80" class="disabled:cursor-not-allowed">
                             <span i-carbon-save mr-1></span>
                             Save Preset
                         </button>
@@ -91,35 +92,68 @@
 
                 <div class="md:w-6/12 md:pl-3">
                     <div flex items-center mb-3>
-                        <span i-tabler-file-upload text-2xl mr-2 class="text-slate-300/80"></span>
+                        <span i-tabler-file-upload text-2xl mr-2 class="text-gray-400/80"></span>
                         <h2 text-xl pt-px>Load From JSON</h2>
                     </div>
                     <div flex flex-col gap-2>
-                        <h3 text-slate-400>Upload a .json file exported from Particle Life or paste JSON data directly.</h3>
+                        <h3 text-slate-400 text-base>Upload a .json file exported from Particle Life or paste JSON data directly.</h3>
                         <div flex flex-col gap-1>
                             <div class="flex items-center w-full">
-                                <button type="button" @click="fileInput?.click()" w-full btn px-3 rounded-lg flex justify-center items-center border border-slate-600 class="bg-slate-800 hover:bg-slate-700/80 transition text-slate-100">
+                                <button type="button" @click="fileInput?.click()" w-full btn px-3 rounded-lg flex justify-center items-center border class="border-slate-600/80 bg-slate-800/80 hover:bg-slate-700/60 text-slate-100">
                                     <span i-tabler-file text-base mr-1></span>
                                     Upload JSON File
                                 </button>
                                 <input ref="fileInput" type="file" accept="application/json,.json" class="hidden" @change="onJsonFileSelected"/>
                             </div>
-                            <div v-if="fileError" px-2 py-1 rounded-lg text-sm text-red-600 border border-red-600 class="bg-red-800/20">
+                            <div v-if="fileError" px-2 py-1 rounded-lg text-xs text-red-600 border class="border-red-700/60 bg-red-950/30">
                                 {{ fileError }}
                             </div>
-                            <div v-if="fileWarning" px-2 py-1 rounded-lg text-sm text-amber-600 border border-amber-600 class="bg-amber-800/20">
+                            <div v-if="fileWarning" px-2 py-1 rounded-lg text-xs text-amber-600 border class="border-amber-700/60 bg-amber-950/30">
                                 {{ fileWarning }}
                             </div>
                         </div>
-                        <JsonEditor v-model="jsonText" v-model:internalError="jsonSyntaxError" :external-error="jsonBusinessError" />
-                        <span v-if="jsonSyntaxError" class="text-[0.75rem]" text-red-600>Invalid JSON syntax : {{ jsonSyntaxError }}</span>
-                        <span v-if="jsonBusinessError" class="text-[0.75rem]" text-red-600>Invalid JSON : {{ jsonBusinessError }}</span>
+                        <JsonEditor v-model="jsonText" v-model:internalError="jsonSyntaxError" :external-errors="jsonValidationErrors" />
+
+                        <div v-if="jsonErrors?.length" class="border border-red-800/60 bg-red-950/40" rounded-md backdrop-blur-sm>
+                            <div flex items-center gap-2 px-3 py-1.5 border-b class="border-red-800/50">
+                                <span i-tabler-alert-triangle-filled text-red-400 text-sm></span>
+                                <span font-semibold tracking-wide uppercase text-red-200 text-xs>
+                                    {{ jsonErrors.length }} error{{ jsonErrors.length > 1 ? 's' : '' }} detected
+                                </span>
+                            </div>
+
+                            <div class="divide-y divide-red-900/40" text-xs>
+                                <div v-for="(error, index) in jsonErrors" :key="index" class="px-3 pt-2 pb-1.5 hover:bg-red-900/10">
+                                    <div class="flex items-start gap-1.5">
+                                        <span mt-1 block w-1.5 h-1.5 rounded-full bg-red-500></span>
+
+                                        <div class="flex-1">
+                                            <div class="flex flex-wrap items-center gap-1">
+                                                <span v-if="error.code" class="px-1 py-px rounded bg-red-900/60 border border-red-700/60 text-red-200 text-[0.6rem] uppercase tracking-wide">
+                                                    {{ error.code }}
+                                                </span>
+                                                <span text-red-100 leading-snug>
+                                                    {{ error.message }}
+                                                </span>
+                                            </div>
+                                            <div v-if="error.path" class="mt-0.5 pl-0.5 text-[0.65rem] text-red-300/70 font-mono break-all">
+                                                ↳ {{ error.path }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div flex items-center justify-between>
-                            <span v-if="!jsonSyntaxError && !jsonBusinessError" class="text-[0.75rem]" text-emerald-500>JSON OK</span>
+                            <span v-if="!hasJsonErrors && !isJsonEmpty" class="inline-flex items-center px-1.5 py-0.5 rounded-full border border-emerald-700/70 bg-emerald-900/40 text-[0.70rem] text-emerald-200 tracking-wide">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>
+                                Ready to load
+                            </span>
                             <span v-else></span>
 
-                            <button type="button" @click="loadFromJson" :disabled="hasJsonErrors" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center text-base
-                                    bg="cyan-800/80 hover:cyan-800/50 disabled:cyan-800/30" class="disabled:cursor-not-allowed">
+                            <button type="button" @click="loadFromJson" :disabled="hasJsonErrors || isJsonEmpty" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center text-base
+                                    bg="cyan-800/80 hover:cyan-800/60 disabled:cyan-800/80" class="disabled:cursor-not-allowed">
                                 <span i-tabler-file-upload mr-1></span>
                                 Load Preset
                             </button>
@@ -134,7 +168,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { usePresetManager } from "~/composables/usePresetManager";
-import type { Preset } from "~/composables/usePresetManager";
+import type { Preset, PresetValidationError, PresetValidationResult } from "~/composables/usePresetManager";
 export default defineComponent({
     name: 'SaveModal',
     props: {
@@ -210,14 +244,30 @@ export default defineComponent({
         // -------------------------------------------------------------------------------------------------------------
         const jsonText = ref<string>("")
         const jsonSyntaxError = ref<string | null>(null)
-        const jsonBusinessError = ref<string | null>(null)
-        const hasJsonErrors = computed(() => !!jsonSyntaxError.value || !!jsonBusinessError.value)
+        const jsonValidationErrors = ref<PresetValidationError[] | null>(null)
 
-        onMounted(async () => {
-            jsonText.value = JSON.stringify(buildPresetData(), null, 2);
+        const isJsonEmpty = computed(() => !jsonText.value.trim())
+        const hasJsonErrors = computed(() => !!jsonSyntaxError.value || !!jsonValidationErrors.value?.length)
+        const jsonErrors = computed<PresetValidationError[]>(() => {
+            const errors: PresetValidationError[] = []
+            if (jsonSyntaxError.value) {
+                errors.push({
+                    message: jsonSyntaxError.value,
+                    code: "JSON_SYNTAX_ERROR",
+                })
+            }
+            if (jsonValidationErrors.value && jsonValidationErrors.value.length > 0) {
+                errors.push(...jsonValidationErrors.value)
+            }
+            return errors
         })
+
+        // onMounted(async () => {
+        //     jsonText.value = JSON.stringify(buildPresetData(), null, 2);
+        // })
+
         const loadFromJson = () => {
-            if (hasJsonErrors.value) return
+            if (hasJsonErrors.value || isJsonEmpty.value) return
             const data = JSON.parse(jsonText.value) as Preset
             save(data)
             closeModal()
@@ -240,12 +290,12 @@ export default defineComponent({
 
                     jsonSyntaxError.value = null
 
-                    const result = validatePreset(parsed)
+                    const result = validatePreset(parsed) as PresetValidationResult
                     if (!result.valid) {
-                        jsonBusinessError.value = result.errors.join(" || ")
+                        jsonValidationErrors.value = result.errors
                         fileWarning.value = "The JSON file is invalid for a Particle Life preset."
                     } else {
-                        jsonBusinessError.value = null
+                        jsonValidationErrors.value = null
                         fileWarning.value = null
                     }
 
@@ -279,34 +329,26 @@ export default defineComponent({
             if (!newVal) fileWarning.value = null
         })
         watch(jsonText, (newVal) => {
-            // Reset des erreurs à chaque modification
             jsonSyntaxError.value = null
-            jsonBusinessError.value = null
+            jsonValidationErrors.value = null
 
-            // Si champ vide, on ne valide pas
             if (!newVal.trim()) return
 
             try {
                 const parsed = JSON.parse(newVal)
-                // JSON syntaxiquement valide, on passe à la validation métier
-                const result = validatePreset(parsed)
-                if (!result.valid) {
-                    jsonBusinessError.value = result.errors.join(" || ")
-                } else {
-                    jsonBusinessError.value = null
-                }
+                const result = validatePreset(parsed) as PresetValidationResult
+                jsonValidationErrors.value = !result.valid ? result.errors : null
             } catch (e: any) {
-                // Erreur de syntaxe JSON
                 jsonSyntaxError.value = e?.message ?? "Invalid JSON."
-                jsonBusinessError.value = null
+                jsonValidationErrors.value = null
             }
-        }, { immediate: false })
+        })
 
         return {
             particleLife, closeModal,
             name, description, forceMatrix, radiusMatrices, colors, generalSettings, canSave,
             buildPresetData, copyToClipboard, download, save, loadFromJson, onJsonFileSelected, fileInput,
-            jsonText, jsonSyntaxError, jsonBusinessError, hasJsonErrors, fileError, fileWarning
+            jsonText, jsonSyntaxError, jsonValidationErrors, isJsonEmpty, hasJsonErrors, jsonErrors, fileError, fileWarning
         }
     },
 })
