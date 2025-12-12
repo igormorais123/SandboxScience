@@ -1,7 +1,7 @@
 <template>
     <div>
         <div flex justify-between items-end mb-3>
-            <button type="button" @click="particleLife.isSaveModalOpen = true" btn pl-2 pr-3 rounded-lg flex justify-center items-center class="bg-cyan-800/80 hover:cyan-900/50">
+            <button type="button" @click="particleLife.isSaveModalOpen = true" btn pl-2 pr-3 rounded-lg flex justify-center items-center bg="cyan-800/80 hover:cyan-800/60">
                 <span mr-1 i-tabler-plus></span>
                 New Preset
             </button>

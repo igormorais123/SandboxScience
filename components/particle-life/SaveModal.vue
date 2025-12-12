@@ -80,7 +80,7 @@
                                 Download
                             </button>
                         </div>
-                        <button type="button" @click="save(buildPresetData())" :disabled="!canSave" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center
+                        <button type="button" @click="savePreset" :disabled="!canSave" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center
                                 bg="cyan-800/80 hover:cyan-800/60 disabled:cyan-800/80" class="disabled:cursor-not-allowed">
                             <span i-carbon-save mr-1></span>
                             Save Preset
@@ -239,6 +239,21 @@ export default defineComponent({
 
             return presetData
         }
+        const savePreset = () => {
+            if (!canSave.value) return
+            save(buildPresetData())
+            closeModal()
+            resetFields()
+        }
+        const resetFields = () => {
+            name.value = ""
+            description.value = ""
+            forceMatrix.value = false
+            radiusMatrices.value = false
+            colors.value = false
+            generalSettings.value = false
+            jsonText.value = ""
+        }
         // -------------------------------------------------------------------------------------------------------------
         // --- JSON Editor ---------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
@@ -271,6 +286,7 @@ export default defineComponent({
             const data = JSON.parse(jsonText.value) as Preset
             save(data)
             closeModal()
+            resetFields()
         }
 
         const fileInput = ref<HTMLInputElement | null>(null)
@@ -347,7 +363,7 @@ export default defineComponent({
         return {
             particleLife, closeModal,
             name, description, forceMatrix, radiusMatrices, colors, generalSettings, canSave,
-            buildPresetData, copyToClipboard, download, save, loadFromJson, onJsonFileSelected, fileInput,
+            buildPresetData, copyToClipboard, download, loadFromJson, onJsonFileSelected, savePreset, fileInput,
             jsonText, jsonSyntaxError, jsonValidationErrors, isJsonEmpty, hasJsonErrors, jsonErrors, fileError, fileWarning
         }
     },
