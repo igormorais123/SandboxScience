@@ -105,45 +105,49 @@
                                 </button>
                                 <input ref="fileInput" type="file" accept="application/json,.json" class="hidden" @change="onJsonFileSelected"/>
                             </div>
-                            <div v-if="fileError" px-2 py-1 rounded-lg text-xs text-red-600 border class="border-red-700/60 bg-red-950/30">
-                                {{ fileError }}
-                            </div>
-                            <div v-if="fileWarning" px-2 py-1 rounded-lg text-xs text-amber-600 border class="border-amber-700/60 bg-amber-950/30">
-                                {{ fileWarning }}
-                            </div>
+                            <TransitionGroup name="fade-translate-y">
+                                <div v-if="fileError" px-2 py-1 rounded-lg text-xs text-red-600 border class="border-red-700/60 bg-red-950/30">
+                                    {{ fileError }}
+                                </div>
+                                <div v-if="fileWarning" px-2 py-1 rounded-lg text-xs text-amber-600 border class="border-amber-700/60 bg-amber-950/30">
+                                    {{ fileWarning }}
+                                </div>
+                            </TransitionGroup>
                         </div>
                         <JsonEditor v-model="jsonText" v-model:internalError="jsonSyntaxError" :external-errors="jsonValidationErrors" />
 
-                        <div v-if="jsonErrors?.length" class="border border-red-800/60 bg-red-950/40" rounded-md backdrop-blur-sm>
-                            <div flex items-center gap-2 px-3 py-1.5 border-b class="border-red-800/50">
-                                <span i-tabler-alert-triangle-filled text-red-400 text-sm></span>
-                                <span font-semibold tracking-wide uppercase text-red-200 text-xs>
-                                    {{ jsonErrors.length }} error{{ jsonErrors.length > 1 ? 's' : '' }} detected
-                                </span>
-                            </div>
+                        <Transition name="fade-translate-y">
+                            <div v-if="jsonErrors?.length" class="border border-red-800/60 bg-red-950/40" rounded-md backdrop-blur-sm>
+                                <div flex items-center gap-2 px-3 py-1.5 border-b class="border-red-800/50">
+                                    <span i-tabler-alert-triangle-filled text-red-400 text-sm></span>
+                                    <span font-semibold tracking-wide uppercase text-red-200 text-xs>
+                                        {{ jsonErrors.length }} error{{ jsonErrors.length > 1 ? 's' : '' }} detected
+                                    </span>
+                                </div>
 
-                            <div class="divide-y divide-red-900/40" text-xs>
-                                <div v-for="(error, index) in jsonErrors" :key="index" class="px-3 pt-2 pb-1.5 hover:bg-red-900/10">
-                                    <div class="flex items-start gap-1.5">
-                                        <span mt-1 block w-1.5 h-1.5 rounded-full bg-red-500></span>
+                                <TransitionGroup name="fade-translate-y" tag="div" class="divide-y divide-red-900/40" text-xs>
+                                    <div v-for="(error, index) in jsonErrors" :key="index" class="px-3 pt-2 pb-1.5 hover:bg-red-900/10">
+                                        <div class="flex items-start gap-1.5">
+                                            <span mt-1 block w-1.5 h-1.5 rounded-full bg-red-500></span>
 
-                                        <div class="flex-1">
-                                            <div class="flex flex-wrap items-center gap-1">
-                                                <span v-if="error.code" class="px-1 py-px rounded bg-red-900/60 border border-red-700/60 text-red-200 text-[0.6rem] uppercase tracking-wide">
-                                                    {{ error.code }}
-                                                </span>
-                                                <span text-red-100 leading-snug>
-                                                    {{ error.message }}
-                                                </span>
-                                            </div>
-                                            <div v-if="error.path" class="mt-0.5 pl-0.5 text-[0.65rem] text-red-300/70 font-mono break-all">
-                                                ↳ {{ error.path }}
+                                            <div class="flex-1">
+                                                <div class="flex flex-wrap items-center gap-1">
+                                                    <span v-if="error.code" class="px-1 py-px rounded bg-red-900/60 border border-red-700/60 text-red-200 text-[0.6rem] uppercase tracking-wide">
+                                                        {{ error.code }}
+                                                    </span>
+                                                    <span text-red-100 leading-snug>
+                                                        {{ error.message }}
+                                                    </span>
+                                                </div>
+                                                <div v-if="error.path" class="mt-0.5 pl-0.5 text-[0.65rem] text-red-300/70 font-mono break-all">
+                                                    ↳ {{ error.path }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </TransitionGroup>
                             </div>
-                        </div>
+                        </Transition>
 
                         <div flex items-center justify-between>
                             <span v-if="!hasJsonErrors && !isJsonEmpty" class="inline-flex items-center px-1.5 py-0.5 rounded-full border border-emerald-700/70 bg-emerald-900/40 text-[0.70rem] text-emerald-200 tracking-wide">
@@ -372,5 +376,18 @@ export default defineComponent({
 
 
 <style scoped>
-
+.fade-translate-y-enter-active,
+.fade-translate-y-leave-active {
+    transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+}
+.fade-translate-y-enter-from,
+.fade-translate-y-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+.fade-translate-y-enter-to,
+.fade-translate-y-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
 </style>
