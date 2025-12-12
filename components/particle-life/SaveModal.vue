@@ -43,29 +43,30 @@
                             v-model="forceMatrix"
                             label="Forces"
                             icon="i-tabler-arrows-random text-sky-600/80"
-                            activeClass="border-sky-600/80 bg-sky-600/20 text-sky-100"
-                            inactiveClass="border-slate-600 bg-slate-800 text-slate-300"
+                            activeClass="border-sky-600/80 bg-sky-600/20 hover:bg-sky-600/30 text-sky-100"
+                            inactiveClass="border-slate-600 bg-slate-800/80 hover:bg-slate-900/50 text-slate-300"
                         />
                         <ToggleChip
                             v-model="radiusMatrices"
                             label="Radii"
                             icon="i-tabler-circles text-purple-600/80"
-                            activeClass="border-purple-600/80 bg-purple-700/20 text-purple-100"
-                            inactiveClass="border-slate-600 bg-slate-800 text-slate-300"
+                            activeClass="border-purple-600/80 bg-purple-700/20 hover:bg-purple-700/30 text-purple-100"
+                            inactiveClass="border-slate-600 bg-slate-800/80 hover:bg-slate-900/50 text-slate-300"
                         />
                         <ToggleChip
                             v-model="colors"
                             label="Colors"
                             icon="i-tabler-palette text-amber-600/80"
-                            activeClass="border-amber-600/80 bg-amber-700/20 text-amber-100"
-                            inactiveClass="border-slate-600 bg-slate-800 text-slate-300"
+                            activeClass="border-amber-600/80 bg-amber-700/20 hover:bg-amber-700/30 text-amber-100"
+                            inactiveClass="border-slate-600 bg-slate-800/80 hover:bg-slate-900/50 text-slate-300"
                         />
                         <ToggleChip
                             v-model="generalSettings"
                             label="Settings"
                             icon="i-tabler-settings text-emerald-600/80"
-                            activeClass="border-emerald-600/80 bg-emerald-700/20 text-emerald-100"
-                            inactiveClass="border-slate-600 bg-slate-800 text-slate-300"
+                            activeClass="border-emerald-600/80 bg-emerald-700/20 hover:bg-emerald-700/30 text-emerald-100"
+                            inactiveClass="border-slate-600 bg-slate-800/80 hover:bg-slate-900/50 text-slate-300"
+                            disabled
                         />
                     </div>
                     <div flex justify-end items-center gap-3 mt-4>
