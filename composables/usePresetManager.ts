@@ -333,7 +333,10 @@ export const usePresetManager = (particleLife: any) => {
     const save = (presetData: Preset) => {
         getSavedPresets()
         const id = crypto.randomUUID?.() ?? `pl-${Date.now()}-${Math.random().toString(36).slice(2)}`
-        particleLife.savedPresets[id] = presetData
+        particleLife.savedPresets = {
+            [id]: presetData,
+            ...particleLife.savedPresets
+        }
         localStorage.setItem("particleLife.presets", JSON.stringify(particleLife.savedPresets))
         success("Preset saved.")
         safeHideAllPoppers()

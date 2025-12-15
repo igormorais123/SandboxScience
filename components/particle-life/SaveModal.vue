@@ -207,26 +207,24 @@ export default defineComponent({
             const presetData: Preset = {
                 v: 1,
                 meta: {
-                    name: name.value.trim() || "Untitled preset",
+                    name: name.value.trim() || "Untitled Preset",
                     description: description.value.trim() || null
                 },
                 types: [] as string[] // "settings", "forces", "radii", "colors"
             }
 
-            if (generalSettings.value) {
-                presetData.settings = {
-                    species: particleLife.numColors,
-                    numParticles: particleLife.numParticles,
-                    frictionFactor: particleLife.frictionFactor,
-                    forceFactor: particleLife.forceFactor,
-                }
-                presetData.types.push("settings")
-            }
+            // if (generalSettings.value) {
+            //     presetData.settings = {
+            //         species: particleLife.numColors,
+            //         numParticles: particleLife.numParticles,
+            //         frictionFactor: particleLife.frictionFactor,
+            //         forceFactor: particleLife.forceFactor,
+            //     }
+            //     presetData.types.push("settings")
+            // }
 
             if (forceMatrix.value || radiusMatrices.value) {
                 presetData.matrices = { forces: [] }
-                // presetData.matrices = { size: particleLife.numColors, forces: [] }
-
                 presetData.matrices.forces = clone2D(particleLife.rulesMatrix)
                 presetData.types.push("forces")
 

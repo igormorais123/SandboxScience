@@ -81,9 +81,13 @@
 import { defineComponent } from "vue";
 import { usePresetManager } from "~/composables/usePresetManager";
 import type { Preset } from "~/composables/usePresetManager";
+import { Dropdown } from 'floating-vue'
 
 export default defineComponent({
     name: 'MyPresets',
+    components: {
+        VDropdown: Dropdown
+    },
     props: {
         store: {
             type: Object,
@@ -93,7 +97,7 @@ export default defineComponent({
     setup(props, {emit}) {
         const particleLife = props.store
 
-        const { success, error } = useToasts()
+        const { success } = useToasts()
         const { getSavedPresets, getPresetByID, copyToClipboard, download, removePreset, hexListToFlatRgba, clone2D } = usePresetManager(particleLife)
 
         const activeTypeFilters = ref<string[]>([])
@@ -110,20 +114,33 @@ export default defineComponent({
             getSavedPresets()
         })
 
-        const filteredPresets = computed(() => {
+        const filteredPresets = computed<Record<string, Preset>>(() => {
             const filters = activeTypeFilters.value
             if (filters.length === 0) return particleLife.savedPresets
 
-            const savedPresets = particleLife.savedPresets as Record<string, Preset>
-            const result: Record<string, Preset> = {}
-            for (const [id, preset] of Object.entries(savedPresets) as [string, Preset][]) {
-                const matchesAll = filters.every(t => preset.types.includes(t))
-                if (matchesAll) {
-                    result[id] = preset
-                }
-            }
-            return result
+            const getTypeIndex = (type: string) => PRESET_TYPE_META.findIndex(m => m.id === type)
+
+            const presets = Object.entries(particleLife.savedPresets) as [string, Preset][]
+
+            return Object.fromEntries(presets
+                .filter(([_, preset]) => filters.every(f => preset.types.includes(f)))
+                .sort(([idA, a], [idB, b]) => {
+                    const scoreA = a.types.length - filters.length
+                    const scoreB = b.types.length - filters.length
+
+                    if (scoreA !== scoreB) return scoreA - scoreB
+
+                    for (let i = 0; i < Math.max(a.types.length, b.types.length); i++) {
+                        const indexA = getTypeIndex(a.types[i] ?? '')
+                        const indexB = getTypeIndex(b.types[i] ?? '')
+                        if (indexA !== indexB) return indexA - indexB
+                    }
+
+                    return idA.localeCompare(idB) // Sort by ID to ensure consistent order
+                })
+            )
         })
+
         const getPresetSpeciesCount = (preset: Preset): number | undefined => {
             let typeCount: number | undefined = undefined
             if (preset.matrices) {
