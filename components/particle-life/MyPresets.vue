@@ -34,12 +34,12 @@
             No presets saved yet.
         </div>
         <div v-else flex flex-col gap-2 overflow-y-auto -mr-1 pr-1 class="thin-scrollbar max-h-[39vh]">
-            <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" p-2 rounded-lg flex justify-between items-center class="bg-slate-700/30">
+            <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" p-2 pr-0 rounded-lg flex justify-between items-center cursor-pointer class="bg-slate-700/30 hover:bg-slate-600/30">
                 <div flex-1 min-w-0 pr-2>
                     <p font-bold text-slate-200 text-sm truncate capitalize>{{ preset.meta.name }}</p>
                     <p text-xs text-slate-400>{{ getPresetSpeciesCount(preset) }} species</p>
                 </div>
-                <div flex items-center gap-2 flex-shrink-0>
+                <div flex items-center flex-shrink-0 self-stretch>
                     <div flex gap-1>
                         <span v-for="meta in PRESET_TYPE_META" :key="meta.id"
                               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-500 text-slate-50"
@@ -48,11 +48,11 @@
                             <span v-if="meta.icon" :class="meta.icon" text-sm></span>
                         </span>
                     </div>
-                    <div w-px h-5 bg-slate-700></div>
+                    <div w-px h-5 bg-slate-700 ml-2></div>
 
-                    <VDropdown placement="right-start" popperClass="dropdownPresetOptions" :arrowPadding="10" instant-move>
-                        <div flex items-center>
-                            <button type="button" i-tabler-dots-vertical text-slate-100 text-center></button>
+                    <VDropdown placement="right-start" popperClass="dropdownPresetOptions" :arrowPadding="10" instant-move @click.stop self-stretch>
+                        <div flex items-center pl-2 pr-2.5 h-full text-slate-300 class="hover:text-slate-100">
+                            <button type="button" i-tabler-dots-vertical text-center text-lg></button>
                         </div>
 
                         <template #popper>

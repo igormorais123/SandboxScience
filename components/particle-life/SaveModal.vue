@@ -1,5 +1,5 @@
 <template>
-    <Modal :modal-active="particleLife.isSaveModalOpen" @close="closeModal" overlayColor="transparent" modalClass="max-w-[880px]">
+    <Modal :modal-active="particleLife.isSaveModalOpen" @close="closeModal" overlayColor="bg-gray-950/25" modalClass="max-w-[880px]">
         <section>
             <header class="-mt-2 sm:-mt-4" mb-3>
                 <div flex items-center mb-3 class="text-2xl sm:text-[1.75rem] font-bold">
