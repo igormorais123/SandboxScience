@@ -84,7 +84,7 @@
                         </div>
 
                         <button type="button" @click="savePreset" :disabled="!canSave" btn whitespace-nowrap py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
-                                class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500 disabled:cursor-not-allowed"
+                                class="border border-cyan-600/80 hover:border-cyan-500/80 disabled:hover:border-cyan-600/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500 disabled:cursor-not-allowed"
                                 bg="cyan-800/80 hover:cyan-600/60 disabled:cyan-800/80">
                             <span mr-1.5 i-carbon-save text-base></span>
                             Save Preset
@@ -161,7 +161,7 @@
                             <span v-else></span>
 
                             <button type="button" @click="loadFromJson" :disabled="hasJsonErrors || isJsonEmpty" btn whitespace-nowrap py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
-                                    class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500 disabled:cursor-not-allowed"
+                                    class="border border-cyan-600/80 disabled:hover:border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500 disabled:cursor-not-allowed"
                                     bg="cyan-800/80 hover:cyan-600/60 disabled:cyan-800/80" >
                                 <span mr-1.5 i-tabler-file-upload text-base></span>
                                 Load Preset

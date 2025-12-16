@@ -1,7 +1,7 @@
 <template>
     <div>
         <div flex justify-between items-end mb-3>
-            <button type="button" @click="particleLife.isSaveModalOpen = true" btn py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
+            <button type="button" aria-label="+New Preset" @click="particleLife.isSaveModalOpen = true" btn py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
                     bg="cyan-800/80 hover:cyan-600/60" class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500">
                 <span mr-1.5 i-tabler-plus text-base></span>
                 New Preset
@@ -20,13 +20,13 @@
 <!--                    {{ !matchPresetCount ? 'Keep' : 'Align' }} Species-->
 <!--                </button>-->
                 <div class="inline-flex items-center rounded-full bg-slate-900/70 p-0.5 text-xs border border-slate-700/80" :class="!hasPresets && 'opacity-60 cursor-not-allowed'">
-                    <button type="button" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = false)"
+                    <button type="button" title="Keep Species" aria-label="Keep Species" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = false)"
                             class="px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors transition-duration-75 disabled:pointer-events-none"
                             :class="[!matchPresetCount ? 'bg-slate-700/70 text-slate-50' : 'bg-transparent text-slate-300 hover:text-slate-100']">
                         <span i-tabler-lock text-xs :class="!matchPresetCount ? 'text-emerald-300/90' : 'text-emerald-300/70'"></span>
                         Keep
                     </button>
-                    <button type="button" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = true)"
+                    <button type="button" title="Align Species" aria-label="Align Species" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = true)"
                             class="px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors transition-duration-75 disabled:pointer-events-none"
                             :class="[matchPresetCount ? 'bg-slate-700/70 text-slate-50' : 'bg-transparent text-slate-300 hover:text-slate-100']">
                         <span i-tabler-lock-open text-xs :class="matchPresetCount ? 'text-violet-300/90' : 'text-violet-300/70'"></span>
@@ -40,7 +40,7 @@
             <span text-sm text-gray-400 underline>Filters:</span>
 
             <div flex items-center gap-1 text-xs>
-                <button type="button" v-for="meta in PRESET_TYPE_META" :key="meta.id"
+                <button type="button" v-for="meta in PRESET_TYPE_META" :key="meta.id" :aria-label="meta.label + ' Filter'"
                         class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-500"
                         :class="activeTypeFilters.includes(meta.id) ? meta.color : 'bg-slate-700/50 hover:bg-slate-700/75 text-gray-300'"
                         @click="toggleTypeFilter(meta.id)">
@@ -90,20 +90,25 @@
 
                     <VDropdown placement="right-start" popperClass="dropdownPresetOptions" :arrowPadding="10" instant-move @click.stop self-stretch>
                         <div flex items-center pl-2 pr-2.5 h-full text-slate-300 class="hover:text-slate-100">
-                            <button type="button" i-tabler-dots-vertical text-center text-lg></button>
+                            <button type="button" title="Preset Options" aria-label="Preset Options" i-tabler-dots-vertical text-center text-lg></button>
                         </div>
 
                         <template #popper>
                             <div flex flex-col class="bg-slate-800/70 backdrop-blur-sm rounded-md shadow-md">
-                                <button type="button" @click="copyToClipboard(getPresetByID(id))" text-sm text-slate-100 class="rounded-t hover:bg-slate-500/50 px-4 py-2">
-                                    <span i-tabler-copy></span>
+                                <button type="button" aria-label="Copy preset JSON"
+                                        @click="copyToClipboard(getPresetByID(id))"
+                                        class="rounded-t hover:bg-slate-500/50 px-4 py-2" text-sm text-slate-100>
                                     Copy JSON
                                 </button>
-                                <button type="button" @click="download(getPresetByID(id))" text-sm text-slate-100 class="hover:bg-slate-500/50 px-4 py-2">
+                                <button type="button" aria-label="Download preset JSON"
+                                        @click="download(getPresetByID(id))"
+                                        class="hover:bg-slate-500/50 px-4 py-2" text-sm text-slate-100 >
                                     Download JSON
                                 </button>
                                 <hr>
-                                <button type="button" @click="removePreset(id)" text-sm text-slate-100 class="rounded-b bg-red-700/30 hover:bg-red-700/60 px-4 py-2">
+                                <button type="button" aria-label="Delete preset"
+                                        @click="removePreset(id)"
+                                        class="rounded-b bg-red-700/30 hover:bg-red-700/60 px-4 py-2" text-sm text-slate-100>
                                     Delete
                                 </button>
                             </div>
