@@ -299,11 +299,29 @@ export default defineComponent({
         const fileInput = ref<HTMLInputElement | null>(null)
         const fileWarning = ref<string | null>(null)
         const fileError = ref<string | null>(null)
+        const MAX_FILE_SIZE = 1 * 1024 * 1024 // 1 MB
+        const JSON_MIME_TYPES = ["application/json", "text/json", "application/ld+json"]
 
         const onJsonFileSelected = (event: Event) => {
             const target = event.target as HTMLInputElement
             const file = target.files?.[0]
             if (!file) return
+
+            fileError.value = null
+            fileWarning.value = null
+
+            if (file.size > MAX_FILE_SIZE) {
+                fileError.value = "The file is too large (max 1 MB)."
+                target.value = ""
+                return
+            }
+            const hasJsonExtension = /\.json$/i.test(file.name)
+            const hasJsonMime = file.type && JSON_MIME_TYPES.includes(file.type)
+            if (!hasJsonExtension && !hasJsonMime) {
+                fileError.value = "Only .json files are accepted."
+                target.value = ""
+                return
+            }
 
             const reader = new FileReader()
             reader.onload = () => {

@@ -278,6 +278,7 @@ export default defineComponent({
         // Define refs and variables
         const mainContainer = ref<HTMLElement | null>(null)
         const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(mainContainer)
+        const { success } = useToasts()
         const particleLife = useParticleLifeGPUStore()
         const rulesOptions = RULES_OPTIONS
         const paletteOptions = PALETTE_OPTIONS
@@ -2423,6 +2424,7 @@ export default defineComponent({
                 if (matchPresetCount && (newNumTypes !== oldNumTypes)) updateParticleBindGroups()
             } finally {
                 isUpdatingParticles = false
+                success("Preset loaded.")
             }
         }
         const applyPresetSubMatrix = (current: number[][], preset: number[][], numTypes: number, typesToUpdate: number,): number[][] => {

@@ -140,7 +140,6 @@ export default defineComponent({
     setup(props, {emit}) {
         const particleLife = props.store
 
-        const { success } = useToasts()
         const { getSavedPresets, getPresetByID, copyToClipboard, download, removePreset, hexListToFlatRgba, clone2D } = usePresetManager(particleLife)
 
         const activeTypeFilters = ref<string[]>([])
@@ -235,7 +234,6 @@ export default defineComponent({
             }
 
             emit("loadPreset", options, presetTypeCount, matchPresetCount.value)
-            success("Preset loaded.")
         }
 
         return {
