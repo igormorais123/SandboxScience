@@ -27,12 +27,12 @@
                         <TooltipInfo container="#mainContainer" tooltip="Choose from static or generative color palette generators. <br> <b>Static</b> palettes are fixed, while <b>generative</b> ones produce new themed variations each time." />
                     </div>
                     <div flex gap-2>
-                        <SelectInput class="w-8/12" v-model="particleLife.selectedColorPaletteOption" :options="paletteOptions"></SelectInput>
+                        <SelectInput class="w-8/12" v-model="particleLife.selectedColorPaletteOption" @change="updateColors" :options="paletteOptions"></SelectInput>
                         <div grid grid-cols-2 gap-1 class="w-4/12">
-                            <button @click="updateColors" type="button" btn px-3 rounded-full flex justify-center items-center bg="slate-800/80 hover:slate-800/50">
+                            <button @click="updateColors" type="button" title="Reload palette" aria-label="Reload palette" btn px-3 rounded-full flex justify-center items-center bg="slate-800/80 hover:slate-800/50">
                                 <span i-tabler-reload></span>
                             </button>
-                            <button @click="updateColors(true)" type="button" btn px-3 rounded-full flex justify-center items-center bg="cyan-900/80 hover:cyan-900/50">
+                            <button @click="updateColors(true)" type="button" title="Random palette" aria-label="Random palette" btn px-3 rounded-full flex justify-center items-center bg="cyan-900/80 hover:cyan-900/50">
                                 <span i-game-icons-perspective-dice-six-faces-random></span>
                             </button>
                         </div>
@@ -45,12 +45,12 @@
                         <TooltipInfo container="#mainContainer" tooltip="Choose from different force matrix generators. <br> These are experimental and may produce unpredictable or unbalanced results." />
                     </div>
                     <div flex gap-2>
-                        <SelectInput class="w-8/12" v-model="particleLife.selectedRulesOption" :options="rulesOptions"></SelectInput>
+                        <SelectInput class="w-8/12" v-model="particleLife.selectedRulesOption" @change="updateRulesMatrix" :options="rulesOptions"></SelectInput>
                         <div grid grid-cols-2 gap-1 class="w-4/12">
-                            <button @click="updateRulesMatrix" type="button" btn px-3 rounded-full flex justify-center items-center bg="slate-800/80 hover:slate-800/50">
+                            <button @click="updateRulesMatrix" type="button" title="Reload interaction matrix" aria-label="Reload interaction matrix" btn px-3 rounded-full flex justify-center items-center bg="slate-800/80 hover:slate-800/50">
                                 <span i-tabler-reload></span>
                             </button>
-                            <button @click="updateRulesMatrix(true)" type="button" btn px-3 rounded-full flex justify-center items-center bg="cyan-900/80 hover:cyan-900/50">
+                            <button @click="updateRulesMatrix(true)" type="button" title="Random interaction matrix" aria-label="Random interaction matrix" btn px-3 rounded-full flex justify-center items-center bg="cyan-900/80 hover:cyan-900/50">
                                 <span i-game-icons-perspective-dice-six-faces-random></span>
                             </button>
                         </div>
@@ -63,12 +63,12 @@
                         <TooltipInfo container="#mainContainer" tooltip="Choose from different particle distribution generators. <br> Each defines how particles are initially placed, affecting the simulation’s early motion and structure." />
                     </div>
                     <div flex gap-2>
-                        <SelectInput class="w-8/12" v-model="particleLife.selectedSpawnPositionOption" :options="positionOptions"></SelectInput>
+                        <SelectInput class="w-8/12" v-model="particleLife.selectedSpawnPositionOption" @change="updateParticlePositions" :options="positionOptions"></SelectInput>
                         <div grid grid-cols-2 gap-1 class="w-4/12">
-                            <button @click="updateParticlePositions" type="button" btn px-3 rounded-full flex justify-center items-center bg="slate-800/80 hover:slate-800/50">
+                            <button @click="updateParticlePositions" type="button" title="Reload particle distribution" aria-label="Reload particle distribution" btn px-3 rounded-full flex justify-center items-center bg="slate-800/80 hover:slate-800/50">
                                 <span i-tabler-reload></span>
                             </button>
-                            <button @click="updateParticlePositions(true)" type="button" btn px-3 rounded-full flex justify-center items-center bg="cyan-900/80 hover:cyan-900/50">
+                            <button @click="updateParticlePositions(true)" type="button" title="Random particle distribution" aria-label="Random particle distribution" btn px-3 rounded-full flex justify-center items-center bg="cyan-900/80 hover:cyan-900/50">
                                 <span i-game-icons-perspective-dice-six-faces-random></span>
                             </button>
                         </div>
