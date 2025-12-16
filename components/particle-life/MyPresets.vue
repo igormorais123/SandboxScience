@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div flex justify-between items-end mb-3>
+        <div flex justify-between items-end mb-2>
             <button type="button" aria-label="+New Preset" @click="particleLife.isSaveModalOpen = true" btn py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
                     bg="cyan-800/80 hover:cyan-600/60" class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500">
                 <span mr-1.5 i-tabler-plus text-base></span>
@@ -9,9 +9,9 @@
 
             <div flex items-center>
                 <TooltipInfo container="#mainContainer" tag="div" mr-0.5
-                             tooltip="Choose how presets affect the species count:<br>
-                             - Keep: Keeps your current number of species.<br>
-                             - Align: Adjusts the number of species to match the preset.">
+                             tooltip="Choose how presets affect the species count:<br><small>
+                             <u>Keep:</u> Keeps your current number of species.<br>
+                             <u>Align:</u> Match the number of species defined by the preset.</small>">
                 </TooltipInfo>
 
 <!--                <button type="button" @click="matchPresetCount = !matchPresetCount" text-xs btn px-2 rounded-full flex justify-center items-center-->
@@ -71,8 +71,8 @@
             </p>
         </div>
 
-        <div v-else flex flex-col gap-2 overflow-y-auto -mr-1 pr-1 class="thin-scrollbar max-h-[39vh]">
-            <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" p-2 pr-0 rounded-lg flex justify-between items-center cursor-pointer class="bg-slate-700/30 hover:bg-slate-600/30">
+        <div v-else flex flex-col gap-1.5 overflow-y-auto -mr-1 pr-1 class="thin-scrollbar max-h-[39vh]">
+            <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" py-2 pl-3 rounded-lg flex justify-between items-center cursor-pointer class="bg-slate-700/30 hover:bg-slate-600/30 border border-slate-700/60">
                 <div flex-1 min-w-0 pr-2>
                     <p font-bold text-slate-200 text-sm truncate capitalize>{{ preset.meta.name }}</p>
                     <p text-xs text-slate-400>{{ getPresetSpeciesCount(preset) }} species</p>
