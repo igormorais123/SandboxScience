@@ -1,38 +1,76 @@
 <template>
     <div>
         <div flex justify-between items-end mb-3>
-            <button type="button" @click="particleLife.isSaveModalOpen = true" btn pl-2 pr-3 rounded-lg flex justify-center items-center bg="cyan-800/80 hover:cyan-800/60">
-                <span mr-1 i-tabler-plus></span>
+            <button type="button" @click="particleLife.isSaveModalOpen = true" btn py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
+                    bg="cyan-800/80 hover:cyan-600/60" class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500">
+                <span mr-1.5 i-tabler-plus text-base></span>
                 New Preset
             </button>
-            <button type="button" @click="matchPresetCount = !matchPresetCount" text-xs btn px-2 rounded-full flex justify-center items-center
-                    :class="!matchPresetCount ? 'bg-red-800/80 hover:bg-red-800/60' : 'bg-slate-700/80 hover:bg-slate-700/50'">
-                <span mr-1 :class="!matchPresetCount ? 'i-tabler-lock' : 'i-tabler-lock-open'"></span>
-                {{ !matchPresetCount ? 'Keep' : 'Align' }} Species
-            </button>
+
+            <div flex items-center>
+                <TooltipInfo container="#mainContainer" tag="div" mr-0.5
+                             tooltip="Choose how presets affect the species count:<br>
+                             - Keep: Keeps your current number of species.<br>
+                             - Align: Adjusts the number of species to match the preset.">
+                </TooltipInfo>
+
+<!--                <button type="button" @click="matchPresetCount = !matchPresetCount" text-xs btn px-2 rounded-full flex justify-center items-center-->
+<!--                        :class="!matchPresetCount ? 'bg-red-800/80 hover:bg-red-800/60' : 'bg-slate-700/80 hover:bg-slate-700/50'">-->
+<!--                    <span mr-1 :class="!matchPresetCount ? 'i-tabler-lock' : 'i-tabler-lock-open'"></span>-->
+<!--                    {{ !matchPresetCount ? 'Keep' : 'Align' }} Species-->
+<!--                </button>-->
+                <div class="inline-flex items-center rounded-full bg-slate-900/70 p-0.5 text-xs border border-slate-700/80" :class="!hasPresets && 'opacity-60 cursor-not-allowed'">
+                    <button type="button" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = false)"
+                            class="px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors transition-duration-75 disabled:pointer-events-none"
+                            :class="[!matchPresetCount ? 'bg-slate-700/70 text-slate-50' : 'bg-transparent text-slate-300 hover:text-slate-100']">
+                        <span i-tabler-lock text-xs :class="!matchPresetCount ? 'text-emerald-300/90' : 'text-emerald-300/70'"></span>
+                        Keep
+                    </button>
+                    <button type="button" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = true)"
+                            class="px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors transition-duration-75 disabled:pointer-events-none"
+                            :class="[matchPresetCount ? 'bg-slate-700/70 text-slate-50' : 'bg-transparent text-slate-300 hover:text-slate-100']">
+                        <span i-tabler-lock-open text-xs :class="matchPresetCount ? 'text-violet-300/90' : 'text-violet-300/70'"></span>
+                        Align
+                    </button>
+                </div>
+            </div>
         </div>
 
-
-        <div v-if="Object.keys(particleLife.savedPresets).length > 0" flex justify-between items-end>
+        <div v-if="hasPresets" flex justify-between items-end>
             <span text-sm text-gray-400 underline>Filters:</span>
 
             <div flex items-center gap-1 text-xs>
                 <button type="button" v-for="meta in PRESET_TYPE_META" :key="meta.id"
                         class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-500"
-                        :class="activeTypeFilters.includes(meta.id) ? meta.color : 'bg-slate-800/60 text-gray-300'"
-                        @click="toggleTypeFilter(meta.id)"
-                >
+                        :class="activeTypeFilters.includes(meta.id) ? meta.color : 'bg-slate-700/50 hover:bg-slate-700/75 text-gray-300'"
+                        @click="toggleTypeFilter(meta.id)">
                     <span v-if="meta.icon" :class="meta.icon" text-sm></span>
-                    <span>{{ meta.label }}</span>
+                    {{ meta.label }}
                 </button>
             </div>
         </div>
 
         <hr border-gray-500 my-2>
 
-        <div v-if="Object.keys(particleLife.savedPresets).length === 0" text-sm text-gray-400 italic>
-            No presets saved yet.
+        <div v-if="!hasPresets" class="text-sm text-slate-300/80 text-center py-3 px-3 rounded-md border border-slate-600/60 bg-slate-800/40">
+            <p class="font-medium text-slate-200/90">
+                No presets saved
+            </p>
+            <p class="text-xs text-slate-400 mt-0.5">
+                Click on <span class="text-cyan-300 font-medium">+New Preset</span> to save your current setup
+            </p>
         </div>
+
+        <div v-else-if="Object.keys(filteredPresets).length === 0 && activeTypeFilters.length > 0"
+             class="text-sm text-slate-300/80 text-center py-3 px-3 rounded-md border border-slate-600/60 bg-slate-800/40">
+            <p class="font-medium text-slate-200/90">
+                No presets match your filters
+            </p>
+            <p class="text-xs text-slate-400 mt-0.5">
+                Try removing one or more filters to see more presets
+            </p>
+        </div>
+
         <div v-else flex flex-col gap-2 overflow-y-auto -mr-1 pr-1 class="thin-scrollbar max-h-[39vh]">
             <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" p-2 pr-0 rounded-lg flex justify-between items-center cursor-pointer class="bg-slate-700/30 hover:bg-slate-600/30">
                 <div flex-1 min-w-0 pr-2>
@@ -104,15 +142,17 @@ export default defineComponent({
         const matchPresetCount = ref<boolean>(false)
 
         const PRESET_TYPE_META: { id: string; label: string; color: string; icon?: string }[] = [
-            {id: "forces", label: "Forces", color: "bg-sky-700/60", icon: "i-tabler-arrows-random"},
-            {id: "radii", label: "Radii", color: "bg-purple-700/60", icon: "i-tabler-circles"},
-            {id: "colors", label: "Colors", color: "bg-amber-700/60", icon: "i-tabler-palette"},
-            {id: "settings", label: "Settings", color: "bg-emerald-700/60", icon: "i-tabler-adjustments"},
+            {id: "forces", label: "Forces", color: "bg-sky-700/60 hover:bg-sky-700/75", icon: "i-tabler-arrows-random"},
+            {id: "radii", label: "Radii", color: "bg-purple-700/60 hover:bg-purple-700/75", icon: "i-tabler-circles"},
+            {id: "colors", label: "Colors", color: "bg-amber-700/60 hover:bg-amber-700/75", icon: "i-tabler-palette"},
+            {id: "settings", label: "Settings", color: "bg-emerald-700/60 hover:bg-emerald-700/75", icon: "i-tabler-adjustments"},
         ]
 
         onMounted(() => {
             getSavedPresets()
         })
+
+        const hasPresets = computed(() => Object.keys(particleLife.savedPresets).length > 0)
 
         const filteredPresets = computed<Record<string, Preset>>(() => {
             const filters = activeTypeFilters.value
@@ -195,7 +235,7 @@ export default defineComponent({
 
         return {
             particleLife, PRESET_TYPE_META,
-            activeTypeFilters, filteredPresets, matchPresetCount,
+            activeTypeFilters, filteredPresets, matchPresetCount, hasPresets,
             getPresetSpeciesCount, toggleTypeFilter, getPresetByID,
             copyToClipboard, download, removePreset, loadPreset,
         }

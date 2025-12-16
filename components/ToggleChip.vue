@@ -2,7 +2,7 @@
     <label class="relative inline-block" :class="disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'">
         <input type="checkbox" class="peer sr-only" :checked="modelValue" @change="toggle" :disabled="disabled"/>
 
-        <span class="flex w-full items-center justify-between gap-3 rounded-lg border px-2 py-1.5 text-xs font-medium transition transition-duration-75 shadow-sm
+        <span class="flex w-full items-center justify-between gap-3 rounded-lg border px-1.5 py-1 text-xs font-medium transition transition-duration-75 shadow-sm
                     peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-sky-500"
               :class="disabled ? disabledClass : (modelValue ? activeClass : inactiveClass)">
 

@@ -23,8 +23,9 @@
                     </div>
                     <div>
                         <p class="text-2sm text-gray-200 mb-1">Description (Optional)</p>
-                        <textarea rows="2" maxlength="180" placeholder="Describe what this preset does..." v-model="description"
-                                  class="w-full border bg-slate-900/70 border-gray-600 rounded px-3 py-2 text-sm text-slate-200 font-500 leading-5 resize-y min-h-[1.25rem] max-h-[3.75rem] overflow-auto"></textarea>
+                        <textarea maxlength="180" placeholder="Describe what this preset does..." v-model="description" min-h-9 h-15 max-h-30
+                                  class="w-full border bg-slate-900/70 border-gray-600 rounded px-3 py-2 text-sm text-slate-200 font-500 leading-5 resize-y overflow-auto">
+                        </textarea>
                     </div>
                     <hr border-gray-500 my-2>
                     <p text-gray-200 class="-mt-0.5" mb-2>
@@ -71,19 +72,21 @@
                     </div>
                     <div flex justify-end items-center gap-3 mt-4>
                         <div flex-1 flex justify-around items-center>
-                            <button type="button" @click="copyToClipboard(buildPresetData())" :disabled="!canSave" px-2 flex items-center text="slate-300 hover:slate-300/80 disabled:slate-300/40" class="disabled:cursor-not-allowed">
+                            <button type="button" @click="copyToClipboard(buildPresetData())" :disabled="!canSave" px-2 flex items-center text-sm text="slate-300 hover:slate-300/80 disabled:slate-300/40" class="disabled:cursor-not-allowed">
                                 <span i-tabler-copy mr-1></span>
                                 Copy
                             </button>
                             <div w-px bg-gray-600 h-6></div>
-                            <button type="button" @click="download(buildPresetData())" :disabled="!canSave" px-2 flex items-center text="slate-300 hover:slate-300/80 disabled:slate-300/40" class="disabled:cursor-not-allowed">
+                            <button type="button" @click="download(buildPresetData())" :disabled="!canSave" px-2 flex items-center text-sm text="slate-300 hover:slate-300/80 disabled:slate-300/40" class="disabled:cursor-not-allowed">
                                 <span i-tabler-download mr-1></span>
                                 Download
                             </button>
                         </div>
-                        <button type="button" @click="savePreset" :disabled="!canSave" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center
-                                bg="cyan-800/80 hover:cyan-800/60 disabled:cyan-800/80" class="disabled:cursor-not-allowed">
-                            <span i-carbon-save mr-1></span>
+
+                        <button type="button" @click="savePreset" :disabled="!canSave" btn whitespace-nowrap py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
+                                class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500 disabled:cursor-not-allowed"
+                                bg="cyan-800/80 hover:cyan-600/60 disabled:cyan-800/80">
+                            <span mr-1.5 i-carbon-save text-base></span>
                             Save Preset
                         </button>
                     </div>
@@ -157,9 +160,10 @@
                             </span>
                             <span v-else></span>
 
-                            <button type="button" @click="loadFromJson" :disabled="hasJsonErrors || isJsonEmpty" whitespace-nowrap btn px-3 rounded-lg flex justify-center items-center text-base
-                                    bg="cyan-800/80 hover:cyan-800/60 disabled:cyan-800/80" class="disabled:cursor-not-allowed">
-                                <span i-tabler-file-upload mr-1></span>
+                            <button type="button" @click="loadFromJson" :disabled="hasJsonErrors || isJsonEmpty" btn whitespace-nowrap py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
+                                    class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500 disabled:cursor-not-allowed"
+                                    bg="cyan-800/80 hover:cyan-600/60 disabled:cyan-800/80" >
+                                <span mr-1.5 i-tabler-file-upload text-base></span>
                                 Load Preset
                             </button>
                         </div>
