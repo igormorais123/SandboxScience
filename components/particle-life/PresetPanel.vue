@@ -1,6 +1,6 @@
 <template>
     <section mx-auto>
-        <div class="flex space-x-1 p-1 bg-slate-700/80 rounded-lg shadow-md">
+        <div class="flex space-x-1 p-0.75 bg-slate-700/80 rounded-[0.625rem] shadow-md">
             <button key="tab-1" @click="openTab = 1" :class="openTab === 1 ? 'bg-slate-900/80' : 'hover:bg-slate-800/80'" class="pl-1 text-sm flex-1 py-1 rounded-lg focus:outline-none focus:shadow-outline-blue transition-all duration-100">
                 Official Presets
                 <TooltipInfo container="#mainContainer" tag="div"

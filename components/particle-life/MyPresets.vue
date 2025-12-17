@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div flex justify-between items-end mb-2>
+        <div flex justify-between items-end mb-2.5 pt-0.5>
             <button type="button" aria-label="+New Preset" @click="particleLife.isSaveModalOpen = true" btn py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
                     bg="cyan-800/80 hover:cyan-600/60" class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500">
                 <span mr-1.5 i-tabler-plus text-base></span>
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <hr border-gray-500 my-2>
+        <hr border-gray-500 mb-2 mt-1>
 
         <div v-if="!hasPresets" class="text-sm text-slate-300/80 text-center py-3 px-3 rounded-md border border-slate-600/60 bg-slate-800/40">
             <p class="font-medium text-slate-200/90">
