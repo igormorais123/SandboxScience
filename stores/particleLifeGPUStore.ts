@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import type { Preset } from "~/composables/usePresetManager";
+
 export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const sidebarLeftOpen = ref<boolean>(false) // Is sidebar left open
     const isLockedPointer = ref<boolean>(false) // Prevent lifeCanvas events from being triggered
@@ -65,6 +67,9 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const selectedRulesOption = ref<number>(0) // Default to 'random'
     const selectedColorPaletteOption = ref<number>(0) // Default to 'random'
 
+    const savedPresets = ref<Record<string, Preset>>({}) // Saved presets from localStorage
+    const isSaveModalOpen = ref<boolean>(false) // Is the save preset modal open
+
     function $reset() {
         sidebarLeftOpen.value = false
         currentMaxRadius.value = 0 // Prevent watcher from not triggering when page is reloaded (!important)
@@ -82,7 +87,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
         repel, forceFactor, frictionFactor, useSpatialHash,
         isBrushActive, brushes, brushRadius, brushIntensity, brushType, attractForce, repulseForce, brushDirectionalForce, showBrushCircle,
         glowSize, glowIntensity, glowSteepness, particleOpacity,
-        selectedSpawnPositionOption, selectedRulesOption, selectedColorPaletteOption,
+        selectedSpawnPositionOption, selectedRulesOption, selectedColorPaletteOption, savedPresets, isSaveModalOpen,
         $reset
     }
 })
