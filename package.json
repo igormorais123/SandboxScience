@@ -25,23 +25,23 @@
         "@pinia/nuxt": "^0.5.3",
         "@unocss/eslint-config": "^66.5.10",
         "@unocss/nuxt": "^66.5.10",
-        "@vueuse/core": "^14.1.0",
-        "@vueuse/nuxt": "^14.1.0",
         "@webgpu/types": "^0.1.68",
         "eslint": "^9.39.2",
         "eslint-plugin-format": "^0.1.2",
         "floating-vue": "^5.2.2",
-        "nuxt": "^3.20.2",
         "nuxt-gtag": "^3.0.1",
         "pinia": "^2.2.1",
         "sass": "^1.77.8",
         "unocss": "^66.5.10",
-        "vue": "^3.5.26",
-        "vue-router": "^4.6.4",
         "vue-tsc": "^2.0.29"
     },
     "dependencies": {
+        "@vueuse/core": "^14.1.0",
+        "@vueuse/nuxt": "^14.1.0",
         "gifenc": "^1.0.3",
+        "nuxt": "^3.20.2",
+        "vue": "^3.5.26",
+        "vue-router": "^4.6.4",
         "zod": "^4.1.13"
     }
 }
