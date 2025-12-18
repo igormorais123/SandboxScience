@@ -37,15 +37,29 @@ export default defineComponent({
     setup(props, { emit }) {
         const modalContainer = ref(null)
 
-        const stopClickOutside = onClickOutside(modalContainer, (event) => {
-            console.log("Click Outside Modal !", event)
-            close()
-        })
-
+        let stopClickOutside: (() => void) | null = null
         const close = () => {
-            stopClickOutside()
             emit("close")
         }
+
+        watch(() => props.modalActive, (active) => {
+            if (active) {
+                nextTick(() => {
+                    stopClickOutside = onClickOutside(modalContainer, (event) => {
+                        // console.log("Click Outside Modal !", event)
+                        close()
+                    })
+                })
+            } else if (stopClickOutside) {
+                // console.log("Removing click outside listener")
+                stopClickOutside()
+                stopClickOutside = null
+            }
+        })
+
+        onBeforeUnmount(() => {
+            stopClickOutside?.()
+        })
 
         return { close, modalContainer }
     }

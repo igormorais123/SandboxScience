@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
+import type { Preset } from "~/composables/usePresetManager";
+
 export const useParticleLifeStore = defineStore('particleLife', () => {
+    const engineType = ref<'CPU' | 'GPU' | 'GPU3D'>('CPU') // Engine type
     const sidebarLeftOpen = ref<boolean>(false) // Is sidebar left open
     const isLockedPointer = ref<boolean>(false) // Prevent lifeCanvas events from being triggered
 
@@ -47,8 +50,8 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
 
     // Define force properties
     const repel = ref<number>(1) // repel force for particles that are too close to each other
-    const forceFactor = ref<number>(0.4) // Decrease will increase the impact of the force on the velocity (the higher the value, the slower the particles will move)
-    const frictionFactor = ref<number>(0.6) // Slow down the particles (0 to 1, where 1 is no friction)
+    const forceFactor = ref<number>(1.0) // Adjust the overall force applied between particles (can't be 0)
+    const frictionFactor = ref<number>(0.3) // Slow down the particles (0 to 1, where 0 is no friction)
 
     // Define properties for randomizing radius matrix
     const minRadiusRange = ref<number[]>([30, 60]) // Range for the random minRadius of each color
@@ -64,13 +67,16 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
     const selectedRulesOption = ref<number>(0) // Default to 'random'
     const selectedColorPaletteOption = ref<number>(0) // Default to 'random'
 
+    const savedPresets = ref<Record<string, Preset>>({}) // Saved presets from localStorage
+    const isSaveModalOpen = ref<boolean>(false) // Is the save preset modal open
+
     function $reset() {
         sidebarLeftOpen.value = false
         currentMaxRadius.value = 0 // Prevent watcher from not triggering when page is reloaded (!important)
     }
 
     return {
-        sidebarLeftOpen, isLockedPointer,
+        engineType, sidebarLeftOpen, isLockedPointer,
         isRunning, isBrushActive, brushes, brushRadius, brushIntensity, brushType, attractForce, repulseForce, wallRepelForce,
         rulesMatrix, minRadiusMatrix, maxRadiusMatrix, currentColors,
         gridWidth, gridHeight, linkProportions,
@@ -79,7 +85,7 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
         minRadiusRange, maxRadiusRange, currentMaxRadius,
         repel, forceFactor, frictionFactor,
         cellGroupSize, cellSizeFactor,
-        captureType, isCapturingGIF, isShareOptionsOpen, selectedRulesOption, selectedColorPaletteOption,
+        captureType, isCapturingGIF, isShareOptionsOpen, selectedRulesOption, selectedColorPaletteOption, savedPresets, isSaveModalOpen,
         $reset
     }
 })
