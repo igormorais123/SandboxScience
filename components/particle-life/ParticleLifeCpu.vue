@@ -492,7 +492,7 @@ export default defineComponent({
             const oldZoomFactor = zoomFactor
             const zoomIntensity = 0.1
             const zoomDelta = delta * zoomIntensity
-            zoomFactor = Math.max(0.1, Math.min(3.2, zoomFactor + zoomDelta))
+            zoomFactor = Math.max(0.1, Math.min(3.2, zoomFactor * (1 + zoomDelta)))
 
             // Adjust grid offsets by scaling the cursor position with the ratio of the new and old zoom factors
             // This maintains the cursor's position on the grid during zoom operations
