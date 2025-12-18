@@ -1,4 +1,5 @@
 import { appURL, appName, appDescription } from './constants/index'
+const gtagId = process.env.NUXT_PUBLIC_GTAG_ID
 
 export default defineNuxtConfig({
     devtools: {
@@ -8,8 +9,8 @@ export default defineNuxtConfig({
         },
     },
     gtag: {
-        enabled: process.env.NODE_ENV === 'production',
-        id: process.env.NUXT_PUBLIC_GTAG_ID ?? 'G-XXXXXXXXXX'
+        enabled: process.env.NODE_ENV === 'production' && !!gtagId,
+        id: gtagId, // G-XXXXXXXXXX
     },
     modules: [
         '@vueuse/nuxt',
