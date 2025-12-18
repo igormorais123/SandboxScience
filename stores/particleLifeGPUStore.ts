@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type { Preset } from "~/composables/usePresetManager";
 
 export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
+    const engineType = ref<'CPU' | 'GPU' | 'GPU3D'>('GPU') // Engine type
     const sidebarLeftOpen = ref<boolean>(false) // Is sidebar left open
     const isLockedPointer = ref<boolean>(false) // Prevent lifeCanvas events from being triggered
 
@@ -76,7 +77,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     }
 
     return {
-        sidebarLeftOpen, isLockedPointer,
+        engineType, sidebarLeftOpen, isLockedPointer,
         isRunning,
         rulesMatrix, minRadiusMatrix, maxRadiusMatrix, currentColors,
         simWidth, simHeight, linkProportions,

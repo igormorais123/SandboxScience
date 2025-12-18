@@ -124,6 +124,7 @@
 import { defineComponent } from "vue";
 import { usePresetManager } from "~/composables/usePresetManager";
 import type { Preset } from "~/composables/usePresetManager";
+import { float32ArrayToHsl } from "~/helpers/utils/colorsGenerator";
 import { Dropdown } from 'floating-vue'
 
 export default defineComponent({
@@ -218,10 +219,14 @@ export default defineComponent({
                 presetRules?: number[][],
                 presetMinRadius?: number[][],
                 presetMaxRadius?: number[][],
-                presetColors?: Float32Array
+                presetColors?: Float32Array | number[][]
             } = {}
             if (preset.colors) {
-                options.presetColors = hexListToFlatRgba(preset.colors)
+                if (particleLife.engineType === "CPU") { // CPU
+                    options.presetColors = float32ArrayToHsl(hexListToFlatRgba(preset.colors))
+                } else { // GPU
+                    options.presetColors = hexListToFlatRgba(preset.colors)
+                }
             }
             if (preset.matrices) {
                 if (preset.matrices.forces) {

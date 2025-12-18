@@ -56,7 +56,7 @@
                         </div>
                     </div>
                 </div>
-                <div mt-2>
+                <div mt-2 v-if="particleLife.engineType !== 'CPU'">
                     <div class="flex items-center text-2sm mb-1">
                         <div class="i-tabler-spiral text-cyan-500 text-md"></div>
                         <span mx-1>Particle Distribution</span>
@@ -114,7 +114,7 @@ export default defineComponent({
         const updateParticlePositions = async (useRandomGenerator: boolean | Event = false) => {
             emit('updateParticlePositions', useRandomGenerator)
         }
-        const loadPreset = async (options: { presetRules?: number[][], presetMinRadius?: number[][], presetMaxRadius?: number[][], presetColors?: Float32Array }, presetTypeCount: number, matchPresetCount: boolean) => {
+        const loadPreset = async (options: { presetRules?: number[][], presetMinRadius?: number[][], presetMaxRadius?: number[][], presetColors?: Float32Array | number[][] }, presetTypeCount: number, matchPresetCount: boolean) => {
             emit('loadPreset', options, presetTypeCount, matchPresetCount)
         }
 
