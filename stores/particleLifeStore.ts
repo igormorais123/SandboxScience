@@ -50,8 +50,8 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
 
     // Define force properties
     const repel = ref<number>(1) // repel force for particles that are too close to each other
-    const forceFactor = ref<number>(0.4) // Decrease will increase the impact of the force on the velocity (the higher the value, the slower the particles will move)
-    const frictionFactor = ref<number>(0.6) // Slow down the particles (0 to 1, where 1 is no friction)
+    const forceFactor = ref<number>(1.0) // Adjust the overall force applied between particles (can't be 0)
+    const frictionFactor = ref<number>(0.3) // Slow down the particles (0 to 1, where 0 is no friction)
 
     // Define properties for randomizing radius matrix
     const minRadiusRange = ref<number[]>([30, 60]) // Range for the random minRadius of each color
