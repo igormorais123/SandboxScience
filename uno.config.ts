@@ -2,7 +2,6 @@ import {
     defineConfig,
     presetAttributify,
     presetIcons,
-    presetTypography,
     presetWind3,
     presetWebFonts,
     transformerDirectives,
@@ -52,7 +51,6 @@ export default defineConfig({
                 }
             }
         }),
-        presetTypography(),
         presetWebFonts({
             fonts: {
                 // sans: 'DM Sans',
