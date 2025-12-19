@@ -1,5 +1,4 @@
 import { appURL, appName, appDescription } from './constants/index'
-const gtagId = process.env.NUXT_PUBLIC_GTAG_ID
 
 export default defineNuxtConfig({
     devtools: {
@@ -9,8 +8,8 @@ export default defineNuxtConfig({
         },
     },
     gtag: {
-        enabled: process.env.NODE_ENV === 'production' && !!gtagId,
-        id: gtagId, // G-XXXXXXXXXX
+        enabled: process.env.NODE_ENV === 'production' && !!process.env.NUXT_PUBLIC_GTAG_ID,
+        id: process.env.NUXT_PUBLIC_GTAG_ID, // G-XXXXXXXXXX
     },
     modules: [
         '@vueuse/nuxt',
@@ -35,6 +34,9 @@ export default defineNuxtConfig({
             templateParams: {
                 separator: '•', // '-', '·', '—', '•'
             },
+            htmlAttrs: {
+                lang: 'en',
+            },
             link: [
                 { rel: 'icon', href: '/favicon.ico?v=1', sizes: 'any' },
                 { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png?v=1' },
@@ -44,20 +46,31 @@ export default defineNuxtConfig({
                 { rel: 'mask-icon', type: 'image/svg+xml', href: '/safari-pinned-tab.svg?v=1', color: '#264653' },
                 { rel: 'shortcut icon', href: '/favicon.ico?v=1' },
             ],
-            meta: [],
+            meta: [
+                { name: 'author', content: 'DicSo92' },
+                { property: 'og:site_name', content: appName },
+                { name: 'twitter:card', content: 'summary_large_image' },
+                { name: 'twitter:title', content: appName },
+                { name: 'twitter:description', content: appDescription },
+                { name: 'twitter:site', content: '@SandboxScience' },
+                { name: 'twitter:image:alt', content: '@SandboxScience' },
+                { name: 'msapplication-TileColor', content: '#264653' },
+                { name: 'theme-color', content: '#264653' },
+                { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+            ],
         },
-        seoMeta: {
-            author: 'DicSo92',
-            ogSiteName: appName,
-            twitterTitle: appName,
-            twitterDescription: appDescription,
-            twitterCard: 'summary_large_image',
-            twitterSite: '@SandboxScience',
-            twitterImageAlt: '@SandboxScience',
-            msapplicationTileColor: '#264653',
-            themeColor: '#264653',
-            appleMobileWebAppStatusBarStyle: 'black-translucent',
-        },
+        // seoMeta: {
+        //     author: 'DicSo92',
+        //     ogSiteName: appName,
+        //     twitterTitle: appName,
+        //     twitterDescription: appDescription,
+        //     twitterCard: 'summary_large_image',
+        //     twitterSite: '@SandboxScience',
+        //     twitterImageAlt: '@SandboxScience',
+        //     msapplicationTileColor: '#264653',
+        //     themeColor: '#264653',
+        //     appleMobileWebAppStatusBarStyle: 'black-translucent',
+        // },
     },
     seo: {
         redirectToCanonicalSiteUrl: false
@@ -83,9 +96,6 @@ export default defineNuxtConfig({
     },
 
     experimental: {
-        // when using generate, payload js assets included in sw precache manifest
-        // but missing on offline, disabling extraction it until fixed
-        payloadExtraction: false,
         typedPages: true,
     },
 
@@ -128,6 +138,5 @@ export default defineNuxtConfig({
     //     },
     // },
 
-    // compatibilityDate: '2024-08-15'
     compatibilityDate: '2025-12-18'
 })
