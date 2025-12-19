@@ -18,7 +18,7 @@ export default defineNuxtConfig({
         '@pinia/nuxt',
         '@nuxtjs/color-mode',
         "@nuxtjs/seo",
-        "@nuxt/eslint",
+        // "@nuxt/eslint",
         'floating-vue/nuxt',
         'nuxt-gtag'
     ],
@@ -122,11 +122,11 @@ export default defineNuxtConfig({
         inlineStyles: false, // For UnoCSS
     },
 
-    eslint: {
-        config: {
-            standalone: false,
-        },
-    },
+    // eslint: {
+    //     config: {
+    //         standalone: false,
+    //     },
+    // },
 
     // compatibilityDate: '2024-08-15'
     compatibilityDate: '2025-12-18'
