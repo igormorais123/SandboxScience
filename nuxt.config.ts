@@ -15,7 +15,6 @@ export default defineNuxtConfig({
         '@vueuse/nuxt',
         '@unocss/nuxt',
         '@pinia/nuxt',
-        '@nuxtjs/color-mode',
         "@nuxtjs/seo",
         // "@nuxt/eslint",
         'floating-vue/nuxt',
@@ -121,12 +120,6 @@ export default defineNuxtConfig({
         '@unocss/reset/tailwind.css', // Maybe need @unocss/reset package
         '~/assets/scss/main.scss'
     ],
-
-    colorMode: {
-        preference: 'dark', // default value of $colorMode.preference (system)
-        fallback: 'dark', // fallback value if not system preference found
-        classSuffix: '' // default '-mode',
-    },
 
     features: {
         inlineStyles: false, // For UnoCSS
