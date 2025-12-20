@@ -71,7 +71,7 @@
             </p>
         </div>
 
-        <div v-else flex flex-col gap-1.5 overflow-y-auto -mr-1 pr-1 class="thin-scrollbar max-h-[39vh]">
+        <div v-else flex flex-col gap-1.5 overflow-y-auto pr-1 class="-mr-1 thin-scrollbar max-h-[39vh]">
             <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" py-2 pl-3 rounded-lg flex justify-between items-center cursor-pointer class="bg-slate-700/30 hover:bg-slate-600/30 border border-slate-700/60">
                 <div flex-1 min-w-0 pr-2>
                     <p font-bold text-slate-200 text-sm truncate capitalize>{{ preset.meta.name }}</p>
