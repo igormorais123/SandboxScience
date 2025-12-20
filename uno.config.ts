@@ -8,6 +8,8 @@ import {
     transformerVariantGroup,
 } from 'unocss'
 
+import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
+
 import fs from 'node:fs/promises'
 
 export default defineConfig({
@@ -35,6 +37,9 @@ export default defineConfig({
             },
         }
     },
+    safelist: [
+        'font-sans',
+    ],
     presets: [
         presetWind3(),
         presetAttributify(),
@@ -52,12 +57,18 @@ export default defineConfig({
             }
         }),
         presetWebFonts({
+            provider: 'bunny',
             fonts: {
                 // sans: 'DM Sans',
                 // serif: 'DM Serif Display',
                 // mono: 'DM Mono'
                 sans: 'Inter',
             },
+            processors: createLocalFontProcessor({ // This will download the fonts and serve them locally
+                cacheDir: 'node_modules/.cache/unocss/fonts', // Directory to cache the fonts
+                fontAssetsDir: 'public/assets/fonts', // Directory to save the fonts assets
+                fontServeBaseUrl: '/assets/fonts', // Base URL to serve the fonts from the client
+            })
         }),
     ],
     transformers: [

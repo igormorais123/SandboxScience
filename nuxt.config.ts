@@ -126,6 +126,13 @@ export default defineNuxtConfig({
             gzip: true,
             brotli: true,
         },
+        publicAssets: [
+            {
+                baseURL: '/assets/fonts',
+                dir: 'public/assets/fonts',
+                maxAge: 60 * 60 * 24 * 365,
+            },
+        ],
     },
 
     css: [
