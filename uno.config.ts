@@ -2,12 +2,13 @@ import {
     defineConfig,
     presetAttributify,
     presetIcons,
-    presetTypography,
-    presetUno,
+    presetWind3,
     presetWebFonts,
     transformerDirectives,
     transformerVariantGroup,
 } from 'unocss'
+
+import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
 
 import fs from 'node:fs/promises'
 
@@ -36,8 +37,11 @@ export default defineConfig({
             },
         }
     },
+    safelist: [
+        'font-sans',
+    ],
     presets: [
-        presetUno(),
+        presetWind3(),
         presetAttributify(),
         presetIcons({
             scale: 1.2,
@@ -52,14 +56,19 @@ export default defineConfig({
                 }
             }
         }),
-        presetTypography(),
         presetWebFonts({
+            provider: 'bunny',
             fonts: {
                 // sans: 'DM Sans',
                 // serif: 'DM Serif Display',
                 // mono: 'DM Mono'
                 sans: 'Inter',
             },
+            processors: createLocalFontProcessor({ // This will download the fonts and serve them locally
+                cacheDir: 'node_modules/.cache/unocss/fonts', // Directory to cache the fonts
+                fontAssetsDir: 'public/assets/fonts', // Directory to save the fonts assets
+                fontServeBaseUrl: '/assets/fonts', // Base URL to serve the fonts from the client
+            })
         }),
     ],
     transformers: [

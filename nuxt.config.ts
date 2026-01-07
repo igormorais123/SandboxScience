@@ -8,16 +8,15 @@ export default defineNuxtConfig({
         },
     },
     gtag: {
-        enabled: process.env.NODE_ENV === 'production',
-        id: process.env.NUXT_PUBLIC_GTAG_ID ?? 'G-XXXXXXXXXX'
+        enabled: process.env.NODE_ENV === 'production' && !!process.env.NUXT_PUBLIC_GTAG_ID,
+        id: process.env.NUXT_PUBLIC_GTAG_ID, // G-XXXXXXXXXX
     },
     modules: [
         '@vueuse/nuxt',
         '@unocss/nuxt',
         '@pinia/nuxt',
-        '@nuxtjs/color-mode',
         "@nuxtjs/seo",
-        "@nuxt/eslint",
+        // "@nuxt/eslint",
         'floating-vue/nuxt',
         'nuxt-gtag'
     ],
@@ -34,6 +33,9 @@ export default defineNuxtConfig({
             templateParams: {
                 separator: '•', // '-', '·', '—', '•'
             },
+            htmlAttrs: {
+                lang: 'en',
+            },
             link: [
                 { rel: 'icon', href: '/favicon.ico?v=1', sizes: 'any' },
                 { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png?v=1' },
@@ -42,21 +44,36 @@ export default defineNuxtConfig({
                 { rel: 'manifest', href: '/site.webmanifest?v=1' },
                 { rel: 'mask-icon', type: 'image/svg+xml', href: '/safari-pinned-tab.svg?v=1', color: '#264653' },
                 { rel: 'shortcut icon', href: '/favicon.ico?v=1' },
+
+                // { rel: 'dns-prefetch', href: 'https://rsms.me' },
+                // { rel: 'preconnect', href: 'https://rsms.me' },
+                // { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
             ],
-            meta: [],
+            meta: [
+                { name: 'author', content: 'DicSo92' },
+                { property: 'og:site_name', content: appName },
+                { name: 'twitter:card', content: 'summary_large_image' },
+                { name: 'twitter:title', content: appName },
+                { name: 'twitter:description', content: appDescription },
+                { name: 'twitter:site', content: '@SandboxScience' },
+                { name: 'twitter:image:alt', content: '@SandboxScience' },
+                { name: 'msapplication-TileColor', content: '#264653' },
+                { name: 'theme-color', content: '#264653' },
+                { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+            ],
         },
-        seoMeta: {
-            author: 'DicSo92',
-            ogSiteName: appName,
-            twitterTitle: appName,
-            twitterDescription: appDescription,
-            twitterCard: 'summary_large_image',
-            twitterSite: '@SandboxScience',
-            twitterImageAlt: '@SandboxScience',
-            msapplicationTileColor: '#264653',
-            themeColor: '#264653',
-            appleMobileWebAppStatusBarStyle: 'black-translucent',
-        },
+        // seoMeta: {
+        //     author: 'DicSo92',
+        //     ogSiteName: appName,
+        //     twitterTitle: appName,
+        //     twitterDescription: appDescription,
+        //     twitterCard: 'summary_large_image',
+        //     twitterSite: '@SandboxScience',
+        //     twitterImageAlt: '@SandboxScience',
+        //     msapplicationTileColor: '#264653',
+        //     themeColor: '#264653',
+        //     appleMobileWebAppStatusBarStyle: 'black-translucent',
+        // },
     },
     seo: {
         redirectToCanonicalSiteUrl: false
@@ -82,15 +99,16 @@ export default defineNuxtConfig({
     },
 
     experimental: {
-        // when using generate, payload js assets included in sw precache manifest
-        // but missing on offline, disabling extraction it until fixed
-        payloadExtraction: false,
         typedPages: true,
     },
 
     linkChecker: {
         enabled: true,
         debug: true
+    },
+
+    sitemap: {
+        zeroRuntime: true
     },
 
     nitro: {
@@ -104,6 +122,17 @@ export default defineNuxtConfig({
             routes: ['/', '/about', '/particle-life', '/game-of-life', '/hash-life', '/sitemap.xml', '/robots.txt'], // Pre-render routes
             ignore: [],
         },
+        compressPublicAssets: {
+            gzip: true,
+            brotli: true,
+        },
+        publicAssets: process.env.NODE_ENV === 'production' ? [
+            {
+                baseURL: '/assets/fonts',
+                dir: 'public/assets/fonts',
+                maxAge: 60 * 60 * 24 * 365,
+            },
+        ] : [],
     },
 
     css: [
@@ -111,21 +140,15 @@ export default defineNuxtConfig({
         '~/assets/scss/main.scss'
     ],
 
-    colorMode: {
-        preference: 'dark', // default value of $colorMode.preference (system)
-        fallback: 'dark', // fallback value if not system preference found
-        classSuffix: '' // default '-mode',
-    },
-
     features: {
         inlineStyles: false, // For UnoCSS
     },
 
-    eslint: {
-        config: {
-            standalone: false,
-        },
-    },
+    // eslint: {
+    //     config: {
+    //         standalone: false,
+    //     },
+    // },
 
-    compatibilityDate: '2024-08-15'
+    compatibilityDate: '2025-12-18'
 })
