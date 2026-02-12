@@ -1,5 +1,5 @@
 <template>
-    <nav flex justify-center py-2 px-3 z-100 fixed top-0 left-0 right-0 class="bg-#090909AA">
+    <nav flex justify-center py-2 px-3 z-100 fixed top-0 left-0 right-0 class="bg-#090909AA" style="box-shadow: 0 2px 8px 0 rgba(0,0,0,.5)">
         <div flex justify-between container>
             <div flex items-center>
                 <NuxtLink to="/" title="Home" aria-label="Home" flex items-center>
@@ -60,7 +60,5 @@
 </script>
 
 <style scoped>
-nav {
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,.5);
-}
+
 </style>
