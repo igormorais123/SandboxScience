@@ -44,10 +44,6 @@ export default defineNuxtConfig({
                 { rel: 'manifest', href: '/site.webmanifest?v=1' },
                 { rel: 'mask-icon', type: 'image/svg+xml', href: '/safari-pinned-tab.svg?v=1', color: '#264653' },
                 { rel: 'shortcut icon', href: '/favicon.ico?v=1' },
-
-                // { rel: 'dns-prefetch', href: 'https://rsms.me' },
-                // { rel: 'preconnect', href: 'https://rsms.me' },
-                // { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
             ],
             meta: [
                 { name: 'author', content: 'DicSo92' },

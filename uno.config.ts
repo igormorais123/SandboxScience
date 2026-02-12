@@ -18,6 +18,9 @@ export default defineConfig({
         ['icon-btn', 'inline-block cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100 hover:text-teal-600'],
     ],
     theme: {
+        // fontFamily: {
+        //     sans: ['Inter', 'sans-serif'],
+        // },
         container: {
             padding: {
                 DEFAULT: '1rem',
@@ -57,13 +60,37 @@ export default defineConfig({
             }
         }),
         presetWebFonts({
-            provider: 'bunny',
-            fonts: {
-                // sans: 'DM Sans',
-                // serif: 'DM Serif Display',
-                // mono: 'DM Mono'
-                sans: 'Inter',
+            provider: {
+                name: 'none',
+                getImportUrl() {
+                    // return 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..800;1,14..32,400;1,14..32,600&display=swap' // Specific weights with optical size and italics
+                    return 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap' // All weights with optical size and italics
+                    // return 'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap' // All weights with italics but no optical size
+                },
             },
+            fonts: {
+                sans: { name: 'Inter' },
+            },
+
+            // provider: 'bunny',
+            // fonts: {
+            //     sans: {
+            //         name: 'Inter',
+            //         weights: ['400', '400i', '500', '600', '600i', '700', '800'],
+            //     },
+            // },
+
+            // provider: 'google',
+            // fonts: {
+            //     // sans: 'Inter:ital,wght@0,400..800;1,400;1,600',
+            //     sans: {
+            //         name: 'Inter',
+            //         // weights: ['400', '400i', '500', '600', '600i', '700', '800'],
+            //         weights: ['400..800'],
+            //         italic: true
+            //     },
+            // },
+
             processors: createLocalFontProcessor({ // This will download the fonts and serve them locally
                 cacheDir: 'node_modules/.cache/unocss/fonts', // Directory to cache the fonts
                 fontAssetsDir: 'public/assets/fonts', // Directory to save the fonts assets
