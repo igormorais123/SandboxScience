@@ -88,11 +88,11 @@
                                         :min="0.01" :max="4" :step="0.01" v-model="particleLife.repel">
                             </RangeInput>
                             <RangeInput input label="Force Multiplier"
-                                        tooltip="Adjust the force scaling factor. <br> Increase it to reduce particle speed, prevent explosive behavior, and manage overly rapid interactions."
+                                        tooltip="Scales the interaction forces between particles. <br> Higher values make forces stronger and particles move faster."
                                         :min="0.01" :max="2" :step="0.01" v-model="particleLife.forceFactor" mt-2>
                             </RangeInput>
                             <RangeInput input label="Friction"
-                                        tooltip="Adjust the friction level. <br> Lowering it slows down particles, reducing chaotic movement and stabilizing the system."
+                                        tooltip="Controls how much friction slows particles down. <br> Higher values reduce speed and help stabilize the system."
                                         :min="0" :max="1" :step="0.01" v-model="particleLife.frictionFactor" mt-2>
                             </RangeInput>
                         </Collapse>
@@ -350,8 +350,8 @@ export default defineComponent({
 
         // Define variables for the simulation
         let repel: number = particleLife.repel // Repel force between particles
-        let forceFactor: number = particleLife.forceFactor // Decrease will increase the impact of the force on the velocity (the higher the value, the slower the particles will move) (can't be 0)
-        let frictionFactor: number = particleLife.frictionFactor // Slow down the particles (0 to 1, where 1 is no friction)
+        let forceFactor: number = particleLife.forceFactor // Adjust the overall force applied between particles (can't be 0)
+        let frictionFactor: number = particleLife.frictionFactor // Slow down the particles (0 to 1, where 0 is no friction)
         let NUM_PARTICLES: number = particleLife.numParticles
         let NEW_NUM_PARTICLES: number = NUM_PARTICLES
         let PARTICLE_SIZE: number = particleLife.particleSize

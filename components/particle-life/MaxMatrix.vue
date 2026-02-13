@@ -270,7 +270,8 @@ export default defineComponent({
                 return `rgb(${r}, ${g}, ${b})`
             }
             // Normal Array of HSL values
-            return `hsl(${colors[id]}, 100%, 50%)`
+            return colors[id] ? `hsl(${colors[id][0]}, ${colors[id][1]}%, ${colors[id][2]}%)` : "hsl(0, 0%, 5%)"
+
         }
         // -------------------------------------------------------------------------------------------------------------
         return {

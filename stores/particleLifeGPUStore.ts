@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type { Preset } from "~/composables/usePresetManager";
 
 export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
+    const engineType = ref<'CPU' | 'GPU' | 'GPU3D'>('GPU') // Engine type
     const sidebarLeftOpen = ref<boolean>(false) // Is sidebar left open
     const isLockedPointer = ref<boolean>(false) // Prevent lifeCanvas events from being triggered
 
@@ -37,8 +38,8 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
 
     // Define force properties
     const repel = ref<number>(1) // repel force for particles that are too close to each other
-    const forceFactor = ref<number>(1.0) // Decrease will increase the impact of the force on the velocity (the higher the value, the slower the particles will move)
-    const frictionFactor = ref<number>(0.3) // Slow down the particles (0 to 1, where 1 is no friction)
+    const forceFactor = ref<number>(1.0) // Adjust the overall force applied between particles (can't be 0)
+    const frictionFactor = ref<number>(0.3) // Slow down the particles (0 to 1, where 0 is no friction)
 
     // Define properties for randomizing radius matrix
     const minRadiusRange = ref<number[]>([12, 24]) // Range for the random minRadius of each color
@@ -76,7 +77,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     }
 
     return {
-        sidebarLeftOpen, isLockedPointer,
+        engineType, sidebarLeftOpen, isLockedPointer,
         isRunning,
         rulesMatrix, minRadiusMatrix, maxRadiusMatrix, currentColors,
         simWidth, simHeight, linkProportions,

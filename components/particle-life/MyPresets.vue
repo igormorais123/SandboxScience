@@ -71,7 +71,7 @@
             </p>
         </div>
 
-        <div v-else flex flex-col gap-1.5 overflow-y-auto -mr-1 pr-1 class="thin-scrollbar max-h-[39vh]">
+        <div v-else flex flex-col gap-1.5 overflow-y-auto pr-1 class="-mr-1 thin-scrollbar max-h-[39vh]">
             <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" py-2 pl-3 rounded-lg flex justify-between items-center cursor-pointer class="bg-slate-700/30 hover:bg-slate-600/30 border border-slate-700/60">
                 <div flex-1 min-w-0 pr-2>
                     <p font-bold text-slate-200 text-sm truncate capitalize>{{ preset.meta.name }}</p>
@@ -124,6 +124,7 @@
 import { defineComponent } from "vue";
 import { usePresetManager } from "~/composables/usePresetManager";
 import type { Preset } from "~/composables/usePresetManager";
+import { float32ArrayToHsl } from "~/helpers/utils/colorsGenerator";
 import { Dropdown } from 'floating-vue'
 
 export default defineComponent({
@@ -218,10 +219,14 @@ export default defineComponent({
                 presetRules?: number[][],
                 presetMinRadius?: number[][],
                 presetMaxRadius?: number[][],
-                presetColors?: Float32Array
+                presetColors?: Float32Array | number[][]
             } = {}
             if (preset.colors) {
-                options.presetColors = hexListToFlatRgba(preset.colors)
+                if (particleLife.engineType === "CPU") { // CPU
+                    options.presetColors = float32ArrayToHsl(hexListToFlatRgba(preset.colors))
+                } else { // GPU
+                    options.presetColors = hexListToFlatRgba(preset.colors)
+                }
             }
             if (preset.matrices) {
                 if (preset.matrices.forces) {

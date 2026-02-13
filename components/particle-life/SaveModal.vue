@@ -188,7 +188,7 @@ export default defineComponent({
     },
     setup(props, { emit }) {
         const particleLife = props.store
-        const { copyToClipboard, download, save, flatRgbaToHexList, clone2D, validatePreset } = usePresetManager(particleLife)
+        const { copyToClipboard, download, save, flatRgbaToHexList, hslArrayToHexList, clone2D, validatePreset } = usePresetManager(particleLife)
 
         const name = ref<string>("")
         const description = ref<string>("")
@@ -240,7 +240,11 @@ export default defineComponent({
             }
 
             if (colors.value) {
-                presetData.colors = flatRgbaToHexList(particleLife.currentColors)
+                if (particleLife.engineType === "CPU") { // CPU
+                    presetData.colors = hslArrayToHexList(particleLife.currentColors)
+                } else { // GPU
+                    presetData.colors = flatRgbaToHexList(particleLife.currentColors)
+                }
                 presetData.types.push("colors")
             }
 
