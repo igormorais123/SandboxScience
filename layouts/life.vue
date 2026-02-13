@@ -10,7 +10,5 @@ const route = useRoute()
 </script>
 
 <style scoped>
-main {
 
-}
 </style>
