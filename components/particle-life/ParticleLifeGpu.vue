@@ -155,6 +155,9 @@
                                         tooltip="Adjusts the smoothness of camera panning. <br> Lower values create more inertia for a gliding effect, while higher values make the movement stop more abruptly."
                                         :min="0.01" :max="0.5" :step="0.01" v-model="particleLife.panSmoothing" mt-2>
                             </RangeInput>
+                            <ToggleSwitch label="Cinematic Camera" colorful-label v-model="particleLife.isDriftCamActive" mr-4
+                                          tooltip="When enabled, the camera will automatically adjust its position and zoom level to keep all particles in view. <br> This feature is useful for observing the overall behavior of the system without manual camera adjustments.">
+                            </ToggleSwitch>
                         </Collapse>
                         <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
                                   tooltip="Provides tools for visualizing the simulation's internal state. <br> Toggle the grid view to see spatial bins or activate a heatmap to analyze particle density. <br> These features are useful for debugging and performance tuning.">
@@ -368,6 +371,7 @@ export default defineComponent({
         let isDebugBinsActive: boolean = particleLife.isDebugBinsActive // Flag to show/hide the bins
         let debugMaxParticleCount: number = particleLife.debugMaxParticleCount // Maximum number of particles for debugging purposes
         let isDebugHeatmapActive: boolean = particleLife.isDebugHeatmapActive // Flag to show/hide the heatmap
+        let isDriftCamActive: boolean = particleLife.isDriftCamActive // Enable drift camera mode (slow automatic movement)
 
         let glowSize: number = particleLife.glowSize
         let glowIntensity: number = particleLife.glowIntensity
@@ -680,6 +684,62 @@ export default defineComponent({
             cameraChanged = true
         }
         // -------------------------------------------------------------------------------------------------------------
+        const driftCamSmoothing = 0.01 // Smoothing factor for camera movement (affects panning and zooming, 0.1 = fast, 0.01 = slow)
+        let driftCamSpeed = 0.05       // Drift camera speed (0.1 = slow, 1.0 = fast)
+        let driftCamAmplitude = 0.80   // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
+        let driftCamZoomMin = 0.6      // Minimum zoom level for driftCam
+        let driftCamZoomMax = 3.0      // Maximum zoom level for driftCam
+        let driftCamZoomCenter = (driftCamZoomMax + driftCamZoomMin) * 0.5    // Center zoom level for driftCam
+        let driftCamZoomAmplitude = (driftCamZoomMax - driftCamZoomMin) * 0.5 // Amplitude of zoom changes for driftCam
+        const driftCamPhase = { x1: 0, x2: 0, y1: 0, y2: 0, z1: 0, z2: 0 }    // Phase offsets for the sine waves controlling camera movement and zoom
+        const initDriftCamera = () => {
+            const t = performance.now() / 1000 * driftCamSpeed
+            const clamp = (v: number) => Math.max(-1, Math.min(1, v))
+
+            // Calculate the initial phase based on the current camera position and zoom to ensure smooth transitions when enabling driftCam
+            const phaseX = Math.asin(clamp((cameraCenter.x - SIM_WIDTH * 0.5) / (SIM_WIDTH * 0.5 * driftCamAmplitude)))
+            const phaseY = Math.asin(clamp((cameraCenter.y - SIM_HEIGHT * 0.5) / (SIM_HEIGHT * 0.5 * driftCamAmplitude)))
+            const phaseZ = Math.asin(clamp((zoomFactor - driftCamZoomCenter) / driftCamZoomAmplitude))
+
+            driftCamPhase.x1 = phaseX - t * 1.0
+            driftCamPhase.x2 = phaseX - t * 1.618
+            driftCamPhase.y1 = phaseY - t * 1.1
+            driftCamPhase.y2 = phaseY - t * 1.414
+            driftCamPhase.z1 = phaseZ - t * 0.7
+            driftCamPhase.z2 = phaseZ - t * 1.3
+        }
+        const handleDriftCamera = () => {
+            if (isDragging) return
+
+            const SIM_WIDTH_HALF = SIM_WIDTH * 0.5
+            const SIM_HEIGHT_HALF = SIM_HEIGHT * 0.5
+
+            const t = performance.now() / 1000 * driftCamSpeed
+
+            // X: horizontal camera movement using two combined sine waves
+            const x = SIM_WIDTH_HALF + (
+                Math.sin(t * 1.0 + driftCamPhase.x1) * 0.6 +   // Primary wave (60%), base freq
+                Math.sin(t * 1.618 + driftCamPhase.x2) * 0.4   // Secondary wave (40%), golden ratio freq
+            ) * SIM_WIDTH_HALF * driftCamAmplitude
+
+            // Y: vertical camera movement, offset frequencies create diagonal drift
+            const y = SIM_HEIGHT_HALF + (
+                Math.sin(t * 1.1 + driftCamPhase.y1) * 0.6 +   // Primary wave (60%), slightly faster than X
+                Math.sin(t * 1.414 + driftCamPhase.y2) * 0.4   // Secondary wave (40%), sqrt(2) freq
+            ) * SIM_HEIGHT_HALF * driftCamAmplitude
+
+            // Z (zoom): camera zoom level, slower frequencies for smooth transitions
+            const z = driftCamZoomCenter + (
+                Math.sin(t * 0.7 + driftCamPhase.z1) * 0.6 +   // Primary wave (60%), slow zoom
+                Math.sin(t * 1.3 + driftCamPhase.z2) * 0.4     // Secondary wave (40%), faster variation
+            ) * driftCamZoomAmplitude
+
+            // Interpolate current target toward calculated position
+            targetCameraCenter.x += (x - targetCameraCenter.x) * driftCamSmoothing
+            targetCameraCenter.y += (y - targetCameraCenter.y) * driftCamSmoothing
+            targetZoomFactor += (z - targetZoomFactor) * driftCamSmoothing
+        }
+        // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
         const initWebGPU = async () => {
@@ -739,6 +799,8 @@ export default defineComponent({
             //     animationFrameId = requestAnimationFrame(frame)
             //     return
             // }
+
+            if (isDriftCamActive) handleDriftCamera()
 
             const zoomDiff = targetZoomFactor - zoomFactor
             const panXDiff = targetCameraCenter.x - cameraCenter.x
@@ -2682,6 +2744,7 @@ export default defineComponent({
         watch(() => particleLife.showBrushCircle, (value: boolean) => showBrushCircle = value)
         watch(() => particleLife.zoomSmoothing, (value: number) => zoomSmoothing = value)
         watch(() => particleLife.panSmoothing, (value: number) => panSmoothing = value)
+        watch(() => particleLife.isDriftCamActive, (value: boolean) => { value && initDriftCamera(); isDriftCamActive = value })
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)
