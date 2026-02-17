@@ -155,19 +155,24 @@
                                         tooltip="Adjusts the smoothness of camera panning. <br> Lower values create more inertia for a gliding effect, while higher values make the movement stop more abruptly."
                                         :min="0.01" :max="0.5" :step="0.01" v-model="particleLife.panSmoothing" mt-2>
                             </RangeInput>
-                            <ToggleSwitch label="Cinematic Camera" colorful-label v-model="particleLife.isDriftCamActive" mr-4
-                                          tooltip="When enabled, the camera will automatically adjust its position and zoom level to keep all particles in view. <br> This feature is useful for observing the overall behavior of the system without manual camera adjustments.">
-                            </ToggleSwitch>
-                            <RangeInput input label="Drift Cam. Speed"
-                                        tooltip="Adjusts the speed of the automatic camera movement when Cinematic Camera mode is active. <br> Higher values make the camera move faster to follow the particles, while lower values create a slower, more cinematic tracking effect."
-                                        :min="0.01" :max="0.9" :step="0.01" v-model="particleLife.driftCamSpeed" mt-2>
+
+                            <hr border-gray-500 my-2>
+                            <div flex items-start justify-between mb-2>
+                                <p underline text-gray-300 mb-1>Cinematic Camera :</p>
+                                <ToggleSwitch label="Auto. Drift" colorful-label v-model="particleLife.isDriftCamActive"
+                                              tooltip="Enables smooth automatic camera panning and zooming for a cinematic viewing experience.">
+                                </ToggleSwitch>
+                            </div>
+                            <RangeInput input label="Drift Speed"
+                                        tooltip="Controls the automatic camera movement speed. <br> - <b>Higher</b> → faster tracking. <br> - <b>Lower</b> → smoother cinematic effect."
+                                        :min="0.01" :max="1.0" :step="0.01" v-model="particleLife.driftCamSpeed" mt-2>
                             </RangeInput>
-                            <RangeInput input label="Drift Cam. Amplitude"
-                                        tooltip="Adjusts the amplitude of the camera movement when Cinematic Camera mode is active. <br> 0.5 is 50% of the simulation size, while 1.0 allows the camera to move up to the edges of the simulation. <br> Higher values create a more dynamic camera movement, while lower values keep the camera closer to the center of the particle system."
+                            <RangeInput input label="Pan Amplitude"
+                                        tooltip="Controls how far the camera moves from center. <br> - <b>0.5</b> → half the simulation area. <br> - <b>1.0</b> → full edges."
                                         :min="0.05" :max="1.0" :step="0.05" v-model="particleLife.driftCamAmplitude" mt-2>
                             </RangeInput>
-                            <RangeInputMinMax input label="Drift Cam. Zoom Range" mt-3
-                                              tooltip="Sets the range for automatic zoom adjustments in Cinematic Camera mode. <br> Adjusting this range allows you to control how much the camera zooms in and out to keep the particles in view."
+                            <RangeInputMinMax input label="Zoom Range" mt-4
+                                              tooltip="Sets the min/max zoom levels for automatic cinematic zoom."
                                               :min="0.1" :max="5" :step="0.05" :range-offset="0.1" v-model="particleLife.driftCamZoomRange">
                             </RangeInputMinMax>
                         </Collapse>
@@ -217,7 +222,11 @@
             <button type="button" name="Randomize" aria-label="Randomize" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="[#094F5D]/80 hover:[#0B5F6F]/80" @click="regenerateLife">
                 <span i-game-icons-perspective-dice-six-faces-random></span>
             </button>
-<!--            3D-->
+            <button type="button" name="Cinematic Camera" aria-label="Cinematic Camera" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm
+                    :class="particleLife.isDriftCamActive ? 'bg-violet-700/80 hover:bg-violet-700/70' : 'bg-violet-900/70 hover:bg-violet-800/70'"
+                    @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
+                <span i-tabler-video :class="particleLife.isDriftCamActive ? 'text-white' : 'text-violet-300'"></span>
+            </button>
             <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="handleZoom(-1, true)">
                 <span i-tabler-zoom-out></span>
             </button>
