@@ -36,6 +36,11 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const debugMaxParticleCount = ref<number>(1600) // Maximum number of particles for debugging purposes
     const isDebugHeatmapActive = ref<boolean>(true) // Enable debug heatmap for the particles
 
+    const isDriftCamActive = ref<boolean>(false) // Enable drift camera mode (slow automatic movement)
+    const driftCamSpeed = ref<number>(0.1) // Drift camera speed (0.1 = slow, 1.0 = fast)
+    const driftCamAmplitude = ref<number>(0.90) // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
+    const driftCamZoomRange = ref<number[]>([0.4, 3.0]) // Range of zoom levels for driftCam (min, max)
+
     // Define force properties
     const repel = ref<number>(1) // repel force for particles that are too close to each other
     const forceFactor = ref<number>(1.0) // Adjust the overall force applied between particles (can't be 0)
@@ -84,6 +89,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
         numParticles, particleSize, numColors, zoomSmoothing, panSmoothing,
         is3D, isParticleGlow, isAdditiveBlending, isWallRepel, isWallWrap, isMirrorWrap, isInfiniteMirrorWrap, mirrorWrapCount, screenMultiplierForGridSize,
         isDebugBinsActive, debugMaxParticleCount, isDebugHeatmapActive,
+        isDriftCamActive, driftCamSpeed, driftCamAmplitude, driftCamZoomRange,
         minRadiusRange, maxRadiusRange, currentMaxRadius,
         repel, forceFactor, frictionFactor, useSpatialHash,
         isBrushActive, brushes, brushRadius, brushIntensity, brushType, attractForce, repulseForce, brushDirectionalForce, showBrushCircle,

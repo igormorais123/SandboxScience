@@ -155,6 +155,26 @@
                                         tooltip="Adjusts the smoothness of camera panning. <br> Lower values create more inertia for a gliding effect, while higher values make the movement stop more abruptly."
                                         :min="0.01" :max="0.5" :step="0.01" v-model="particleLife.panSmoothing" mt-2>
                             </RangeInput>
+
+                            <hr border-gray-500 my-2>
+                            <div flex items-start justify-between mb-2>
+                                <p underline text-gray-300 mb-1>Cinematic Camera :</p>
+                                <ToggleSwitch label="Auto. Drift" colorful-label v-model="particleLife.isDriftCamActive"
+                                              tooltip="Enables smooth automatic camera panning and zooming for a cinematic viewing experience.">
+                                </ToggleSwitch>
+                            </div>
+                            <RangeInput input label="Drift Speed"
+                                        tooltip="Controls the automatic camera movement speed. <br> - <b>Higher</b> → faster tracking. <br> - <b>Lower</b> → smoother cinematic effect."
+                                        :min="0.01" :max="1.0" :step="0.01" v-model="particleLife.driftCamSpeed" mt-2>
+                            </RangeInput>
+                            <RangeInput input label="Pan Amplitude"
+                                        tooltip="Controls how far the camera moves from center. <br> - <b>0.5</b> → half the simulation area. <br> - <b>1.0</b> → full edges."
+                                        :min="0.05" :max="1.0" :step="0.05" v-model="particleLife.driftCamAmplitude" mt-2>
+                            </RangeInput>
+                            <RangeInputMinMax input label="Zoom Range" mt-4
+                                              tooltip="Sets the min/max zoom levels for automatic cinematic zoom."
+                                              :min="0.1" :max="5" :step="0.05" :range-offset="0.1" v-model="particleLife.driftCamZoomRange">
+                            </RangeInputMinMax>
                         </Collapse>
                         <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
                                   tooltip="Provides tools for visualizing the simulation's internal state. <br> Toggle the grid view to see spatial bins or activate a heatmap to analyze particle density. <br> These features are useful for debugging and performance tuning.">
@@ -202,7 +222,11 @@
             <button type="button" name="Randomize" aria-label="Randomize" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="[#094F5D]/80 hover:[#0B5F6F]/80" @click="regenerateLife">
                 <span i-game-icons-perspective-dice-six-faces-random></span>
             </button>
-<!--            3D-->
+            <button type="button" name="Cinematic Camera" aria-label="Cinematic Camera" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm
+                    :class="particleLife.isDriftCamActive ? 'bg-violet-700/80 hover:bg-violet-700/70' : 'bg-violet-900/70 hover:bg-violet-800/70'"
+                    @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
+                <span i-tabler-video :class="particleLife.isDriftCamActive ? 'text-white' : 'text-violet-300'"></span>
+            </button>
             <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="handleZoom(-1, true)">
                 <span i-tabler-zoom-out></span>
             </button>
@@ -302,6 +326,8 @@ export default defineComponent({
         let CANVAS_HEIGHT: number = 0
         let SIM_WIDTH: number = 0
         let SIM_HEIGHT: number = 0
+        let SIM_WIDTH_HALF: number = 0
+        let SIM_HEIGHT_HALF: number = 0
         let CELL_SIZE: number = 0
         let baseSimWidth: number = 0
         let baseSimHeight: number = 0
@@ -348,6 +374,18 @@ export default defineComponent({
         let cameraChanged: boolean = true
         let infiniteTotalInstances: number = 0 // Total number of instances for infinite rendering
 
+        // Define properties for the drift camera
+        const driftCamSmoothing: number = 0.0003 // Smoothing factor for camera movement (affects panning and zooming, 0.1 = fast, 0.01 = slow)
+        let driftCamSpeed: number = particleLife.driftCamSpeed // Drift camera speed (0.1 = slow, 1.0 = fast)
+        let driftCamAmplitude: number = particleLife.driftCamAmplitude // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
+        let driftCamZoomRange: number[] = particleLife.driftCamZoomRange // Range of zoom levels for driftCam (min, max)
+        let driftCamZoomCenter: number = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5 // Center zoom level for driftCam
+        let driftCamZoomAmplitude: number = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
+        let driftCamTime: number = 0 // Time variable for the drift camera, incremented each frame based on the driftCamSpeed to create continuous movement
+        let driftCamLastTime: number = 0 // Last timestamp when the drift camera was updated, used to calculate elapsed time for consistent movement regardless of frame rate
+        let driftCamTransitionProgress: number = 0 // Smoothly blend camera position from its current location to the drift trajectory when driftCam is enabled, and reset to 0 whenever the user manually pans/zooms the camera, allowing for a seamless transition back to the drift movement
+        let driftCamPhase = { x1: 0, x2: 0, y1: 0, y2: 0, z1: 0, z2: 0 } // Phase offsets for the sine waves controlling camera movement and zoom
+
         // Define variables for the simulation
         let repel: number = particleLife.repel // Repel force between particles
         let forceFactor: number = particleLife.forceFactor // Adjust the overall force applied between particles (can't be 0)
@@ -368,6 +406,7 @@ export default defineComponent({
         let isDebugBinsActive: boolean = particleLife.isDebugBinsActive // Flag to show/hide the bins
         let debugMaxParticleCount: number = particleLife.debugMaxParticleCount // Maximum number of particles for debugging purposes
         let isDebugHeatmapActive: boolean = particleLife.isDebugHeatmapActive // Flag to show/hide the heatmap
+        let isDriftCamActive: boolean = particleLife.isDriftCamActive // Enable drift camera mode (slow automatic movement)
 
         let glowSize: number = particleLife.glowSize
         let glowIntensity: number = particleLife.glowIntensity
@@ -562,6 +601,7 @@ export default defineComponent({
             useEventListener(canvasRef.value, 'wheel', (e) => {
                 if (e.deltaY < 0) handleZoom(1) // Zoom in
                 else handleZoom(-1) // Zoom out
+                if (isDriftCamActive) driftCamTransitionProgress = 0 // Reset drift cam transition when user interacts with the camera
             })
         })
         // -------------------------------------------------------------------------------------------------------------
@@ -581,6 +621,8 @@ export default defineComponent({
         function setSimSizeBasedOnScreen() {
             particleLife.simWidth = SIM_WIDTH = baseSimWidth = CANVAS_WIDTH
             particleLife.simHeight = SIM_HEIGHT = baseSimHeight = CANVAS_HEIGHT
+            SIM_WIDTH_HALF = SIM_WIDTH * 0.5
+            SIM_HEIGHT_HALF = SIM_HEIGHT * 0.5
             updateCameraScaleFactors()
         }
         function setSimSize() {
@@ -588,6 +630,8 @@ export default defineComponent({
                 particleLife.simWidth = SIM_WIDTH = CELL_SIZE * Math.round(baseSimWidth / CELL_SIZE)
                 particleLife.simHeight = SIM_HEIGHT = CELL_SIZE * Math.round(baseSimHeight / CELL_SIZE)
             }
+            SIM_WIDTH_HALF = SIM_WIDTH * 0.5
+            SIM_HEIGHT_HALF = SIM_HEIGHT * 0.5
             updateCameraScaleFactors()
             updateBinningParameters()
             updateOffscreenMirrorResources()
@@ -633,8 +677,8 @@ export default defineComponent({
             }
         }
         function centerView() {
-            cameraCenter = { x: SIM_WIDTH / 2, y: SIM_HEIGHT / 2 }
-            targetCameraCenter = { x: SIM_WIDTH / 2, y: SIM_HEIGHT / 2 }
+            cameraCenter = { x: SIM_WIDTH_HALF, y: SIM_HEIGHT_HALF }
+            targetCameraCenter = { x: SIM_WIDTH_HALF, y: SIM_HEIGHT_HALF }
         }
         function handleMove() {
             const dx = pointerX - lastPointerX
@@ -680,6 +724,63 @@ export default defineComponent({
             cameraChanged = true
         }
         // -------------------------------------------------------------------------------------------------------------
+        const initDriftCamera = () => {
+            driftCamTransitionProgress = 0
+            driftCamTime = 0
+            driftCamLastTime = performance.now() / 1000
+
+            const clamp = (v: number) => Math.max(-1, Math.min(1, v))
+            // Calculates sine wave phase offsets so the drift camera starts smoothly from the current position without jumping and follows a "randomized" trajectory
+            const findMatchingPhases = (target: number) => {
+                const p2 = Math.random() * Math.PI * 2 // Random initial phase for the secondary wave
+                const primaryWaveValue = (clamp(target) - Math.sin(p2) * 0.4) / 0.6 // Calculate the required phase for the primary wave to achieve the target position, given the random secondary wave phase and their respective amplitudes (0.6 and 0.4)
+                const p1 = Math.asin(clamp(primaryWaveValue)) // Calculate the primary wave phase using arcsin, which gives a value between -π/2 and π/2. This ensures that the combined sine waves will start at the current camera position
+                return { p1, p2 }
+            }
+
+            // Calculate the initial phases for X, Y, and Z (zoom) based on the current camera position and zoom level to ensure that when driftCam is enabled, the camera starts moving smoothly from its current position without any sudden jumps.
+            const phasesX = findMatchingPhases((cameraCenter.x - SIM_WIDTH_HALF) / (SIM_WIDTH_HALF * driftCamAmplitude))
+            const phasesY = findMatchingPhases((cameraCenter.y - SIM_HEIGHT_HALF) / (SIM_HEIGHT_HALF * driftCamAmplitude))
+            const phasesZ = findMatchingPhases((zoomFactor - driftCamZoomCenter) / driftCamZoomAmplitude)
+
+            driftCamPhase = { x1: phasesX.p1, x2: phasesX.p2, y1: phasesY.p1, y2: phasesY.p2, z1: phasesZ.p1, z2: phasesZ.p2}
+        }
+        const handleDriftCamera = () => {
+            const now = performance.now() / 1000
+            if (isDragging) {
+                driftCamLastTime = now // Update last time to prevent large jumps in camera position when the user stops dragging after a long interaction
+                driftCamTransitionProgress = 0 // Reset transition when users pans to allow for a smooth blend back to the drift trajectory when they stop interacting
+                return
+            }
+
+            driftCamTransitionProgress += (1 - driftCamTransitionProgress) * driftCamSmoothing // Progressive transition towards the drift trajectory after pans/zooms, creating a smooth blending effect
+            driftCamTime += (now - driftCamLastTime) * driftCamSpeed // Increment the drift camera's internal time based on the elapsed real time and the configured speed, ensuring consistent movement regardless of frame rate variations
+            driftCamLastTime = now
+
+            // Horizontal pan using two combined sine waves
+            const driftTargetX = SIM_WIDTH_HALF + (
+                Math.sin(driftCamTime * 1.0 + driftCamPhase.x1) * 0.6 +   // Primary wave (60%), base freq
+                Math.sin(driftCamTime * 1.618 + driftCamPhase.x2) * 0.4   // Secondary wave (40%), golden ratio freq
+            ) * SIM_WIDTH_HALF * driftCamAmplitude
+
+            // Vertical pan with offset frequencies for diagonal drift
+            const driftTargetY = SIM_HEIGHT_HALF + (
+                Math.sin(driftCamTime * 1.1 + driftCamPhase.y1) * 0.6 +   // Primary wave (60%), slightly faster than X
+                Math.sin(driftCamTime * 1.414 + driftCamPhase.y2) * 0.4   // Secondary wave (40%), sqrt(2) freq
+            ) * SIM_HEIGHT_HALF * driftCamAmplitude
+
+            // Zoom level with slower frequencies for smooth transitions
+            const driftTargetZoom = driftCamZoomCenter + (
+                Math.sin(driftCamTime * 0.7 + driftCamPhase.z1) * 0.6 +   // Primary wave (60%), slow zoom
+                Math.sin(driftCamTime * 1.3 + driftCamPhase.z2) * 0.4     // Secondary wave (40%), faster variation
+            ) * driftCamZoomAmplitude
+
+            // Smoothly interpolate camera center and zoom towards the drift targets
+            targetCameraCenter.x += (driftTargetX - targetCameraCenter.x) * driftCamTransitionProgress
+            targetCameraCenter.y += (driftTargetY - targetCameraCenter.y) * driftCamTransitionProgress
+            targetZoomFactor += (driftTargetZoom - targetZoomFactor) * driftCamTransitionProgress
+        }
+        // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
         const initWebGPU = async () => {
@@ -694,7 +795,7 @@ export default defineComponent({
                 colorSpace: 'srgb',
             })
         }
-        const initLife = async () => {
+        const initLife = async (autoCenter: boolean = true) => {
             isInitializing = true
             setRulesMatrix(generateRules(0, NUM_TYPES)) // Random rule
             setMinRadiusMatrix(makeRandomMinRadiusMatrix())
@@ -709,7 +810,7 @@ export default defineComponent({
             console.log("Max Radius Matrix:", maxRadiusMatrix);
 
             await nextTick()
-            centerView()
+            if (autoCenter) centerView()
 
             initColors()
             initParticles()
@@ -726,7 +827,7 @@ export default defineComponent({
             cancelAnimationLoop()
             destroyPipelinesAndBindGroups()
             await destroyBuffers(true)
-            await initLife()
+            await initLife(false)
         }
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
@@ -739,6 +840,8 @@ export default defineComponent({
             //     animationFrameId = requestAnimationFrame(frame)
             //     return
             // }
+
+            if (isDriftCamActive) handleDriftCamera()
 
             const zoomDiff = targetZoomFactor - zoomFactor
             const panXDiff = targetCameraCenter.x - cameraCenter.x
@@ -2682,6 +2785,14 @@ export default defineComponent({
         watch(() => particleLife.showBrushCircle, (value: boolean) => showBrushCircle = value)
         watch(() => particleLife.zoomSmoothing, (value: number) => zoomSmoothing = value)
         watch(() => particleLife.panSmoothing, (value: number) => panSmoothing = value)
+        watch(() => particleLife.isDriftCamActive, (value: boolean) => { value && initDriftCamera(); isDriftCamActive = value })
+        watch(() => particleLife.driftCamSpeed, (value: number) => driftCamSpeed = value)
+        watch(() => particleLife.driftCamAmplitude, (value: number) => driftCamAmplitude = value)
+        watch(() => particleLife.driftCamZoomRange, (value: number[]) => {
+            driftCamZoomRange = value;
+            driftCamZoomCenter = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5 // Center zoom level for driftCam
+            driftCamZoomAmplitude = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
+        }, { deep: true })
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)
