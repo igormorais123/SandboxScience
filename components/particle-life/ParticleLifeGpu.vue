@@ -576,6 +576,7 @@ export default defineComponent({
             useEventListener(canvasRef.value, 'wheel', (e) => {
                 if (e.deltaY < 0) handleZoom(1) // Zoom in
                 else handleZoom(-1) // Zoom out
+                if (isDriftCamActive) driftCamTransitionProgress = 0 // Reset drift cam transition when user interacts with the camera
             })
         })
         // -------------------------------------------------------------------------------------------------------------
@@ -698,63 +699,73 @@ export default defineComponent({
             cameraChanged = true
         }
         // -------------------------------------------------------------------------------------------------------------
-        const driftCamSmoothing: number = 0.0075 // Smoothing factor for camera movement (affects panning and zooming, 0.1 = fast, 0.01 = slow)
-        let driftCamSpeed: number = particleLife.driftCamSpeed       // Drift camera speed (0.1 = slow, 1.0 = fast)
-        let driftCamAmplitude: number = particleLife.driftCamAmplitude   // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
+        const driftCamSmoothing: number = 0.0003 // Smoothing factor for camera movement (affects panning and zooming, 0.1 = fast, 0.01 = slow)
+        let driftCamSpeed: number = particleLife.driftCamSpeed // Drift camera speed (0.1 = slow, 1.0 = fast)
+        let driftCamAmplitude: number = particleLife.driftCamAmplitude // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
         let driftCamZoomRange: number[] = particleLife.driftCamZoomRange // Range of zoom levels for driftCam (min, max)
-        let driftCamZoomCenter: number = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5    // Center zoom level for driftCam
+        let driftCamZoomCenter: number = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5 // Center zoom level for driftCam
         let driftCamZoomAmplitude: number = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
 
         let driftCamTime: number = 0 // Time variable for the drift camera, incremented each frame based on the driftCamSpeed to create continuous movement
         let driftCamLastTime: number = 0 // Last timestamp when the drift camera was updated, used to calculate elapsed time for consistent movement regardless of frame rate
+        let driftCamTransitionProgress: number = 0 // Smoothly blend camera position from its current location to the drift trajectory when driftCam is enabled, and reset to 0 whenever the user manually pans/zooms the camera, allowing for a seamless transition back to the drift movement
         let driftCamPhase = { x1: 0, x2: 0, y1: 0, y2: 0, z1: 0, z2: 0 } // Phase offsets for the sine waves controlling camera movement and zoom
+
         const initDriftCamera = () => {
+            driftCamTransitionProgress = 0
+            driftCamTime = 0
             driftCamLastTime = performance.now() / 1000
+
             const clamp = (v: number) => Math.max(-1, Math.min(1, v))
+            // Calculates sine wave phase offsets so the drift camera starts smoothly from the current position without jumping and follows a "randomized" trajectory
+            const findMatchingPhases = (target: number) => {
+                const p2 = Math.random() * Math.PI * 2 // Random initial phase for the secondary wave
+                const primaryWaveValue = (clamp(target) - Math.sin(p2) * 0.4) / 0.6 // Calculate the required phase for the primary wave to achieve the target position, given the random secondary wave phase and their respective amplitudes (0.6 and 0.4)
+                const p1 = Math.asin(clamp(primaryWaveValue)) // Calculate the primary wave phase using arcsin, which gives a value between -π/2 and π/2. This ensures that the combined sine waves will start at the current camera position
+                return { p1, p2 }
+            }
 
-            // Calculate the initial phase based on the current camera position and zoom to ensure smooth transitions when enabling driftCam
-            const phaseX = Math.asin(clamp((cameraCenter.x - SIM_WIDTH_HALF) / (SIM_WIDTH_HALF * driftCamAmplitude)))
-            const phaseY = Math.asin(clamp((cameraCenter.y - SIM_HEIGHT_HALF) / (SIM_HEIGHT_HALF * driftCamAmplitude)))
-            const phaseZ = Math.asin(clamp((zoomFactor - driftCamZoomCenter) / driftCamZoomAmplitude))
+            // Calculate the initial phases for X, Y, and Z (zoom) based on the current camera position and zoom level to ensure that when driftCam is enabled, the camera starts moving smoothly from its current position without any sudden jumps.
+            const phasesX = findMatchingPhases((cameraCenter.x - SIM_WIDTH_HALF) / (SIM_WIDTH_HALF * driftCamAmplitude))
+            const phasesY = findMatchingPhases((cameraCenter.y - SIM_HEIGHT_HALF) / (SIM_HEIGHT_HALF * driftCamAmplitude))
+            const phasesZ = findMatchingPhases((zoomFactor - driftCamZoomCenter) / driftCamZoomAmplitude)
 
-            driftCamPhase.x1 = phaseX - driftCamTime * 1.0
-            driftCamPhase.x2 = phaseX - driftCamTime * 1.618
-            driftCamPhase.y1 = phaseY - driftCamTime * 1.1
-            driftCamPhase.y2 = phaseY - driftCamTime * 1.414
-            driftCamPhase.z1 = phaseZ - driftCamTime * 0.7
-            driftCamPhase.z2 = phaseZ - driftCamTime * 1.3
+            driftCamPhase = { x1: phasesX.p1, x2: phasesX.p2, y1: phasesY.p1, y2: phasesY.p2, z1: phasesZ.p1, z2: phasesZ.p2}
         }
         const handleDriftCamera = () => {
             const now = performance.now() / 1000
             if (isDragging) {
-                driftCamLastTime = now // Reset driftCam timer when dragging to prevent jumps after releasing the mouse
+                driftCamLastTime = now // Update last time to prevent large jumps in camera position when the user stops dragging after a long interaction
+                driftCamTransitionProgress = 0 // Reset transition when users pans to allow for a smooth blend back to the drift trajectory when they stop interacting
                 return
             }
-            driftCamTime += (now - driftCamLastTime) * driftCamSpeed // Increment time based on speed setting, multiplied by the actual elapsed time to ensure consistent movement regardless of frame rate
+
+            driftCamTransitionProgress += (1 - driftCamTransitionProgress) * driftCamSmoothing // Progressive transition towards the drift trajectory after pans/zooms, creating a smooth blending effect
+            driftCamTime += (now - driftCamLastTime) * driftCamSpeed // Increment the drift camera's internal time based on the elapsed real time and the configured speed, ensuring consistent movement regardless of frame rate variations
             driftCamLastTime = now
 
-            // X: horizontal camera movement using two combined sine waves
-            const x = SIM_WIDTH_HALF + (
+            // Horizontal pan using two combined sine waves
+            const driftTargetX = SIM_WIDTH_HALF + (
                 Math.sin(driftCamTime * 1.0 + driftCamPhase.x1) * 0.6 +   // Primary wave (60%), base freq
                 Math.sin(driftCamTime * 1.618 + driftCamPhase.x2) * 0.4   // Secondary wave (40%), golden ratio freq
             ) * SIM_WIDTH_HALF * driftCamAmplitude
 
-            // Y: vertical camera movement, offset frequencies create diagonal drift
-            const y = SIM_HEIGHT_HALF + (
+            // Vertical pan with offset frequencies for diagonal drift
+            const driftTargetY = SIM_HEIGHT_HALF + (
                 Math.sin(driftCamTime * 1.1 + driftCamPhase.y1) * 0.6 +   // Primary wave (60%), slightly faster than X
                 Math.sin(driftCamTime * 1.414 + driftCamPhase.y2) * 0.4   // Secondary wave (40%), sqrt(2) freq
             ) * SIM_HEIGHT_HALF * driftCamAmplitude
 
-            // Z (zoom): camera zoom level, slower frequencies for smooth transitions
-            const z = driftCamZoomCenter + (
+            // Zoom level with slower frequencies for smooth transitions
+            const driftTargetZoom = driftCamZoomCenter + (
                 Math.sin(driftCamTime * 0.7 + driftCamPhase.z1) * 0.6 +   // Primary wave (60%), slow zoom
                 Math.sin(driftCamTime * 1.3 + driftCamPhase.z2) * 0.4     // Secondary wave (40%), faster variation
             ) * driftCamZoomAmplitude
 
-            // Interpolate current target toward calculated position
-            targetCameraCenter.x += (x - targetCameraCenter.x) * driftCamSmoothing
-            targetCameraCenter.y += (y - targetCameraCenter.y) * driftCamSmoothing
-            targetZoomFactor += (z - targetZoomFactor) * driftCamSmoothing
+            // Smoothly interpolate camera center and zoom towards the drift targets
+            targetCameraCenter.x += (driftTargetX - targetCameraCenter.x) * driftCamTransitionProgress
+            targetCameraCenter.y += (driftTargetY - targetCameraCenter.y) * driftCamTransitionProgress
+            targetZoomFactor += (driftTargetZoom - targetZoomFactor) * driftCamTransitionProgress
         }
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------

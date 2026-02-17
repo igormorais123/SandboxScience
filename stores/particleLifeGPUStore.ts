@@ -37,9 +37,9 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const isDebugHeatmapActive = ref<boolean>(true) // Enable debug heatmap for the particles
 
     const isDriftCamActive = ref<boolean>(false) // Enable drift camera mode (slow automatic movement)
-    const driftCamSpeed = ref<number>(0.05) // Drift camera speed (0.1 = slow, 1.0 = fast)
-    const driftCamAmplitude = ref<number>(0.80) // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
-    const driftCamZoomRange = ref<number[]>([0.6, 3.0]) // Range of zoom levels for driftCam (min, max)
+    const driftCamSpeed = ref<number>(0.1) // Drift camera speed (0.1 = slow, 1.0 = fast)
+    const driftCamAmplitude = ref<number>(0.90) // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
+    const driftCamZoomRange = ref<number[]>([0.4, 3.0]) // Range of zoom levels for driftCam (min, max)
 
     // Define force properties
     const repel = ref<number>(1) // repel force for particles that are too close to each other
