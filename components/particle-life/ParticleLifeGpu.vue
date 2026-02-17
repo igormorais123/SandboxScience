@@ -374,6 +374,18 @@ export default defineComponent({
         let cameraChanged: boolean = true
         let infiniteTotalInstances: number = 0 // Total number of instances for infinite rendering
 
+        // Define properties for the drift camera
+        const driftCamSmoothing: number = 0.0003 // Smoothing factor for camera movement (affects panning and zooming, 0.1 = fast, 0.01 = slow)
+        let driftCamSpeed: number = particleLife.driftCamSpeed // Drift camera speed (0.1 = slow, 1.0 = fast)
+        let driftCamAmplitude: number = particleLife.driftCamAmplitude // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
+        let driftCamZoomRange: number[] = particleLife.driftCamZoomRange // Range of zoom levels for driftCam (min, max)
+        let driftCamZoomCenter: number = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5 // Center zoom level for driftCam
+        let driftCamZoomAmplitude: number = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
+        let driftCamTime: number = 0 // Time variable for the drift camera, incremented each frame based on the driftCamSpeed to create continuous movement
+        let driftCamLastTime: number = 0 // Last timestamp when the drift camera was updated, used to calculate elapsed time for consistent movement regardless of frame rate
+        let driftCamTransitionProgress: number = 0 // Smoothly blend camera position from its current location to the drift trajectory when driftCam is enabled, and reset to 0 whenever the user manually pans/zooms the camera, allowing for a seamless transition back to the drift movement
+        let driftCamPhase = { x1: 0, x2: 0, y1: 0, y2: 0, z1: 0, z2: 0 } // Phase offsets for the sine waves controlling camera movement and zoom
+
         // Define variables for the simulation
         let repel: number = particleLife.repel // Repel force between particles
         let forceFactor: number = particleLife.forceFactor // Adjust the overall force applied between particles (can't be 0)
@@ -712,18 +724,6 @@ export default defineComponent({
             cameraChanged = true
         }
         // -------------------------------------------------------------------------------------------------------------
-        const driftCamSmoothing: number = 0.0003 // Smoothing factor for camera movement (affects panning and zooming, 0.1 = fast, 0.01 = slow)
-        let driftCamSpeed: number = particleLife.driftCamSpeed // Drift camera speed (0.1 = slow, 1.0 = fast)
-        let driftCamAmplitude: number = particleLife.driftCamAmplitude // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
-        let driftCamZoomRange: number[] = particleLife.driftCamZoomRange // Range of zoom levels for driftCam (min, max)
-        let driftCamZoomCenter: number = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5 // Center zoom level for driftCam
-        let driftCamZoomAmplitude: number = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
-
-        let driftCamTime: number = 0 // Time variable for the drift camera, incremented each frame based on the driftCamSpeed to create continuous movement
-        let driftCamLastTime: number = 0 // Last timestamp when the drift camera was updated, used to calculate elapsed time for consistent movement regardless of frame rate
-        let driftCamTransitionProgress: number = 0 // Smoothly blend camera position from its current location to the drift trajectory when driftCam is enabled, and reset to 0 whenever the user manually pans/zooms the camera, allowing for a seamless transition back to the drift movement
-        let driftCamPhase = { x1: 0, x2: 0, y1: 0, y2: 0, z1: 0, z2: 0 } // Phase offsets for the sine waves controlling camera movement and zoom
-
         const initDriftCamera = () => {
             driftCamTransitionProgress = 0
             driftCamTime = 0
@@ -795,7 +795,7 @@ export default defineComponent({
                 colorSpace: 'srgb',
             })
         }
-        const initLife = async () => {
+        const initLife = async (autoCenter: boolean = true) => {
             isInitializing = true
             setRulesMatrix(generateRules(0, NUM_TYPES)) // Random rule
             setMinRadiusMatrix(makeRandomMinRadiusMatrix())
@@ -810,7 +810,7 @@ export default defineComponent({
             console.log("Max Radius Matrix:", maxRadiusMatrix);
 
             await nextTick()
-            centerView()
+            if (autoCenter) centerView()
 
             initColors()
             initParticles()
@@ -827,7 +827,7 @@ export default defineComponent({
             cancelAnimationLoop()
             destroyPipelinesAndBindGroups()
             await destroyBuffers(true)
-            await initLife()
+            await initLife(false)
         }
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
