@@ -55,6 +55,10 @@ export default defineComponent({
             type: Number,
             default: 1,
         },
+        rangeOffset: {
+            type: Number,
+            default: 6
+        },
         modelValue: {
             type: Object,
             required: true
@@ -69,7 +73,6 @@ export default defineComponent({
         }
     },
     setup(props, { emit, slots }) {
-        const rangeOffset = 6
         const minOffset = computed(() => {
             return Math.max(0, Math.min(100, ((props.modelValue[0] - props.min) / (props.max - props.min)) * 100)) // get the percentage from the left
         })
@@ -84,11 +87,11 @@ export default defineComponent({
             updateMaxValue(isNaN(value) ? props.min : value)
         }, 750, { maxWait: 2500 })
         function updateMinValue(value: any) {
-            const newRange = [Math.min(value, props.modelValue[1] - rangeOffset), props.modelValue[1]]
+            const newRange = [Math.min(value, props.modelValue[1] - props.rangeOffset), props.modelValue[1]]
             emit("update:modelValue", newRange)
         }
         function updateMaxValue(value: any) {
-            const newRange = [props.modelValue[0], Math.max(value, props.modelValue[0] + rangeOffset)]
+            const newRange = [props.modelValue[0], Math.max(value, props.modelValue[0] + props.rangeOffset)]
             emit("update:modelValue", newRange)
         }
 

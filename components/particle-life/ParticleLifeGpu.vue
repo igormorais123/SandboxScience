@@ -166,6 +166,10 @@
                                         tooltip="Adjusts the amplitude of the camera movement when Cinematic Camera mode is active. <br> 0.5 is 50% of the simulation size, while 1.0 allows the camera to move up to the edges of the simulation. <br> Higher values create a more dynamic camera movement, while lower values keep the camera closer to the center of the particle system."
                                         :min="0.05" :max="1.0" :step="0.05" v-model="particleLife.driftCamAmplitude" mt-2>
                             </RangeInput>
+                            <RangeInputMinMax input label="Drift Cam. Zoom Range" mt-3
+                                              tooltip="Sets the range for automatic zoom adjustments in Cinematic Camera mode. <br> Adjusting this range allows you to control how much the camera zooms in and out to keep the particles in view."
+                                              :min="0.1" :max="5" :step="0.05" :range-offset="0.1" v-model="particleLife.driftCamZoomRange">
+                            </RangeInputMinMax>
                         </Collapse>
                         <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
                                   tooltip="Provides tools for visualizing the simulation's internal state. <br> Toggle the grid view to see spatial bins or activate a heatmap to analyze particle density. <br> These features are useful for debugging and performance tuning.">
@@ -2775,6 +2779,11 @@ export default defineComponent({
         watch(() => particleLife.isDriftCamActive, (value: boolean) => { value && initDriftCamera(); isDriftCamActive = value })
         watch(() => particleLife.driftCamSpeed, (value: number) => driftCamSpeed = value)
         watch(() => particleLife.driftCamAmplitude, (value: number) => driftCamAmplitude = value)
+        watch(() => particleLife.driftCamZoomRange, (value: number[]) => {
+            driftCamZoomRange = value;
+            driftCamZoomCenter = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5 // Center zoom level for driftCam
+            driftCamZoomAmplitude = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
+        }, { deep: true })
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)
