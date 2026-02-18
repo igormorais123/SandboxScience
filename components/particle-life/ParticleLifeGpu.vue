@@ -163,6 +163,9 @@
                                               tooltip="Enables smooth automatic camera panning and zooming for a cinematic viewing experience.">
                                 </ToggleSwitch>
                             </div>
+                            <ToggleSwitch label="Reset Path on Pan" colorful-label v-model="particleLife.driftCamResetOnPan"
+                                          tooltip="Starts a new drift trajectory after manual panning or zooming, instead of resuming the previous path.">
+                            </ToggleSwitch>
                             <RangeInput input label="Drift Speed"
                                         tooltip="Controls the automatic camera movement speed. <br> - <b>Higher</b> → faster tracking. <br> - <b>Lower</b> → smoother cinematic effect."
                                         :min="0.01" :max="1.0" :step="0.01" v-model="particleLife.driftCamSpeed" mt-2>
@@ -375,6 +378,8 @@ export default defineComponent({
         let infiniteTotalInstances: number = 0 // Total number of instances for infinite rendering
 
         // Define properties for the drift camera
+        let isDriftCamActive: boolean = particleLife.isDriftCamActive // Enable drift camera mode (slow automatic movement)
+        let driftCamResetOnPan: boolean = particleLife.driftCamResetOnPan // Reset drift camera trajectory when user pans/zooms
         const driftCamSmoothing: number = 0.0003 // Smoothing factor for camera movement (affects panning and zooming, 0.1 = fast, 0.01 = slow)
         let driftCamSpeed: number = particleLife.driftCamSpeed // Drift camera speed (0.1 = slow, 1.0 = fast)
         let driftCamAmplitude: number = particleLife.driftCamAmplitude // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
@@ -406,7 +411,6 @@ export default defineComponent({
         let isDebugBinsActive: boolean = particleLife.isDebugBinsActive // Flag to show/hide the bins
         let debugMaxParticleCount: number = particleLife.debugMaxParticleCount // Maximum number of particles for debugging purposes
         let isDebugHeatmapActive: boolean = particleLife.isDebugHeatmapActive // Flag to show/hide the heatmap
-        let isDriftCamActive: boolean = particleLife.isDriftCamActive // Enable drift camera mode (slow automatic movement)
 
         let glowSize: number = particleLife.glowSize
         let glowIntensity: number = particleLife.glowIntensity
@@ -597,11 +601,15 @@ export default defineComponent({
                 isBrushErasing = false
                 isBrushDrawing = false
                 isApplyingBrushForce = false
+                if (isDriftCamActive && driftCamResetOnPan) initDriftCamera()
             })
             useEventListener(canvasRef.value, 'wheel', (e) => {
                 if (e.deltaY < 0) handleZoom(1) // Zoom in
                 else handleZoom(-1) // Zoom out
-                if (isDriftCamActive) driftCamTransitionProgress = 0 // Reset drift cam transition when user interacts with the camera
+                if (isDriftCamActive) {
+                    driftCamTransitionProgress = 0 // Reset drift cam transition when user interacts with the camera
+                    if (driftCamResetOnPan) initDriftCamera()
+                }
             })
         })
         // -------------------------------------------------------------------------------------------------------------
@@ -2786,6 +2794,7 @@ export default defineComponent({
         watch(() => particleLife.zoomSmoothing, (value: number) => zoomSmoothing = value)
         watch(() => particleLife.panSmoothing, (value: number) => panSmoothing = value)
         watch(() => particleLife.isDriftCamActive, (value: boolean) => { value && initDriftCamera(); isDriftCamActive = value })
+        watch(() => particleLife.driftCamResetOnPan, (value: boolean) => driftCamResetOnPan = value)
         watch(() => particleLife.driftCamSpeed, (value: number) => driftCamSpeed = value)
         watch(() => particleLife.driftCamAmplitude, (value: number) => driftCamAmplitude = value)
         watch(() => particleLife.driftCamZoomRange, (value: number[]) => {

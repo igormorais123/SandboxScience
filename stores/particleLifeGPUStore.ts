@@ -37,6 +37,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const isDebugHeatmapActive = ref<boolean>(true) // Enable debug heatmap for the particles
 
     const isDriftCamActive = ref<boolean>(false) // Enable drift camera mode (slow automatic movement)
+    const driftCamResetOnPan = ref<boolean>(false) // Reset drift camera trajectory when the user pans/zoom
     const driftCamSpeed = ref<number>(0.1) // Drift camera speed (0.1 = slow, 1.0 = fast)
     const driftCamAmplitude = ref<number>(0.90) // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
     const driftCamZoomRange = ref<number[]>([0.4, 3.0]) // Range of zoom levels for driftCam (min, max)
@@ -89,7 +90,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
         numParticles, particleSize, numColors, zoomSmoothing, panSmoothing,
         is3D, isParticleGlow, isAdditiveBlending, isWallRepel, isWallWrap, isMirrorWrap, isInfiniteMirrorWrap, mirrorWrapCount, screenMultiplierForGridSize,
         isDebugBinsActive, debugMaxParticleCount, isDebugHeatmapActive,
-        isDriftCamActive, driftCamSpeed, driftCamAmplitude, driftCamZoomRange,
+        isDriftCamActive, driftCamResetOnPan, driftCamSpeed, driftCamAmplitude, driftCamZoomRange,
         minRadiusRange, maxRadiusRange, currentMaxRadius,
         repel, forceFactor, frictionFactor, useSpatialHash,
         isBrushActive, brushes, brushRadius, brushIntensity, brushType, attractForce, repulseForce, brushDirectionalForce, showBrushCircle,
