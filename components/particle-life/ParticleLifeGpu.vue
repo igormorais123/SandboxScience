@@ -175,6 +175,19 @@
                                               tooltip="Sets the min/max zoom levels for automatic cinematic zoom."
                                               :min="0.1" :max="5" :step="0.05" :range-offset="0.1" v-model="particleLife.driftCamZoomRange">
                             </RangeInputMinMax>
+
+                            <hr border-gray-500 my-2>
+                            <div flex items-start justify-between mb-2>
+                                <p underline text-gray-300 mb-1>Particle Tracker :</p>
+                                <button v-if="!particleLife.isTrackerActive" btn px-2 py-1 text-xs rounded bg="violet-600 hover:violet-500"
+                                        @click="startTrackerSelection">
+                                    Select Zone
+                                </button>
+                                <button v-else btn px-2 py-1 text-xs rounded bg="rose-600 hover:rose-500"
+                                        @click="stopTracker">
+                                    Stop Tracking
+                                </button>
+                            </div>
                         </Collapse>
                         <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
                                   tooltip="Provides tools for visualizing the simulation's internal state. <br> Toggle the grid view to see spatial bins or activate a heatmap to analyze particle density. <br> These features are useful for debugging and performance tuning.">
@@ -203,6 +216,12 @@
             </template>
         </SidebarLeft>
         <canvas ref="canvasRef" id="canvasRef" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
+        <ClientOnly>
+            <TrackerOverlay
+                v-if="particleLife.isTrackerSelectionActive"
+                @tracker-selected="onTrackerSelected">
+            </TrackerOverlay>
+        </ClientOnly>
         <SaveModal :store="particleLife"></SaveModal>
         <div absolute top-0 right-0 flex flex-col items-end text-right pointer-events-none>
             <div flex items-center text-start text-xs pl-4 pr-1 bg-slate-800 rounded-bl-xl style="padding-bottom: 1px; opacity: 75%" >
@@ -266,6 +285,7 @@ import MatrixSettings from "~/components/particle-life/MatrixSettings.vue";
 import BrushSettings from "~/components/particle-life/BrushSettings.vue";
 import SaveModal from "~/components/particle-life/SaveModal.vue";
 import PresetPanel from "~/components/particle-life/PresetPanel.vue";
+import TrackerOverlay from "~/components/particle-life/TrackerOverlay.vue";
 import { RULES_OPTIONS, generateRules } from '~/helpers/utils/rulesGenerator';
 import { PALETTE_OPTIONS, generateColors } from "~/helpers/utils/colorsGenerator";
 import { POSITION_OPTIONS, generatePositions } from "~/helpers/utils/positionsGenerator";
@@ -297,7 +317,7 @@ import renderBinsShaderCode from 'assets/particle-life-gpu/shaders/render/render
 
 export default defineComponent({
     name: 'ParticleLifeGpu',
-    components: { PresetPanel, SaveModal, BrushSettings, MatrixSettings, WallStateSelection, WrapModeSelection },
+    components: { PresetPanel, SaveModal, BrushSettings, MatrixSettings, WallStateSelection, WrapModeSelection, TrackerOverlay },
     setup() {
         // Define refs and variables
         const mainContainer = ref<HTMLElement | null>(null)
@@ -779,6 +799,32 @@ export default defineComponent({
             targetCameraCenter.x += (driftTargetX - targetCameraCenter.x) * driftCamTransitionProgress
             targetCameraCenter.y += (driftTargetY - targetCameraCenter.y) * driftCamTransitionProgress
             targetZoomFactor += (driftTargetZoom - targetZoomFactor) * driftCamTransitionProgress
+        }
+        // -------------------------------------------------------------------------------------------------------------
+        let isTrackerActive: boolean = particleLife.isTrackerActive
+        let trackerZone: { x: number, y: number, width: number, height: number } | null = null
+        const startTrackerSelection = () => {
+            particleLife.isTrackerSelectionActive = true
+            particleLife.isRunning = false // Pause the simulation while selecting the tracker zone
+        }
+        const onTrackerSelected = (zone: { x: number, y: number, width: number, height: number }) => {
+            const centerScreenX = zone.x + zone.width / 2
+            const centerScreenY = zone.y + zone.height / 2
+
+            trackerZone = {
+                x: cameraCenter.x + ((centerScreenX / CANVAS_WIDTH) * 2 - 1) / cameraScaleX,
+                y: cameraCenter.y + ((centerScreenY / CANVAS_HEIGHT) * 2 - 1) / cameraScaleY,
+                width: (zone.width / CANVAS_WIDTH) * 2 / cameraScaleX,
+                height: (zone.height / CANVAS_HEIGHT) * 2 / cameraScaleY
+            }
+
+            particleLife.isTrackerActive = true
+            particleLife.isTrackerSelectionActive = false
+            particleLife.isRunning = true
+        }
+        const stopTracker = () => {
+            particleLife.isTrackerActive = false
+            trackerZone = null
         }
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
@@ -2794,6 +2840,8 @@ export default defineComponent({
             driftCamZoomAmplitude = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
         }, { deep: true })
 
+        watch(() => particleLife.isTrackerActive, (value: boolean) => isTrackerActive = value)
+
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)
         watchAndUpdateGlowOptions(() => particleLife.glowSteepness, (value: number) => glowSteepness = value)
@@ -3002,6 +3050,7 @@ export default defineComponent({
             updateSimWidth, updateSimHeight, updateNumParticles, setNewNumParticles, setNewNumTypes,
             updateRulesMatrixValue, updateMinMatrixValue, updateMaxMatrixValue, newRandomRulesMatrix,
             updateRulesMatrix, updateParticlePositions, updateColors, loadPreset,
+            startTrackerSelection, stopTracker, onTrackerSelected,
             rulesOptions, paletteOptions, positionOptions
         }
     }

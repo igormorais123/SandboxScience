@@ -41,6 +41,9 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const driftCamAmplitude = ref<number>(0.90) // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
     const driftCamZoomRange = ref<number[]>([0.4, 3.0]) // Range of zoom levels for driftCam (min, max)
 
+    const isTrackerActive = ref<boolean>(false) // Enable tracker for the particles (follows creatures)
+    const isTrackerSelectionActive = ref<boolean>(false) // Enable selection mode for the tracker (select a creature to follow)
+
     // Define force properties
     const repel = ref<number>(1) // repel force for particles that are too close to each other
     const forceFactor = ref<number>(1.0) // Adjust the overall force applied between particles (can't be 0)
@@ -90,6 +93,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
         is3D, isParticleGlow, isAdditiveBlending, isWallRepel, isWallWrap, isMirrorWrap, isInfiniteMirrorWrap, mirrorWrapCount, screenMultiplierForGridSize,
         isDebugBinsActive, debugMaxParticleCount, isDebugHeatmapActive,
         isDriftCamActive, driftCamSpeed, driftCamAmplitude, driftCamZoomRange,
+        isTrackerActive, isTrackerSelectionActive,
         minRadiusRange, maxRadiusRange, currentMaxRadius,
         repel, forceFactor, frictionFactor, useSpatialHash,
         isBrushActive, brushes, brushRadius, brushIntensity, brushType, attractForce, repulseForce, brushDirectionalForce, showBrushCircle,
