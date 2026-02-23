@@ -188,6 +188,14 @@
                                     Stop Tracking
                                 </button>
                             </div>
+                            <RangeInput input label="Tracker Smoothing"
+                                        tooltip="Controls how smoothly the tracker follows the creature. <br> Lower values = more responsive but jittery. <br> Higher values = smoother but slower to react."
+                                        :min="0.01" :max="1" :step="0.01" v-model="particleLife.trackerSmoothing">
+                            </RangeInput>
+                            <RangeInput input label="Search Radius" mt-2
+                                        tooltip="The base radius around the tracked position to search for particles. <br> Automatically adapts to creature size (based on max interaction radius). <br> Smaller = more precise. Larger = more stable."
+                                        :min="Math.max(particleLife.currentMaxRadius * 0.8, 30)" :max="500" :step="5" v-model="particleLife.trackerSearchRadius">
+                            </RangeInput>
                         </Collapse>
                         <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
                                   tooltip="Provides tools for visualizing the simulation's internal state. <br> Toggle the grid view to see spatial bins or activate a heatmap to analyze particle density. <br> These features are useful for debugging and performance tuning.">
@@ -314,6 +322,7 @@ import particleCompactShaderCode from 'assets/particle-life-gpu/shaders/compute/
 import particleDrawShaderCode from 'assets/particle-life-gpu/shaders/compute/particleDraw.wgsl?raw';
 import renderBrushCircleShaderCode from 'assets/particle-life-gpu/shaders/render/render_brush_circle.wgsl?raw';
 import renderBinsShaderCode from 'assets/particle-life-gpu/shaders/render/render_bins.wgsl?raw';
+import renderTrackerShaderCode from 'assets/particle-life-gpu/shaders/render/render_tracker.wgsl?raw';
 
 export default defineComponent({
     name: 'ParticleLifeGpu',
@@ -464,6 +473,7 @@ export default defineComponent({
         let glowOptionsBuffer: GPUBuffer | undefined
         let infiniteRenderOptionsBuffer: GPUBuffer | undefined
         let brushOptionsBuffer: GPUBuffer | undefined
+        let trackerOptionsBuffer: GPUBuffer | undefined
 
         let binOffsetBuffer: GPUBuffer | undefined
         let binOffsetTempBuffer: GPUBuffer | undefined
@@ -489,6 +499,7 @@ export default defineComponent({
         let renderOffscreenPipeline: GPURenderPipeline
         let composeInfinitePipeline: GPURenderPipeline
         let composeHdrPipeline: GPURenderPipeline
+        let renderTrackerPipeline: GPURenderPipeline
 
         let renderPipelineAdditive: GPURenderPipeline
         let renderMirrorPipelineAdditive: GPURenderPipeline
@@ -522,6 +533,7 @@ export default defineComponent({
         let glowOptionsBindGroup: GPUBindGroup
         let infiniteRenderOptionsBindGroup: GPUBindGroup
         let brushOptionsBindGroup: GPUBindGroup
+        let trackerOptionsBindGroup: GPUBindGroup
 
         let particleBufferBindGroupLayout: GPUBindGroupLayout
         let binPrefixSumBindGroupLayout: GPUBindGroupLayout
@@ -538,6 +550,7 @@ export default defineComponent({
         let glowOptionsBindGroupLayout: GPUBindGroupLayout
         let infiniteRenderOptionsBindGroupLayout: GPUBindGroupLayout
         let brushOptionsBindGroupLayout: GPUBindGroupLayout
+        let trackerOptionsBindGroupLayout: GPUBindGroupLayout
 
         let particleErasePipeline: GPUComputePipeline;
         let particleCompactPipeline: GPUComputePipeline;
@@ -803,21 +816,41 @@ export default defineComponent({
         // -------------------------------------------------------------------------------------------------------------
         let isTrackerActive: boolean = particleLife.isTrackerActive
         let trackerZone: { x: number, y: number, width: number, height: number } | null = null
+        
+        // Tracker state for following a GROUP of particles (center of mass approach)
+        let trackerCenterOfMass: { x: number, y: number, vx: number, vy: number } = { x: 0, y: 0, vx: 0, vy: 0 }
+        let smoothedTrackerPosition: { x: number, y: number } = { x: 0, y: 0 }
+        let trackerSmoothing: number = particleLife.trackerSmoothing
+        let trackerSearchRadius: number = particleLife.trackerSearchRadius
+        let trackerInitialized: boolean = false
+        let trackerMinParticles: number = 32 // Minimum particles to consider valid tracking
+        let trackerUpdatePending: boolean = false // Prevent overlapping async updates
+        
         const startTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = true
             particleLife.isRunning = false // Pause the simulation while selecting the tracker zone
         }
-        const onTrackerSelected = (zone: { x: number, y: number, width: number, height: number }) => {
-            const centerScreenX = zone.x + zone.width / 2
-            const centerScreenY = zone.y + zone.height / 2
+        const onTrackerSelected = async (zone: { x: number, y: number, width: number, height: number }) => {
+            const scaledX = zone.x * DEVICE_PIXEL_RATIO
+            const scaledY = zone.y * DEVICE_PIXEL_RATIO
+            const scaledWidth = zone.width * DEVICE_PIXEL_RATIO
+            const scaledHeight = zone.height * DEVICE_PIXEL_RATIO
+            
+            const centerScreenX = scaledX + scaledWidth / 2
+            const centerScreenY = scaledY + scaledHeight / 2
+            
+            // Convert screen coordinates to world coordinates
+            const worldX = cameraCenter.x + (centerScreenX / CANVAS_WIDTH * 2 - 1) / cameraScaleX
+            const worldY = cameraCenter.y + (centerScreenY / CANVAS_HEIGHT * 2 - 1) / cameraScaleY
 
-            trackerZone = {
-                x: cameraCenter.x + ((centerScreenX / CANVAS_WIDTH) * 2 - 1) / cameraScaleX,
-                y: cameraCenter.y + ((centerScreenY / CANVAS_HEIGHT) * 2 - 1) / cameraScaleY,
-                width: (zone.width / CANVAS_WIDTH) * 2 / cameraScaleX,
-                height: (zone.height / CANVAS_HEIGHT) * 2 / cameraScaleY
-            }
+            // Calculate the world size of the selected zone based on the current camera zoom level
+            const worldWidth = (scaledWidth / CANVAS_WIDTH) * 2 / cameraScaleX
+            const worldHeight = (scaledHeight / CANVAS_HEIGHT) * 2 / cameraScaleY
 
+            trackerZone = { x: worldX, y: worldY, width: worldWidth, height: worldHeight }
+
+            await initializeTrackerFromZone()
+            
             particleLife.isTrackerActive = true
             particleLife.isTrackerSelectionActive = false
             particleLife.isRunning = true
@@ -825,6 +858,158 @@ export default defineComponent({
         const stopTracker = () => {
             particleLife.isTrackerActive = false
             trackerZone = null
+            trackerInitialized = false
+            trackerUpdatePending = false
+        }
+        
+        // Initialize tracker by finding center of mass of all particles in selected zone
+        const initializeTrackerFromZone = async () => {
+            if (!trackerZone) return
+            
+            const particleDataBuffer = await readBufferFromGPU(particleBuffer!, NUM_PARTICLES * 5 * 4)
+            const particles = new Float32Array(particleDataBuffer)
+            
+            let sumX = 0, sumY = 0, sumVx = 0, sumVy = 0, count = 0
+
+            for (let i = 0; i < NUM_PARTICLES; i++) {
+                const px = particles[i * 5]
+                const py = particles[i * 5 + 1]
+                const dx = px - trackerZone.x
+                const dy = py - trackerZone.y
+                
+                if (Math.abs(dx) <= (trackerZone.width / 2) && Math.abs(dy) <= (trackerZone.height / 2)) {
+                    sumX += px
+                    sumY += py
+                    sumVx += particles[i * 5 + 2]
+                    sumVy += particles[i * 5 + 3]
+                    count++
+                }
+            }
+            console.log('Found particles in zone:', count)
+
+            if (count < trackerMinParticles) {
+                console.warn('Not enough particles found in the selected zone to initialize tracker. Please select a larger area or an area with more particles.')
+                trackerInitialized = false
+                return
+            }
+            
+            trackerCenterOfMass = { x: sumX / count, y: sumY / count, vx: sumVx / count, vy: sumVy / count}
+            smoothedTrackerPosition = { x: trackerCenterOfMass.x, y: trackerCenterOfMass.y }
+
+            trackerSearchRadius = Math.max(trackerZone.width, trackerZone.height) * 0.5
+            particleLife.trackerSearchRadius = trackerSearchRadius
+
+            updateTrackerOptionsBuffer()
+            trackerInitialized = true
+        }
+        
+        // Update tracker each frame - recalculate center of mass around current position
+        const updateTrackerPosition = async () => {
+            if (trackerUpdatePending) return
+            
+            trackerUpdatePending = true
+            
+            try {
+                const particleDataBuffer = await readBufferFromGPU(particleBuffer!, NUM_PARTICLES * 5 * 4)
+                const particles = new Float32Array(particleDataBuffer)
+                
+                // Predict where the center of mass should be based on average velocity
+                const speed = Math.sqrt(trackerCenterOfMass.vx ** 2 + trackerCenterOfMass.vy ** 2)
+                const predictionFactor = Math.min(1.0 + speed * 0.001, 2.0) // Stronger prediction for fast creatures
+                const predictedX = trackerCenterOfMass.x + trackerCenterOfMass.vx * smoothedDeltaTime * predictionFactor
+                const predictedY = trackerCenterOfMass.y + trackerCenterOfMass.vy * smoothedDeltaTime * predictionFactor
+                
+                // Multi-level adaptive search: try progressively larger radii until we find enough particles
+                const baseRadius = trackerSearchRadius
+                const searchMultipliers = [1.0, 1.25, 1.5, 2.0, 3.0, 5.0] // Progressive expansion
+
+                let bestResult: { sumX: number, sumY: number, sumVx: number, sumVy: number, count: number, totalWeight: number, radius: number } | null = null
+                
+                for (const multiplier of searchMultipliers) {
+                    const searchRadius = baseRadius * multiplier
+                    const searchRadiusSq = searchRadius * searchRadius
+                    
+                    let sumX = 0, sumY = 0, sumVx = 0, sumVy = 0, count = 0, totalWeight = 0
+
+                    for (let i = 0; i < NUM_PARTICLES; i++) {
+                        const px = particles[i * 5]
+                        const py = particles[i * 5 + 1]
+                        const vx = particles[i * 5 + 2]
+                        const vy = particles[i * 5 + 3]
+                        
+                        const dx = px - predictedX
+                        const dy = py - predictedY
+                        const distSq = dx * dx + dy * dy
+                        
+                        if (distSq > searchRadiusSq) continue
+                        
+                        // Weight particles by proximity to center
+                        const dist = Math.sqrt(distSq)
+                        const normalizedDist = dist / searchRadius
+                        const weight = Math.exp(-normalizedDist * normalizedDist * 2)
+                        
+                        sumX += px * weight
+                        sumY += py * weight
+                        sumVx += vx * weight
+                        sumVy += vy * weight
+                        totalWeight += weight
+                        count++
+                    }
+                    
+                    // If we found enough particles, use this result
+                    if (count >= trackerMinParticles && totalWeight > 0) {
+                        bestResult = { sumX, sumY, sumVx, sumVy, count, totalWeight, radius: searchRadius }
+                        break // Stop expanding search radius once we have a valid result
+                    }
+                }
+                
+                if (bestResult && bestResult.count >= trackerMinParticles) {
+                    // Calculate new center of mass based on weighted average of nearby particles
+                    trackerCenterOfMass.x = bestResult.sumX / bestResult.totalWeight
+                    trackerCenterOfMass.y = bestResult.sumY / bestResult.totalWeight
+                    trackerCenterOfMass.vx = bestResult.sumVx / bestResult.totalWeight
+                    trackerCenterOfMass.vy = bestResult.sumVy / bestResult.totalWeight
+
+                    // Smooth the displayed position
+                    // smoothedTrackerPosition.x += (trackerCenterOfMass.x - smoothedTrackerPosition.x) * trackerSmoothing
+                    // smoothedTrackerPosition.y += (trackerCenterOfMass.y - smoothedTrackerPosition.y) * trackerSmoothing
+
+                    // Smooth the displayed position using the ALREADY predicted position
+                    smoothedTrackerPosition.x += (predictedX - smoothedTrackerPosition.x) * trackerSmoothing
+                    smoothedTrackerPosition.y += (predictedY - smoothedTrackerPosition.y) * trackerSmoothing
+
+
+                    // Adjust search radius for next frame
+                    const minRadiusBasedOnCreatureSize = Math.max(currentMaxRadius * 0.8, 16)
+                    if (bestResult.radius > baseRadius) {
+                        trackerSearchRadius = bestResult.radius
+                    } else {
+                        trackerSearchRadius = trackerSearchRadius * 0.98
+                    }
+                    trackerSearchRadius = Math.max(trackerSearchRadius, minRadiusBasedOnCreatureSize)
+                    particleLife.trackerSearchRadius = trackerSearchRadius
+
+                    updateTrackerOptionsBuffer()
+                }
+            } finally {
+                trackerUpdatePending = false
+            }
+        }
+        const renderTrackerIndicator = (encoder: GPUCommandEncoder) => {
+            if (!trackerInitialized) return
+            
+            const renderPass = encoder.beginRenderPass({
+                colorAttachments: [{
+                    view: ctx.getCurrentTexture().createView(),
+                    loadOp: 'load',
+                    storeOp: 'store',
+                }],
+            })
+            renderPass.setPipeline(renderTrackerPipeline)
+            renderPass.setBindGroup(0, cameraBindGroup)
+            renderPass.setBindGroup(1, trackerOptionsBindGroup)
+            renderPass.draw(4, 1, 0, 0)
+            renderPass.end()
         }
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
@@ -911,6 +1096,7 @@ export default defineComponent({
                 renderParticles(encoder)
                 if (isDebugBinsActive && useSpatialHash) renderDebugBins(encoder)
                 if (isBrushActive && showBrushCircle) renderBrushCircle(encoder)
+                if (isTrackerActive) renderTrackerIndicator(encoder)
                 device.queue.submit([encoder.finish()])
             }
             // device.queue.onSubmittedWorkDone().then(() => executionTime.value = performance.now() - startExecutionTime) // Approximate execution time of the GPU commands
@@ -948,8 +1134,11 @@ export default defineComponent({
 
             if (isDebugBinsActive && useSpatialHash) renderDebugBins(encoder)
             if (isBrushActive && showBrushCircle) renderBrushCircle(encoder)
+            if (isTrackerActive) renderTrackerIndicator(encoder)
 
             device.queue.submit([encoder.finish()])
+            
+            if (isTrackerActive && trackerInitialized) updateTrackerPosition()
         }
         // -------------------------------------------------------------------------------------------------------------
         const computeBruteForce = (encoder: GPUCommandEncoder) => {
@@ -1220,6 +1409,7 @@ export default defineComponent({
             updateBrushOptionsBuffer()
             updateBrushesBuffer()
             updateDebugOptionsBuffer()
+            updateTrackerOptionsBuffer()
             // ----------------------------------------------------------------------------------------------
             const cameraData = new Float32Array([cameraCenter.x, cameraCenter.y, cameraScaleX, cameraScaleY])
             cameraBuffer = device.createBuffer({
@@ -1474,6 +1664,25 @@ export default defineComponent({
                 device.queue.writeBuffer(debugOptionsBuffer, 0, debugOptionsData)
             }
         }
+        const updateTrackerOptionsBuffer = () => {
+            const trackerOptionsData = new ArrayBuffer(12)
+            const trackerOptionsView = new DataView(trackerOptionsData)
+            trackerOptionsView.setFloat32(0, smoothedTrackerPosition.x, true)
+            trackerOptionsView.setFloat32(4, smoothedTrackerPosition.y, true)
+            trackerOptionsView.setFloat32(8, trackerSearchRadius, true)
+
+            if (!trackerOptionsBuffer) {
+                trackerOptionsBuffer = device.createBuffer({
+                    size: trackerOptionsData.byteLength,
+                    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                    mappedAtCreation: true,
+                })
+                new Uint8Array(trackerOptionsBuffer.getMappedRange()).set(new Uint8Array(trackerOptionsData))
+                trackerOptionsBuffer.unmap()
+            } else {
+                device.queue.writeBuffer(trackerOptionsBuffer, 0, trackerOptionsData)
+            }
+        }
         const updateInteractionMatrixBuffer = () => {
             const stride = 4; // 4 octets par couple
             const interactionData = new Uint8Array(NUM_TYPES * NUM_TYPES * stride);
@@ -1557,6 +1766,12 @@ export default defineComponent({
                 layout: debugOptionsBindGroupLayout,
                 entries: [
                     { binding: 0, resource: { buffer: debugOptionsBuffer! } },
+                ],
+            })
+            trackerOptionsBindGroup = device.createBindGroup({
+                layout: trackerOptionsBindGroupLayout,
+                entries: [
+                    { binding: 0, resource: { buffer: trackerOptionsBuffer! } },
                 ],
             })
         }
@@ -1829,6 +2044,11 @@ export default defineComponent({
                     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // debugOptionsBuffer
                 ],
             })
+            trackerOptionsBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // trackerOptionsBuffer
+                ],
+            })
         }
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
@@ -2080,6 +2300,19 @@ export default defineComponent({
                         format: navigator.gpu.getPreferredCanvasFormat(),
                         blend: particleNormalBlending,
                     }] },
+                primitive: { topology: 'triangle-strip' },
+            })
+            // ---------------------------------------------------------------------------------------------------------
+            const renderTrackerShader = device.createShaderModule({ code: renderTrackerShaderCode })
+            renderTrackerPipeline = device.createRenderPipeline({
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [cameraBindGroupLayout, trackerOptionsBindGroupLayout]
+                }),
+                vertex: { module: renderTrackerShader, entryPoint: 'vertexMain' },
+                fragment: { module: renderTrackerShader, entryPoint: 'fragmentMain', targets: [{
+                    format: navigator.gpu.getPreferredCanvasFormat(),
+                    blend: particleNormalBlending,
+                }] },
                 primitive: { topology: 'triangle-strip' },
             })
         }
@@ -2841,6 +3074,8 @@ export default defineComponent({
         }, { deep: true })
 
         watch(() => particleLife.isTrackerActive, (value: boolean) => isTrackerActive = value)
+        watch(() => particleLife.trackerSmoothing, (value: number) => trackerSmoothing = value)
+        watch(() => particleLife.trackerSearchRadius, (value: number) => trackerSearchRadius = value)
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)
@@ -2956,6 +3191,7 @@ export default defineComponent({
             newParticleCountBuffer?.destroy(); newParticleCountBuffer = undefined;
             newParticleCountReadBuffer?.destroy(); newParticleCountReadBuffer = undefined;
             particleCompactBuffer?.destroy(); particleCompactBuffer = undefined;
+            trackerOptionsBuffer?.destroy(); trackerOptionsBuffer = undefined;
 
             if (!keepTexture) {
                 offscreenTexture?.destroy(); offscreenTexture = undefined;

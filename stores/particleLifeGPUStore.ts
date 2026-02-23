@@ -43,6 +43,8 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
 
     const isTrackerActive = ref<boolean>(false) // Enable tracker for the particles (follows creatures)
     const isTrackerSelectionActive = ref<boolean>(false) // Enable selection mode for the tracker (select a creature to follow)
+    const trackerSmoothing = ref<number>(1.0) // Smoothing factor for tracker movement (0 to 1) - lower = smoother
+    const trackerSearchRadius = ref<number>(40) // Radius to search for particles - smaller = more precise but can lose track
 
     // Define force properties
     const repel = ref<number>(1) // repel force for particles that are too close to each other
@@ -93,7 +95,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
         is3D, isParticleGlow, isAdditiveBlending, isWallRepel, isWallWrap, isMirrorWrap, isInfiniteMirrorWrap, mirrorWrapCount, screenMultiplierForGridSize,
         isDebugBinsActive, debugMaxParticleCount, isDebugHeatmapActive,
         isDriftCamActive, driftCamSpeed, driftCamAmplitude, driftCamZoomRange,
-        isTrackerActive, isTrackerSelectionActive,
+        isTrackerActive, isTrackerSelectionActive, trackerSmoothing, trackerSearchRadius,
         minRadiusRange, maxRadiusRange, currentMaxRadius,
         repel, forceFactor, frictionFactor, useSpatialHash,
         isBrushActive, brushes, brushRadius, brushIntensity, brushType, attractForce, repulseForce, brushDirectionalForce, showBrushCircle,

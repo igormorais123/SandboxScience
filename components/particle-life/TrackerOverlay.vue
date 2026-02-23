@@ -55,7 +55,6 @@ export default defineComponent({
             useEventListener(trackerCanvas, ['mouseup'], (e) => {
                 if (isHandlingTrackerArea && e.button === 0) {
                     confirmTrackerArea()
-                    console.log('mouseup')
                 }
             })
         })
@@ -85,12 +84,7 @@ export default defineComponent({
             currentTrackerArea = null
             isSelecting.value = false
 
-            emit('trackerSelected', {
-                x: x,
-                y: y,
-                width: width,
-                height: height
-            })
+            emit('trackerSelected', { x, y, width, height })
         }
         // -------------------------------------------------------------------------------------------------------------
         function drawTrackerArea() {
