@@ -4,11 +4,18 @@ struct Camera {
     scaleX: f32,
     scaleY: f32,
 };
-
-struct TrackerOptions {
-    trackerX: f32,
-    trackerY: f32,
+struct TrackerState {
+    x: f32,
+    y: f32,
+    vx: f32,
+    vy: f32,
     searchRadius: f32,
+    minRadius: f32,
+    deltaTime: f32,
+    minParticles: u32,
+    numParticles: u32,
+    expectedCount: u32,
+    _padding: u32,
 };
 
 const TRACKER_SIZE: f32 = 75.0;
@@ -22,7 +29,7 @@ const QUAD_VERTICES = array<vec2<f32>, 4>(
 );
 
 @group(0) @binding(0) var<uniform> camera: Camera;
-@group(1) @binding(0) var<uniform> tracker: TrackerOptions;
+@group(1) @binding(0) var<storage, read> tracker: TrackerState;
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
@@ -33,7 +40,7 @@ struct VertexOutput {
 fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     let quadPos = QUAD_VERTICES[vertexIndex];
     let maxSize = max(TRACKER_SIZE, tracker.searchRadius);
-    let worldPos = vec2<f32>(tracker.trackerX, tracker.trackerY) + quadPos * maxSize;
+    let worldPos = vec2<f32>(tracker.x, tracker.y) + quadPos * maxSize;
     let clipPos = (worldPos - vec2<f32>(camera.centerX, camera.centerY)) * vec2<f32>(camera.scaleX, -camera.scaleY);
     return VertexOutput(
         vec4<f32>(clipPos, 0.0, 1.0),
