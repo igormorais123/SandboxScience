@@ -6,6 +6,28 @@ struct Particle {
     particleType: f32,
 }
 
+struct SimOptions {
+    simWidth: f32,
+    simHeight: f32,
+    gridWidth: u32,
+    gridHeight: u32,
+    cellSize: f32, // = currentMaxRadius
+    numParticles: u32,
+    numTypes: u32,
+    particleSize: f32,
+    particleOpacity: f32,
+    isWallRepel: u32,
+    isWallWrap: u32,
+    forceFactor: f32,
+    frictionFactor: f32,
+    repel: f32,
+    extendedGridWidth: u32,
+    extendedGridHeight: u32,
+    gridOffsetX: u32,
+    gridOffsetY: u32,
+    mirrorWrapCount: u32,
+}
+
 // Tracker state persisted across frames
 struct TrackerState {
     x: f32,
@@ -13,10 +35,7 @@ struct TrackerState {
     vx: f32,
     vy: f32,
     searchRadius: f32,
-    minRadius: f32, // max(currentMaxRadius * 0.8, 16)
-    deltaTime: f32,
     minParticles: u32,
-    numParticles: u32,
     expectedCount: u32,
     _padding: u32,
 }
@@ -36,6 +55,8 @@ struct LevelAccum {
 @group(0) @binding(0) var<storage, read> particles: array<Particle>;
 @group(0) @binding(1) var<storage, read_write> trackerState: TrackerState;
 @group(0) @binding(2) var<storage, read_write> levels: array<LevelAccum, 6>;
+@group(1) @binding(0) var<uniform> simOptions: SimOptions;
+@group(2) @binding(0) var<uniform> deltaTime: f32;
 
 const SCALE: f32 = 100.0;        // Fixed-point scale for atomic integer operations
 const NUM_LEVELS: u32 = 6u;      // Number of search radius levels
@@ -57,10 +78,10 @@ fn getRadiusMultiplier(level: u32) -> f32 {
 @compute @workgroup_size(256)
 fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
     let tid = globalId.x;
-    if (tid >= trackerState.numParticles) { return; }
+    if (tid >= simOptions.numParticles) { return; }
 
-    let baseRadius = trackerState.minRadius;
-    let dt = trackerState.deltaTime;
+    let baseRadius = max(simOptions.cellSize * 0.8, 16.0);
+    let dt = deltaTime;
 
     // Predict reference position based on current velocity
     let speed = sqrt(trackerState.vx * trackerState.vx + trackerState.vy * trackerState.vy);
@@ -122,8 +143,8 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
 @compute @workgroup_size(1)
 fn finalizeTracker() {
     let minParticles = trackerState.minParticles;
-    let baseRadius = trackerState.minRadius;
-    let dt = trackerState.deltaTime;
+    let baseRadius = max(simOptions.cellSize * 0.8, 16.0);
+    let dt = deltaTime;
     let expectedCount = trackerState.expectedCount;
 
     // Dynamic threshold: 15% of expectedCount, minimum minParticles

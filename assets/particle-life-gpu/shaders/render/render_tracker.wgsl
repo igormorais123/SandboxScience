@@ -10,10 +10,7 @@ struct TrackerState {
     vx: f32,
     vy: f32,
     searchRadius: f32,
-    minRadius: f32,
-    deltaTime: f32,
     minParticles: u32,
-    numParticles: u32,
     expectedCount: u32,
     _padding: u32,
 };

@@ -825,20 +825,21 @@ export default defineComponent({
 
         let isTrackerActive: boolean = particleLife.isTrackerActive
         let isTrackerCameraActive: boolean = particleLife.isTrackerCameraActive
-        let trackerInitialized: boolean = false
 
         let trackerMinParticles: number = 16 // Minimum particles to consider valid tracking
-        const TRACKER_STATE_SIZE = 44
-        const TRACKER_LEVELS_SIZE = 32 * 6 // 192 bytes for 6 levels of 32 floats (x, y, count per level)
+        const TRACKER_STATE_SIZE: number = 32 // x, y, vx, vy, searchRadius, minParticles, expectedCount, _padding
+        const TRACKER_LEVELS_SIZE: number = 32 * 6 // 192 bytes for 6 levels of 32 floats (x, y, count per level)
 
-        let trackerZone: { x: number, y: number, width: number, height: number } | null = null
-        let trackerPositionX = 0
-        let trackerPositionY = 0
-        let lastTrackerReadTime = 0
+        let trackerPositionX: number = 0 // Tracker current X position (for camera tracking)
+        let trackerPositionY: number = 0 // Tracker current Y position (for camera tracking)
+        let lastTrackerReadTime: number = 0 // Timestamp of the last tracker state read from GPU to limit read frequency
 
         const startTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = true
             particleLife.isRunning = false // Pause the simulation while selecting the tracker zone
+        }
+        const stopTracker = () => {
+            particleLife.isTrackerActive = false
         }
         const onTrackerSelected = async (zone: { x: number, y: number, width: number, height: number }) => {
             const scaledX = zone.x * DEVICE_PIXEL_RATIO
@@ -857,113 +858,62 @@ export default defineComponent({
             const worldWidth = (scaledWidth / CANVAS_WIDTH) * 2 / cameraScaleX
             const worldHeight = (scaledHeight / CANVAS_HEIGHT) * 2 / cameraScaleY
 
-            trackerZone = { x: worldX, y: worldY, width: worldWidth, height: worldHeight }
-
-            await initializeTrackerFromZone()
+            const success = await initializeTrackerFromZone({ x: worldX, y: worldY, width: worldWidth, height: worldHeight })
             
-            particleLife.isTrackerActive = true
+            if (success) particleLife.isTrackerActive = true
             particleLife.isTrackerSelectionActive = false
             particleLife.isRunning = true
         }
-        const stopTracker = () => {
-            particleLife.isTrackerActive = false
-            trackerZone = null
-            trackerInitialized = false
-        }
-        
-        // Asynchronous read of tracker state from GPU
-        const readTrackerState = async () => {
-            if (!trackerStateBuffer || !trackerInitialized) return
+        // Reads tracker state from GPU and updates camera position (~60Hz)
+        const updateCameraTrackingPosition = async () => {
+            if (!trackerStateBuffer) return
             
             // Limit read frequency to ~60Hz to avoid performance issues
             const now = performance.now()
             if (now - lastTrackerReadTime < 16) return
             lastTrackerReadTime = now
             
-            try {
-                const readBuffer = device.createBuffer({
-                    size: TRACKER_STATE_SIZE,
-                    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-                })
-                
-                const commandEncoder = device.createCommandEncoder()
-                commandEncoder.copyBufferToBuffer(trackerStateBuffer, 0, readBuffer, 0, TRACKER_STATE_SIZE)
-                device.queue.submit([commandEncoder.finish()])
-                
-                await readBuffer.mapAsync(GPUMapMode.READ)
-                const mappedRange = readBuffer.getMappedRange()
-                const dataView = new DataView(mappedRange)
-                
-                trackerPositionX = dataView.getFloat32(0, true)  // x
-                trackerPositionY = dataView.getFloat32(4, true)  // y
-                particleLife.trackerExpectedCount = dataView.getUint32(36, true) // expectedCount
+            const arrayBuffer = await readBufferFromGPU(trackerStateBuffer, TRACKER_STATE_SIZE)
+            const dataView = new DataView(arrayBuffer)
 
-                if (isTrackerCameraActive) {
-                    targetCameraCenter.x = trackerPositionX
-                    targetCameraCenter.y = trackerPositionY
-                }
-                
-                readBuffer.unmap()
-                readBuffer.destroy()
-            } catch (e) {
-                // Ignore errors from GPU read
+            trackerPositionX = dataView.getFloat32(0, true)  // x
+            trackerPositionY = dataView.getFloat32(4, true)  // y
+            particleLife.trackerExpectedCount = dataView.getUint32(24, true) // expectedCount
+
+            if (isTrackerCameraActive) {
+                targetCameraCenter.x = trackerPositionX
+                targetCameraCenter.y = trackerPositionY
             }
         }
 
-        // Update tracker state parameters on GPU (minRadius, deltaTime, numParticles) before compute passes
-        const updateTrackerStateParams = () => {
-            if (!trackerStateBuffer) return
-            const paramsData = new ArrayBuffer(8)
-            const view = new DataView(paramsData)
-            view.setFloat32(0, Math.max(currentMaxRadius * 0.8, 16), true) // minRadius
-            view.setFloat32(4, smoothedDeltaTime, true)                          // deltaTime
-            device.queue.writeBuffer(trackerStateBuffer, 20, paramsData)
-
-            const numParticlesData = new Uint32Array([NUM_PARTICLES])
-            device.queue.writeBuffer(trackerStateBuffer, 32, numParticlesData)
-        }
         // Initialize tracker state based on a user-selected zone, calculating the center of mass
-        const initializeTrackerFromZone = async () => {
-            if (!trackerZone) return
-
-            const zoneHalfW = trackerZone.width * 0.5
-            const zoneHalfH = trackerZone.height * 0.5
-            
+        const initializeTrackerFromZone = async (zone: { x: number, y: number, width: number, height: number }): Promise<boolean> => {
             // Read the current particle positions and velocities from the GPU to calculate the center of mass and average
-            const particleReadBuffer = device.createBuffer({
-                size: particleBuffer!.size,
-                usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-            })
-            const encoder = device.createCommandEncoder()
-            encoder.copyBufferToBuffer(particleBuffer!, 0, particleReadBuffer, 0, particleBuffer!.size)
-            device.queue.submit([encoder.finish()])
-            await particleReadBuffer.mapAsync(GPUMapMode.READ)
-            const particles = new Float32Array(particleReadBuffer.getMappedRange())
-            
-            // Get the center of mass and average velocity of particles within the selected zone
-            let sumX = 0, sumY = 0, sumVx = 0, sumVy = 0, count = 0
-            for (let i = 0; i < NUM_PARTICLES; i++) {
-                const px = particles[i * 5]
-                const py = particles[i * 5 + 1]
-                const vx = particles[i * 5 + 2]
-                const vy = particles[i * 5 + 3]
+            const arrayBuffer = await readBufferFromGPU(particleBuffer!, NUM_PARTICLES * 5 * 4)
+            const particles = new Float32Array(arrayBuffer)
 
-                if (Math.abs(px - trackerZone.x) <= zoneHalfW && Math.abs(py - trackerZone.y) <= zoneHalfH) {
+            const zoneHalfW = zone.width * 0.5
+            const zoneHalfH = zone.height * 0.5
+            let sumX = 0, sumY = 0, sumVx = 0, sumVy = 0, count = 0
+
+            // Get the center of mass and average velocity of particles within the selected zone
+            for (let i = 0; i < NUM_PARTICLES; i++) {
+                const idx = i * 5
+                const px = particles[idx]
+                const py = particles[idx + 1]
+
+                if (Math.abs(px - zone.x) <= zoneHalfW && Math.abs(py - zone.y) <= zoneHalfH) {
                     sumX += px
                     sumY += py
-                    sumVx += vx
-                    sumVy += vy
+                    sumVx += particles[idx + 2]
+                    sumVy += particles[idx + 3]
                     count++
                 }
             }
             
-            particleReadBuffer.unmap()
-            particleReadBuffer.destroy()
-            
             if (count < trackerMinParticles) {
                 console.warn('Not enough particles in selection zone:', count)
-                trackerInitialized = false
-                return
+                return false
             }
 
             // Calculate center of mass and average velocity for the selected particles
@@ -972,11 +922,12 @@ export default defineComponent({
             const avgVx = sumVx / count
             const avgVy = sumVy / count
 
+            // Determine the initial search radius
             const minRadius = Math.max(currentMaxRadius * 0.8, 16)
             const zoneRadius = Math.max(zoneHalfW, zoneHalfH)
             const initialSearchRadius = Math.max(zoneRadius, minRadius)
             
-            // Initialize tracker state on GPU (44 bytes)
+            // Initialize tracker state on GPU (32 bytes)
             const stateData = new ArrayBuffer(TRACKER_STATE_SIZE)
             const view = new DataView(stateData)
             view.setFloat32(0, centerX, true)              // x
@@ -984,45 +935,41 @@ export default defineComponent({
             view.setFloat32(8, avgVx, true)                // vx
             view.setFloat32(12, avgVy, true)               // vy
             view.setFloat32(16, initialSearchRadius, true) // searchRadius
-            view.setFloat32(20, minRadius, true)           // minRadius
-            view.setFloat32(24, smoothedDeltaTime, true)   // deltaTime
-            view.setUint32(28, trackerMinParticles, true)  // minParticles
-            view.setUint32(32, NUM_PARTICLES, true)        // numParticles
-            view.setUint32(36, count, true)                // expectedCount
-            view.setUint32(40, 0, true)              // _padding
+            view.setUint32(20, trackerMinParticles, true)  // minParticles
+            view.setUint32(24, count, true)                // expectedCount
+            view.setUint32(28, 0, true)              // _padding
             device.queue.writeBuffer(trackerStateBuffer!, 0, stateData)
-            
-            // Reset tracker levels buffer
-            const zeroData = new ArrayBuffer(TRACKER_LEVELS_SIZE)
-            device.queue.writeBuffer(trackerLevelsBuffer!, 0, zeroData)
+
+            // Clear levels buffer
+            device.queue.writeBuffer(trackerLevelsBuffer!, 0, new ArrayBuffer(TRACKER_LEVELS_SIZE))
 
             if (isTrackerCameraActive) {
                 targetCameraCenter.x = centerX
                 targetCameraCenter.y = centerY
             }
-            
-            trackerInitialized = true
+
+            return true
         }
         const computeTracking = (encoder: GPUCommandEncoder) => {
             if (!trackerStateBuffer || !trackerLevelsBuffer) return
 
-            updateTrackerStateParams()
-
             const accumulatePass = encoder.beginComputePass()
             accumulatePass.setPipeline(trackerAccumulatePipeline)
             accumulatePass.setBindGroup(0, trackerComputeBindGroup)
+            accumulatePass.setBindGroup(1, simOptionsBindGroup)
+            accumulatePass.setBindGroup(2, deltaTimeBindGroup)
             accumulatePass.dispatchWorkgroups(Math.ceil(NUM_PARTICLES / 256))
             accumulatePass.end()
 
             const finalizePass = encoder.beginComputePass()
             finalizePass.setPipeline(trackerFinalizePipeline)
             finalizePass.setBindGroup(0, trackerComputeBindGroup)
+            finalizePass.setBindGroup(1, simOptionsBindGroup)
+            finalizePass.setBindGroup(2, deltaTimeBindGroup)
             finalizePass.dispatchWorkgroups(1)
             finalizePass.end()
         }
         const renderTrackerIndicator = (encoder: GPUCommandEncoder) => {
-            if (!trackerInitialized) return
-            
             const renderPass = encoder.beginRenderPass({
                 colorAttachments: [{
                     view: ctx.getCurrentTexture().createView(),
@@ -1156,16 +1103,16 @@ export default defineComponent({
             else computeBruteForce(encoder)
             computeAdvance(encoder)
             
-            if (isTrackerActive && trackerInitialized) {
+            if (isTrackerActive) {
                 computeTracking(encoder)
-                readTrackerState() // Asynchronous read of tracker state for camera tracking
+                if (isTrackerCameraActive) updateCameraTrackingPosition()
             }
             
             renderParticles(encoder)
 
             if (isDebugBinsActive && useSpatialHash) renderDebugBins(encoder)
             if (isBrushActive && showBrushCircle) renderBrushCircle(encoder)
-            if (isTrackerActive && trackerInitialized) renderTrackerIndicator(encoder)
+            if (isTrackerActive) renderTrackerIndicator(encoder)
 
             device.queue.submit([encoder.finish()])
         }
@@ -2212,13 +2159,13 @@ export default defineComponent({
             const trackerComputeShader = device.createShaderModule({ code: trackerComputeShaderCode })
             trackerAccumulatePipeline = device.createComputePipeline({
                 layout: device.createPipelineLayout({
-                    bindGroupLayouts: [trackerComputeBindGroupLayout]
+                    bindGroupLayouts: [trackerComputeBindGroupLayout, simOptionsBindGroupLayout, deltaTimeBindGroupLayout]
                 }),
                 compute: { module: trackerComputeShader, entryPoint: 'accumulateParticles' }
             })
             trackerFinalizePipeline = device.createComputePipeline({
                 layout: device.createPipelineLayout({
-                    bindGroupLayouts: [trackerComputeBindGroupLayout]
+                    bindGroupLayouts: [trackerComputeBindGroupLayout, simOptionsBindGroupLayout, deltaTimeBindGroupLayout]
                 }),
                 compute: { module: trackerComputeShader, entryPoint: 'finalizeTracker' }
             })
@@ -2917,6 +2864,7 @@ export default defineComponent({
             await readBuffer.mapAsync(GPUMapMode.READ)
             const arrayBuffer = readBuffer.getMappedRange().slice(0)
             readBuffer.unmap()
+            readBuffer.destroy()
             return arrayBuffer
         }
         function resizeMatrix(matrix: number[][], oldNumTypes: number, newNumTypes: number, randomFn: () => number) {
