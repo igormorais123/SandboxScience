@@ -61,18 +61,7 @@ struct LevelAccum {
 const SCALE: f32 = 100.0;        // Fixed-point scale for atomic integer operations
 const NUM_LEVELS: u32 = 6u;      // Number of search radius levels
 const MAX_MULTIPLIER: f32 = 3.0; // Maximum radius multiplier
-
-// Returns radius multiplier for each level
-fn getRadiusMultiplier(level: u32) -> f32 {
-    switch(level) {
-        case 0u: { return 1.0; }
-        case 1u: { return 1.2; }
-        case 2u: { return 1.4; }
-        case 3u: { return 1.75; }
-        case 4u: { return 2.25; }
-        default: { return 3.0; }
-    }
-}
+const RADIUS_MULTIPLIER = array<f32, 6>(1.0, 1.2, 1.4, 1.75, 2.25, 3.0); // Radius multipliers
 
 // Pass 1: Accumulate particles into appropriate radius levels
 @compute @workgroup_size(256)
@@ -101,7 +90,7 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
     // Find smallest level containing this particle
     var minLevel: u32 = 5u;
     for (var lvl: u32 = 0u; lvl < NUM_LEVELS; lvl++) {
-        let mult = getRadiusMultiplier(lvl);
+        let mult = RADIUS_MULTIPLIER[lvl];
         let radiusSq = (baseRadius * mult) * (baseRadius * mult);
         if (distSq <= radiusSq) {
             minLevel = lvl;
@@ -125,7 +114,7 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
 
     // Add particle to all levels >= minLevel (inclusive hierarchy)
     for (var lvl: u32 = minLevel; lvl < NUM_LEVELS; lvl++) {
-        let lvlRadius = baseRadius * getRadiusMultiplier(lvl);
+        let lvlRadius = baseRadius * RADIUS_MULTIPLIER[lvl];
         let lvlNormalizedDist = dist / lvlRadius;
         let gaussWeight = exp(-lvlNormalizedDist * lvlNormalizedDist * 2.0);
         let lvlWeight = gaussWeight * dirBonus;
@@ -182,7 +171,7 @@ fn finalizeTracker() {
             trackerState.y = predY + offsetY;
             trackerState.vx = newVx;
             trackerState.vy = newVy;
-            trackerState.searchRadius = baseRadius * getRadiusMultiplier(lvl);
+            trackerState.searchRadius = baseRadius * RADIUS_MULTIPLIER[lvl];
 
             // Smooth expectedCount update (97% old + 3% new)
             let newExpected = u32(f32(expectedCount) * 0.97 + f32(currentCount) * 0.03);
