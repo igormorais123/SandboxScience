@@ -59,6 +59,7 @@ struct LevelAccum {
 @group(2) @binding(0) var<uniform> deltaTime: f32;
 
 const SCALE: f32 = 100.0;        // Fixed-point scale for atomic integer operations
+const SCALE_INV: f32 = 0.01;     // Precomputed 1/SCALE
 const MIN_RADIUS: f32 = 16.0;    // Minimum search radius (pixels)
 const NUM_LEVELS: u32 = 4u;      // Number of search radius levels
 const RADIUS_MULTIPLIER = array<f32, 4>(1.0, 1.4, 1.8, 2.5); // Radius multipliers
@@ -83,18 +84,16 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
 
     // Predict reference position based on current velocity
     let speedSq = tVx * tVx + tVy * tVy;
-    let speed = sqrt(speedSq);
-    let predictionFactor = min(1.0 + speed * 0.002, 1.5);
-    let dt = deltaTime;
-    let refX = tX + tVx * dt * predictionFactor;
-    let refY = tY + tVy * dt * predictionFactor;
+    let predictionFactor = min(1.0 + sqrt(speedSq) * 0.002, 1.5);
+    let refX = tX + tVx * deltaTime * predictionFactor;
+    let refY = tY + tVy * deltaTime * predictionFactor;
 
     let particle = particles[tid];
     let dx = particle.x - refX;
     let dy = particle.y - refY;
     let distSq = dx * dx + dy * dy;
 
-    // Early exit if particle is outside max search radius
+    // Early exit if outside max radius
     let maxRadiusSq = baseRadiusSq * RADIUS_MULTIPLIER_SQ[NUM_LEVELS - 1u];
     if (distSq > maxRadiusSq) { return; }
 
@@ -107,28 +106,29 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
         }
     }
 
-    let dist = sqrt(distSq);
+    // Compute distance using inverseSqrt (faster than sqrt + division)
+    let distInv = inverseSqrt(max(distSq, 0.0001));
+    let dist = distSq * distInv;
 
     // Directional bonus: favor particles in movement direction (0.7x to 1.3x)
     var dirBonus: f32 = 1.0;
     if (speedSq > 0.01) {
-        let speedInv = 1.0 / speed;
-        let distInv = 1.0 / max(dist, 0.001);
+        let speedInv = inverseSqrt(speedSq);
         let alignment = (tVx * dx + tVy * dy) * speedInv * distInv;
         dirBonus = 1.0 + alignment * 0.3;
     }
 
     // Add particle to all levels >= minLevel (inclusive hierarchy)
+    let normalizedDistBase = dist * baseRadiusInv;
     for (var lvl: u32 = minLevel; lvl < NUM_LEVELS; lvl++) {
-        let lvlNormalizedDist = dist * baseRadiusInv * RADIUS_MULTIPLIER_INV[lvl];
-        let gaussWeight = exp(-lvlNormalizedDist * lvlNormalizedDist * 2.0);
-        let weightScaled = gaussWeight * dirBonus * SCALE;
+        let lvlNormalizedDist = normalizedDistBase * RADIUS_MULTIPLIER_INV[lvl];
+        let weight = exp(-lvlNormalizedDist * lvlNormalizedDist * 2.0) * dirBonus * SCALE;
 
-        atomicAdd(&levels[lvl].sumDx, i32(dx * weightScaled));
-        atomicAdd(&levels[lvl].sumDy, i32(dy * weightScaled));
-        atomicAdd(&levels[lvl].sumVx, i32(particle.vx * weightScaled));
-        atomicAdd(&levels[lvl].sumVy, i32(particle.vy * weightScaled));
-        atomicAdd(&levels[lvl].totalWeight, i32(weightScaled));
+        atomicAdd(&levels[lvl].sumDx, i32(dx * weight));
+        atomicAdd(&levels[lvl].sumDy, i32(dy * weight));
+        atomicAdd(&levels[lvl].sumVx, i32(particle.vx * weight));
+        atomicAdd(&levels[lvl].sumVy, i32(particle.vy * weight));
+        atomicAdd(&levels[lvl].totalWeight, i32(weight));
         atomicAdd(&levels[lvl].count, 1u);
     }
 }
@@ -138,11 +138,13 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
 fn finalizeTracker() {
     let minParticles = trackerState.minParticles;
     let baseRadius = max(simOptions.cellSize * 0.8, MIN_RADIUS);
-    let dt = deltaTime;
     let expectedCount = trackerState.expectedCount;
 
     // Dynamic threshold: 15% of expectedCount, minimum minParticles
     let dynamicMinParticles = max(minParticles, u32(f32(expectedCount) * 0.15));
+
+    // Compute current speed for prediction scaling
+    let speed = sqrt(trackerState.vx * trackerState.vx + trackerState.vy * trackerState.vy);
 
     // Find first level (most precise) with enough particles
     var bestLevel: i32 = -1;
@@ -156,38 +158,35 @@ fn finalizeTracker() {
 
     if (bestLevel >= 0) {
         let lvl = u32(bestLevel);
-        let totalWeight = f32(atomicLoad(&levels[lvl].totalWeight)) / SCALE;
+        let totalWeight = f32(atomicLoad(&levels[lvl].totalWeight)) * SCALE_INV;
         let currentCount = atomicLoad(&levels[lvl].count);
+        let totalWeightInv = 1.0 / max(totalWeight, 0.001);
 
-        if (totalWeight > 0.0) {
-            // Compute weighted center of mass offset
-            let offsetX = f32(atomicLoad(&levels[lvl].sumDx)) / SCALE / totalWeight;
-            let offsetY = f32(atomicLoad(&levels[lvl].sumDy)) / SCALE / totalWeight;
-            let newVx = f32(atomicLoad(&levels[lvl].sumVx)) / SCALE / totalWeight;
-            let newVy = f32(atomicLoad(&levels[lvl].sumVy)) / SCALE / totalWeight;
+        // Compute weighted center of mass offset
+        let offsetX = f32(atomicLoad(&levels[lvl].sumDx)) * SCALE_INV * totalWeightInv;
+        let offsetY = f32(atomicLoad(&levels[lvl].sumDy)) * SCALE_INV * totalWeightInv;
+        let newVx = f32(atomicLoad(&levels[lvl].sumVx)) * SCALE_INV * totalWeightInv;
+        let newVy = f32(atomicLoad(&levels[lvl].sumVy)) * SCALE_INV * totalWeightInv;
 
-            // Apply offset to predicted position (same prediction as accumulateParticles)
-            let speed = sqrt(trackerState.vx * trackerState.vx + trackerState.vy * trackerState.vy);
-            let predictionFactor = min(1.0 + speed * 0.002, 1.5);
-            let predX = trackerState.x + trackerState.vx * dt * predictionFactor;
-            let predY = trackerState.y + trackerState.vy * dt * predictionFactor;
+        // Apply offset to predicted position (same prediction as accumulateParticles)
+        let predictionFactor = min(1.0 + speed * 0.002, 1.5);
+        let predX = trackerState.x + trackerState.vx * deltaTime * predictionFactor;
+        let predY = trackerState.y + trackerState.vy * deltaTime * predictionFactor;
 
-            trackerState.x = predX + offsetX;
-            trackerState.y = predY + offsetY;
-            trackerState.vx = newVx;
-            trackerState.vy = newVy;
-            trackerState.searchRadius = baseRadius * RADIUS_MULTIPLIER[lvl];
+        trackerState.x = predX + offsetX;
+        trackerState.y = predY + offsetY;
+        trackerState.vx = newVx;
+        trackerState.vy = newVy;
+        trackerState.searchRadius = baseRadius * RADIUS_MULTIPLIER[lvl];
 
-            // Smooth expectedCount update (97% old + 3% new)
-            let newExpected = u32(f32(expectedCount) * 0.97 + f32(currentCount) * 0.03);
-            trackerState.expectedCount = max(newExpected, minParticles);
-        }
+        // Smooth expectedCount update (97% old + 3% new)
+        let newExpected = u32(f32(expectedCount) * 0.97 + f32(currentCount) * 0.03);
+        trackerState.expectedCount = max(newExpected, minParticles);
     } else {
         // No valid level found: predict position using velocity only
-        let speed = sqrt(trackerState.vx * trackerState.vx + trackerState.vy * trackerState.vy);
         let predictionFactor = min(1.0 + speed * 0.001, 2.0);
-        trackerState.x = trackerState.x + trackerState.vx * dt * predictionFactor;
-        trackerState.y = trackerState.y + trackerState.vy * dt * predictionFactor;
+        trackerState.x = trackerState.x + trackerState.vx * deltaTime * predictionFactor;
+        trackerState.y = trackerState.y + trackerState.vy * deltaTime * predictionFactor;
 
         trackerState.searchRadius = baseRadius * RADIUS_MULTIPLIER[NUM_LEVELS - 1u];
 
