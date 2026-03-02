@@ -54,14 +54,16 @@ struct LevelAccum {
 
 @group(0) @binding(0) var<storage, read> particles: array<Particle>;
 @group(0) @binding(1) var<storage, read_write> trackerState: TrackerState;
-@group(0) @binding(2) var<storage, read_write> levels: array<LevelAccum, 6>;
+@group(0) @binding(2) var<storage, read_write> levels: array<LevelAccum, 4>;
 @group(1) @binding(0) var<uniform> simOptions: SimOptions;
 @group(2) @binding(0) var<uniform> deltaTime: f32;
 
 const SCALE: f32 = 100.0;        // Fixed-point scale for atomic integer operations
-const NUM_LEVELS: u32 = 6u;      // Number of search radius levels
-const MAX_MULTIPLIER: f32 = 3.0; // Maximum radius multiplier
-const RADIUS_MULTIPLIER = array<f32, 6>(1.0, 1.2, 1.4, 1.75, 2.25, 3.0); // Radius multipliers
+const MIN_RADIUS: f32 = 16.0;    // Minimum search radius (pixels)
+const NUM_LEVELS: u32 = 4u;      // Number of search radius levels
+const RADIUS_MULTIPLIER = array<f32, 4>(1.0, 1.4, 1.8, 2.5); // Radius multipliers
+const RADIUS_MULTIPLIER_SQ = array<f32, 4>(1.0, 1.96, 3.24, 6.25); // Precomputed squares
+const RADIUS_MULTIPLIER_INV = array<f32, 4>(1.0, 0.71428571, 0.55555556, 0.4); // Precomputed 1/mult
 
 // Pass 1: Accumulate particles into appropriate radius levels
 @compute @workgroup_size(256)
@@ -69,14 +71,23 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
     let tid = globalId.x;
     if (tid >= simOptions.numParticles) { return; }
 
-    let baseRadius = max(simOptions.cellSize * 0.8, 16.0);
-    let dt = deltaTime;
+    // Cache tracker state locally (avoid repeated memory reads)
+    let tX = trackerState.x;
+    let tY = trackerState.y;
+    let tVx = trackerState.vx;
+    let tVy = trackerState.vy;
+
+    let baseRadius = max(simOptions.cellSize * 0.8, MIN_RADIUS);
+    let baseRadiusSq = baseRadius * baseRadius;
+    let baseRadiusInv = 1.0 / baseRadius;
 
     // Predict reference position based on current velocity
-    let speed = sqrt(trackerState.vx * trackerState.vx + trackerState.vy * trackerState.vy);
+    let speedSq = tVx * tVx + tVy * tVy;
+    let speed = sqrt(speedSq);
     let predictionFactor = min(1.0 + speed * 0.002, 1.5);
-    let refX = trackerState.x + trackerState.vx * dt * predictionFactor;
-    let refY = trackerState.y + trackerState.vy * dt * predictionFactor;
+    let dt = deltaTime;
+    let refX = tX + tVx * dt * predictionFactor;
+    let refY = tY + tVy * dt * predictionFactor;
 
     let particle = particles[tid];
     let dx = particle.x - refX;
@@ -84,15 +95,13 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
     let distSq = dx * dx + dy * dy;
 
     // Early exit if particle is outside max search radius
-    let maxRadiusSq = (baseRadius * MAX_MULTIPLIER) * (baseRadius * MAX_MULTIPLIER);
+    let maxRadiusSq = baseRadiusSq * RADIUS_MULTIPLIER_SQ[NUM_LEVELS - 1u];
     if (distSq > maxRadiusSq) { return; }
 
     // Find smallest level containing this particle
-    var minLevel: u32 = 5u;
+    var minLevel: u32 = NUM_LEVELS - 1u;
     for (var lvl: u32 = 0u; lvl < NUM_LEVELS; lvl++) {
-        let mult = RADIUS_MULTIPLIER[lvl];
-        let radiusSq = (baseRadius * mult) * (baseRadius * mult);
-        if (distSq <= radiusSq) {
+        if (distSq <= baseRadiusSq * RADIUS_MULTIPLIER_SQ[lvl]) {
             minLevel = lvl;
             break;
         }
@@ -102,28 +111,24 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
 
     // Directional bonus: favor particles in movement direction (0.7x to 1.3x)
     var dirBonus: f32 = 1.0;
-    if (speed > 0.1) {
-        let velDirX = trackerState.vx / speed;
-        let velDirY = trackerState.vy / speed;
+    if (speedSq > 0.01) {
+        let speedInv = 1.0 / speed;
         let distInv = 1.0 / max(dist, 0.001);
-        let toDirX = dx * distInv;
-        let toDirY = dy * distInv;
-        let alignment = velDirX * toDirX + velDirY * toDirY;
+        let alignment = (tVx * dx + tVy * dy) * speedInv * distInv;
         dirBonus = 1.0 + alignment * 0.3;
     }
 
     // Add particle to all levels >= minLevel (inclusive hierarchy)
     for (var lvl: u32 = minLevel; lvl < NUM_LEVELS; lvl++) {
-        let lvlRadius = baseRadius * RADIUS_MULTIPLIER[lvl];
-        let lvlNormalizedDist = dist / lvlRadius;
+        let lvlNormalizedDist = dist * baseRadiusInv * RADIUS_MULTIPLIER_INV[lvl];
         let gaussWeight = exp(-lvlNormalizedDist * lvlNormalizedDist * 2.0);
-        let lvlWeight = gaussWeight * dirBonus;
+        let weightScaled = gaussWeight * dirBonus * SCALE;
 
-        atomicAdd(&levels[lvl].sumDx, i32(dx * lvlWeight * SCALE));
-        atomicAdd(&levels[lvl].sumDy, i32(dy * lvlWeight * SCALE));
-        atomicAdd(&levels[lvl].sumVx, i32(particle.vx * lvlWeight * SCALE));
-        atomicAdd(&levels[lvl].sumVy, i32(particle.vy * lvlWeight * SCALE));
-        atomicAdd(&levels[lvl].totalWeight, i32(lvlWeight * SCALE));
+        atomicAdd(&levels[lvl].sumDx, i32(dx * weightScaled));
+        atomicAdd(&levels[lvl].sumDy, i32(dy * weightScaled));
+        atomicAdd(&levels[lvl].sumVx, i32(particle.vx * weightScaled));
+        atomicAdd(&levels[lvl].sumVy, i32(particle.vy * weightScaled));
+        atomicAdd(&levels[lvl].totalWeight, i32(weightScaled));
         atomicAdd(&levels[lvl].count, 1u);
     }
 }
@@ -132,7 +137,7 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
 @compute @workgroup_size(1)
 fn finalizeTracker() {
     let minParticles = trackerState.minParticles;
-    let baseRadius = max(simOptions.cellSize * 0.8, 16.0);
+    let baseRadius = max(simOptions.cellSize * 0.8, MIN_RADIUS);
     let dt = deltaTime;
     let expectedCount = trackerState.expectedCount;
 
@@ -184,7 +189,7 @@ fn finalizeTracker() {
         trackerState.x = trackerState.x + trackerState.vx * dt * predictionFactor;
         trackerState.y = trackerState.y + trackerState.vy * dt * predictionFactor;
 
-        trackerState.searchRadius = baseRadius * MAX_MULTIPLIER;
+        trackerState.searchRadius = baseRadius * RADIUS_MULTIPLIER[NUM_LEVELS - 1u];
 
         // Decay expectedCount to allow re-initialization
         let newExpected = u32(f32(expectedCount) * 0.95);

@@ -828,7 +828,7 @@ export default defineComponent({
 
         let trackerMinParticles: number = 16 // Minimum particles to consider valid tracking
         const TRACKER_STATE_SIZE: number = 32 // x, y, vx, vy, searchRadius, minParticles, expectedCount, _padding
-        const TRACKER_LEVELS_SIZE: number = 32 * 6 // 192 bytes for 6 levels of 32 floats (x, y, count per level)
+        const TRACKER_LEVELS_SIZE: number = 32 * 4 // 128 bytes for 4 levels
 
         let trackerPositionX: number = 0 // Tracker current X position (for camera tracking)
         let trackerPositionY: number = 0 // Tracker current Y position (for camera tracking)
