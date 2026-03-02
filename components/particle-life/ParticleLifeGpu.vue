@@ -193,9 +193,10 @@
                                               tooltip="When enabled, the camera will smoothly follow the tracked creature.">
                                 </ToggleSwitch>
                             </div>
-                            <div v-if="particleLife.isTrackerActive" flex justify-between items-center mt-2 text-xs text-gray-400>
-                                <span>Expected Count:</span>
-                                <span font-mono>{{ particleLife.trackerExpectedCount }}</span>
+                            <div v-if="particleLife.isTrackerActive" mt-2>
+                                <ToggleSwitch label="Show Indicator" colorful-label v-model="particleLife.isTrackerIndicatorVisible"
+                                              tooltip="Show or hide the visual tracker indicator overlay.">
+                                </ToggleSwitch>
                             </div>
                         </Collapse>
                         <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
@@ -825,9 +826,9 @@ export default defineComponent({
 
         let isTrackerActive: boolean = particleLife.isTrackerActive
         let isTrackerCameraActive: boolean = particleLife.isTrackerCameraActive
+        let isTrackerIndicatorVisible: boolean = particleLife.isTrackerIndicatorVisible
 
-        let trackerMinParticles: number = 16 // Minimum particles to consider valid tracking
-        const TRACKER_STATE_SIZE: number = 32 // x, y, vx, vy, searchRadius, minParticles, expectedCount, _padding
+        const TRACKER_STATE_SIZE: number = 32 // x, y, vx, vy, searchRadius, expectedCount, _padding1, _padding2
         const TRACKER_LEVELS_SIZE: number = 32 * 4 // 128 bytes for 4 levels
 
         let trackerPositionX: number = 0 // Tracker current X position (for camera tracking)
@@ -874,11 +875,10 @@ export default defineComponent({
             lastTrackerReadTime = now
             
             const arrayBuffer = await readBufferFromGPU(trackerStateBuffer, TRACKER_STATE_SIZE)
-            const dataView = new DataView(arrayBuffer)
+            const trackerData = new Float32Array(arrayBuffer)
 
-            trackerPositionX = dataView.getFloat32(0, true)  // x
-            trackerPositionY = dataView.getFloat32(4, true)  // y
-            particleLife.trackerExpectedCount = dataView.getUint32(24, true) // expectedCount
+            trackerPositionX = trackerData[0]  // x
+            trackerPositionY = trackerData[1]  // y
 
             if (isTrackerCameraActive) {
                 targetCameraCenter.x = trackerPositionX
@@ -911,7 +911,7 @@ export default defineComponent({
                 }
             }
             
-            if (count < trackerMinParticles) {
+            if (count < 8) {
                 console.warn('Not enough particles in selection zone:', count)
                 return false
             }
@@ -935,9 +935,9 @@ export default defineComponent({
             view.setFloat32(8, avgVx, true)                // vx
             view.setFloat32(12, avgVy, true)               // vy
             view.setFloat32(16, initialSearchRadius, true) // searchRadius
-            view.setUint32(20, trackerMinParticles, true)  // minParticles
-            view.setUint32(24, count, true)                // expectedCount
-            view.setUint32(28, 0, true)              // _padding
+            view.setUint32(20, count, true)                // expectedCount
+            view.setUint32(24, 0, true)                    // _padding1
+            view.setUint32(28, 0, true)                    // _padding2
             device.queue.writeBuffer(trackerStateBuffer!, 0, stateData)
 
             // Clear levels buffer
@@ -1068,7 +1068,7 @@ export default defineComponent({
                 renderParticles(encoder)
                 if (isDebugBinsActive && useSpatialHash) renderDebugBins(encoder)
                 if (isBrushActive && showBrushCircle) renderBrushCircle(encoder)
-                if (isTrackerActive) renderTrackerIndicator(encoder)
+                if (isTrackerActive && isTrackerIndicatorVisible) renderTrackerIndicator(encoder)
                 device.queue.submit([encoder.finish()])
             }
             // device.queue.onSubmittedWorkDone().then(() => executionTime.value = performance.now() - startExecutionTime) // Approximate execution time of the GPU commands
@@ -1112,7 +1112,7 @@ export default defineComponent({
 
             if (isDebugBinsActive && useSpatialHash) renderDebugBins(encoder)
             if (isBrushActive && showBrushCircle) renderBrushCircle(encoder)
-            if (isTrackerActive) renderTrackerIndicator(encoder)
+            if (isTrackerActive && isTrackerIndicatorVisible) renderTrackerIndicator(encoder)
 
             device.queue.submit([encoder.finish()])
         }
@@ -3073,6 +3073,7 @@ export default defineComponent({
 
         watch(() => particleLife.isTrackerActive, (value: boolean) => isTrackerActive = value)
         watch(() => particleLife.isTrackerCameraActive, (value: boolean) => isTrackerCameraActive = value)
+        watch(() => particleLife.isTrackerIndicatorVisible, (value: boolean) => isTrackerIndicatorVisible = value)
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)

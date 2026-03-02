@@ -35,9 +35,9 @@ struct TrackerState {
     vx: f32,
     vy: f32,
     searchRadius: f32,
-    minParticles: u32,
     expectedCount: u32,
-    _padding: u32,
+    _padding1: u32,
+    _padding2: u32,
 }
 
 // Accumulator for each search radius level (uses atomics for parallel accumulation)
@@ -61,6 +61,7 @@ struct LevelAccum {
 const SCALE: f32 = 100.0;        // Fixed-point scale for atomic integer operations
 const SCALE_INV: f32 = 0.01;     // Precomputed 1/SCALE
 const MIN_RADIUS: f32 = 16.0;    // Minimum search radius (pixels)
+const MIN_PARTICLES: u32 = 16u;  // Minimum particles for valid tracking
 const NUM_LEVELS: u32 = 4u;      // Number of search radius levels
 const RADIUS_MULTIPLIER = array<f32, 4>(1.0, 1.4, 1.8, 2.5); // Radius multipliers
 const RADIUS_MULTIPLIER_SQ = array<f32, 4>(1.0, 1.96, 3.24, 6.25); // Precomputed squares
@@ -136,12 +137,11 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
 // Pass 2: Finalize tracker position using the most precise valid level
 @compute @workgroup_size(1)
 fn finalizeTracker() {
-    let minParticles = trackerState.minParticles;
     let baseRadius = max(simOptions.cellSize * 0.8, MIN_RADIUS);
     let expectedCount = trackerState.expectedCount;
 
-    // Dynamic threshold: 15% of expectedCount, minimum minParticles
-    let dynamicMinParticles = max(minParticles, u32(f32(expectedCount) * 0.15));
+    // Dynamic threshold: 15% of expectedCount, minimum MIN_PARTICLES
+    let dynamicMinParticles = max(MIN_PARTICLES, u32(f32(expectedCount) * 0.15));
 
     // Compute current speed for prediction scaling
     let speed = sqrt(trackerState.vx * trackerState.vx + trackerState.vy * trackerState.vy);
@@ -181,7 +181,7 @@ fn finalizeTracker() {
 
         // Smooth expectedCount update (97% old + 3% new)
         let newExpected = u32(f32(expectedCount) * 0.97 + f32(currentCount) * 0.03);
-        trackerState.expectedCount = max(newExpected, minParticles);
+        trackerState.expectedCount = max(newExpected, MIN_PARTICLES);
     } else {
         // No valid level found: predict position using velocity only
         let predictionFactor = min(1.0 + speed * 0.001, 2.0);
@@ -192,11 +192,11 @@ fn finalizeTracker() {
 
         // Decay expectedCount to allow re-initialization
         let newExpected = u32(f32(expectedCount) * 0.95);
-        trackerState.expectedCount = max(newExpected, minParticles);
+        trackerState.expectedCount = max(newExpected, MIN_PARTICLES);
     }
 
-    // Ensure expectedCount never drops below minParticles
-    trackerState.expectedCount = max(trackerState.expectedCount, minParticles);
+    // Ensure expectedCount never drops below MIN_PARTICLES
+    trackerState.expectedCount = max(trackerState.expectedCount, MIN_PARTICLES);
 
     // Reset all levels for next frame
     for (var lvl: u32 = 0u; lvl < NUM_LEVELS; lvl++) {
