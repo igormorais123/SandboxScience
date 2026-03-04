@@ -20,7 +20,7 @@
             </button>
         </div>
         <div fixed left-2 bottom-2 z-40 :style="toggleBtnStyle" pointer-events-none>
-            <div class="flex flex-col items-start gap-2">
+            <div class="flex flex-col items-start gap-1.5">
                 <slot name="bottom-actions"></slot>
             </div>
         </div>
