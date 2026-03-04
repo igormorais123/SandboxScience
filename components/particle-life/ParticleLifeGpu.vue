@@ -224,6 +224,27 @@
                     </div>
                 </div>
             </template>
+            <template #bottom-actions>
+                <button type="button" name="Cinematic Camera" aria-label="Cinematic Camera" title="Cinematic Camera"
+                        btn rounded-full flex items-center justify-center p-2 pointer-events-auto
+                        class="backdrop-blur-sm"
+                        :class="particleLife.isDriftCamActive ? 'bg-violet-600/90 hover:bg-violet-500/90' : 'bg-violet-900/80 hover:bg-violet-800/80'"
+                        @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
+                    <span i-tabler-video :class="particleLife.isDriftCamActive ? 'text-white' : 'text-violet-300'"></span>
+                </button>
+                <TrackerToggle
+                    :is-active="particleLife.isTrackerActive"
+                    v-model:camera-active="particleLife.isTrackerCameraActive"
+                    v-model:indicator-visible="particleLife.isTrackerIndicatorVisible"
+                    @toggle="particleLife.isTrackerActive ? stopTracker() : startTrackerSelection()">
+                </TrackerToggle>
+                <button type="button" name="Randomize" aria-label="Randomize" title="Randomize simulation"
+                        btn rounded-full flex items-center justify-center p-2 pointer-events-auto
+                        class="backdrop-blur-sm bg-[#094F5D]/90 hover:bg-[#0B5F6F]/90"
+                        @click="regenerateLife">
+                    <span i-game-icons-perspective-dice-six-faces-random text-2xl></span>
+                </button>
+            </template>
         </SidebarLeft>
         <canvas ref="canvasRef" id="canvasRef" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
         <ClientOnly>
@@ -248,13 +269,8 @@
             </div>
         </div>
         <div fixed z-10 bottom-2 flex justify-center items-end class="left-1/2 transform -translate-x-1/2"> <!-- faded-hover-effect -->
-            <button type="button" name="Randomize" aria-label="Randomize" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="[#094F5D]/80 hover:[#0B5F6F]/80" @click="regenerateLife">
-                <span i-game-icons-perspective-dice-six-faces-random></span>
-            </button>
-            <button type="button" name="Cinematic Camera" aria-label="Cinematic Camera" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm
-                    :class="particleLife.isDriftCamActive ? 'bg-violet-700/80 hover:bg-violet-700/70' : 'bg-violet-900/70 hover:bg-violet-800/70'"
-                    @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
-                <span i-tabler-video :class="particleLife.isDriftCamActive ? 'text-white' : 'text-violet-300'"></span>
+            <button type="button" name="Toggle Fullscreen" aria-label="Toggle Fullscreen" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="toggleFullscreen">
+                <span :class="isFullscreen ? 'i-tabler-maximize-off' : 'i-tabler-maximize'"></span>
             </button>
             <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="handleZoom(-1, true)">
                 <span i-tabler-zoom-out></span>
@@ -267,9 +283,6 @@
             </button>
             <button type="button" name="Zoom In" aria-label="Zoom In" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="handleZoom(1, true)">
                 <span i-tabler-zoom-in></span>
-            </button>
-            <button type="button" name="Toggle Fullscreen" aria-label="Toggle Fullscreen" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="toggleFullscreen">
-                <span :class="isFullscreen ? 'i-tabler-maximize-off' : 'i-tabler-maximize'"></span>
             </button>
         </div>
         <section fixed z-10 bottom-2 right-2 flex>
@@ -296,6 +309,7 @@ import BrushSettings from "~/components/particle-life/BrushSettings.vue";
 import SaveModal from "~/components/particle-life/SaveModal.vue";
 import PresetPanel from "~/components/particle-life/PresetPanel.vue";
 import TrackerOverlay from "~/components/particle-life/TrackerOverlay.vue";
+import TrackerToggle from "~/components/particle-life/TrackerToggle.vue";
 import { RULES_OPTIONS, generateRules } from '~/helpers/utils/rulesGenerator';
 import { PALETTE_OPTIONS, generateColors } from "~/helpers/utils/colorsGenerator";
 import { POSITION_OPTIONS, generatePositions } from "~/helpers/utils/positionsGenerator";
@@ -329,7 +343,7 @@ import trackerComputeShaderCode from 'assets/particle-life-gpu/shaders/compute/t
 
 export default defineComponent({
     name: 'ParticleLifeGpu',
-    components: { PresetPanel, SaveModal, BrushSettings, MatrixSettings, WallStateSelection, WrapModeSelection, TrackerOverlay },
+    components: { PresetPanel, SaveModal, BrushSettings, MatrixSettings, WallStateSelection, WrapModeSelection, TrackerOverlay, TrackerToggle },
     setup() {
         // Define refs and variables
         const mainContainer = ref<HTMLElement | null>(null)
@@ -3302,5 +3316,22 @@ export default defineComponent({
 <style scoped>
 canvas {
     background: black;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+}
+
+.fade-enter-to,
+.fade-leave-from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 </style>

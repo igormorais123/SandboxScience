@@ -19,13 +19,11 @@
                 <span class="vertical-90 rotate-180" text-sm font-medium>Settings</span>
             </button>
         </div>
-
-<!--        <div my-3 mx-1 fixed left-0 z-40 :style="toggleBtnStyle" >-->
-<!--            <button rounded-full btn flex items-center p-4 id="sidebarLeftBtn" bg="gray-800 hover:gray-900" @click="toggle">-->
-<!--                <span i-tabler-settings text-2xl></span>-->
-<!--            </button>-->
-<!--            <slot name="controls"></slot>-->
-<!--        </div>-->
+        <div fixed left-2 bottom-2 z-40 :style="toggleBtnStyle" pointer-events-none>
+            <div class="flex flex-col items-start gap-2">
+                <slot name="bottom-actions"></slot>
+            </div>
+        </div>
         <Transition enter-active-class="transform transition-transform ease-out duration-300"
                     enter-from-class="-translate-x-full"
                     enter-to-class="translate-x-0"
