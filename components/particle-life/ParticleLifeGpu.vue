@@ -231,6 +231,10 @@
                         :class="particleLife.isDriftCamActive ? 'bg-violet-600/90 hover:bg-violet-500/90' : 'bg-violet-900/80 hover:bg-violet-800/80'"
                         @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
                     <span i-tabler-video :class="particleLife.isDriftCamActive ? 'text-white' : 'text-violet-300'"></span>
+                    <span v-if="particleLife.isDriftCamActive" class="absolute -top-0.5 -right-0.5 flex size-3">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 ring-1 ring-cyan-300/50 opacity-75"></span>
+                        <span class="relative inline-flex size-3 rounded-full bg-cyan-400"></span>
+                    </span>
                 </button>
                 <TrackerToggle
                     :is-active="particleLife.isTrackerActive"
