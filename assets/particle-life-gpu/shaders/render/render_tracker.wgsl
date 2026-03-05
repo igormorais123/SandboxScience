@@ -10,14 +10,29 @@ struct TrackerState {
     vx: f32,
     vy: f32,
     searchRadius: f32,
-    minParticles: u32,
     expectedCount: u32,
-    _padding: u32,
+    _padding1: u32,
+    _padding2: u32,
 };
 
+const MIN_PARTICLES: u32 = 16u;
 const TRACKER_SIZE: f32 = 75.0;
-const TRACKER_COLOR: vec3<f32> = vec3<f32>(0.4, 0.9, 1.0); // Cyan
-const HIGHLIGHT_COLOR: vec3<f32> = vec3<f32>(1.0, 1.0, 0.8); // Bright white/yellow
+const TRACKER_SIZE_INV: f32 = 1.0 / 75.0;
+const PI: f32 = 3.14159265;
+const TAU_INV: f32 = 1.0 / (2.0 * 3.14159265);
+
+const COLOR_BRIGHT: vec3<f32>   = vec3<f32>(0.85, 1.0, 1.0);
+const COLOR_CYAN: vec3<f32>     = vec3<f32>(0.4, 0.92, 1.0);
+const COLOR_VELOCITY: vec3<f32> = vec3<f32>(1.0, 0.65, 0.25);
+const COLOR_DIAMOND: vec3<f32>  = vec3<f32>(1.0, 0.45, 0.1);
+const COLOR_LOST: vec3<f32>     = vec3<f32>(1.0, 0.15, 0.1);
+
+const OUTER_RING_RADIUS: f32 = 0.90;
+const OUTER_RING_THICKNESS: f32 = 0.065;
+const CROSSHAIR_GAP_INNER: f32 = 0.30;
+const CROSSHAIR_GAP_OUTER: f32 = OUTER_RING_RADIUS - 0.06;
+const CROSSHAIR_THICKNESS: f32 = 0.028;
+
 const QUAD_VERTICES = array<vec2<f32>, 4>(
     vec2<f32>(-1.0, -1.0),
     vec2<f32>(1.0, -1.0),
@@ -27,6 +42,7 @@ const QUAD_VERTICES = array<vec2<f32>, 4>(
 
 @group(0) @binding(0) var<uniform> camera: Camera;
 @group(1) @binding(0) var<storage, read> tracker: TrackerState;
+@group(2) @binding(0) var<uniform> deltaTime: f32;
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
@@ -36,51 +52,104 @@ struct VertexOutput {
 @vertex
 fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     let quadPos = QUAD_VERTICES[vertexIndex];
-    let maxSize = max(TRACKER_SIZE, tracker.searchRadius);
+    let maxSize = max(TRACKER_SIZE, tracker.searchRadius) * 1.15;
     let worldPos = vec2<f32>(tracker.x, tracker.y) + quadPos * maxSize;
     let clipPos = (worldPos - vec2<f32>(camera.centerX, camera.centerY)) * vec2<f32>(camera.scaleX, -camera.scaleY);
     return VertexOutput(
         vec4<f32>(clipPos, 0.0, 1.0),
-        quadPos * (maxSize / TRACKER_SIZE)
+        quadPos * (maxSize * TRACKER_SIZE_INV)
     );
+}
+
+fn ring(dist: f32, r: f32, halfT: f32, fw: f32) -> f32 {
+    return smoothstep(r + halfT + fw, r + halfT - fw, dist)
+         * smoothstep(r - halfT - fw, r - halfT + fw, dist);
 }
 
 @fragment
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
-    let dist = length(input.localPos);
+    let pos = input.localPos;
+    let dist = length(pos);
     let fw = fwidth(dist);
-    
-    // --- OUTER RING ---
-    let alpha_outer_out = smoothstep(0.95 + fw, 0.95 - fw, dist);
-    let alpha_outer_in = smoothstep(0.83 - fw, 0.83 + fw, dist);
-    let outerRingAlpha = alpha_outer_out * alpha_outer_in;
-    
-    // --- MIDDLE RING (searchRadius) ---
-    let searchRadiusRatio = tracker.searchRadius / TRACKER_SIZE;
-    let alpha_middle_out = smoothstep(searchRadiusRatio + fw, searchRadiusRatio - fw, dist);
-    let alpha_middle_in = smoothstep(searchRadiusRatio - 0.06 - fw, searchRadiusRatio - 0.06 + fw, dist);
-    let middleRingAlpha = alpha_middle_out * alpha_middle_in * 0.9;
+    let absX = abs(pos.x);
+    let absY = abs(pos.y);
 
-    // --- CENTER DOT ---
-    let centerDotAlpha = smoothstep(0.15 + fw, 0.15 - fw, dist);
-    
-    // --- CROSSHAIR ---
-    let absX = abs(input.localPos.x);
-    let absY = abs(input.localPos.y);
-    let isHorizontalBar = absY < 0.08 && absX > 0.25 && absX < 1.0;
-    let isVerticalBar = absX < 0.08 && absY > 0.25 && absY < 1.0;
-    let crosshairAlpha = select(0.0, 1.0, isHorizontalBar || isVerticalBar);
+    // Precompute shared values
+    let angle = atan2(pos.y, pos.x);
+    let angleNorm = angle * TAU_INV + 0.5; // [0, 1] range
+    let vel = vec2<f32>(tracker.vx, tracker.vy);
+    let speed = length(vel);
+    let speedFade = smoothstep(0.1, 0.5, speed);
+    let searchR = tracker.searchRadius * TRACKER_SIZE_INV;
 
-    // --- COMBINE STRUCTURE ---
-    let structureAlpha = max(max(max(outerRingAlpha, middleRingAlpha), centerDotAlpha), crosshairAlpha);
-    if (structureAlpha <= 0.01) { discard; }
+    // ── OUTER RING (4 arcs, gaps at cardinal directions) ──
+    let seg4 = fract(angleNorm * 4.0);
+    let gapMask = smoothstep(0.05, 0.09, seg4) * smoothstep(0.95, 0.91, seg4);
+    let outerRingAlpha = ring(dist, OUTER_RING_RADIUS, OUTER_RING_THICKNESS * 0.5, fw) * gapMask;
 
-    // --- GLOW EFFECT ---
-    let glowAlpha = smoothstep(1.1, 0.5, dist) * 0.3;
-    let totalAlpha = max(structureAlpha, glowAlpha);
+    // ── SEARCH RADIUS RING (dashed) ──
+    let dashSeg = fract(angleNorm * 20.0);
+    let dashMask = smoothstep(0.12, 0.18, dashSeg) * smoothstep(0.88, 0.82, dashSeg);
+    let searchRingAlpha = ring(dist, searchR, 0.0125, fw) * dashMask * 0.65;
 
-    // --- COLOR GRADIENT ---
-    let finalColor = mix(HIGHLIGHT_COLOR, TRACKER_COLOR, smoothstep(0.3, 0.8, dist));
+    // ── CROSSHAIR (short lines) ──
+    let hLine = smoothstep(CROSSHAIR_THICKNESS + fw, CROSSHAIR_THICKNESS - fw, absY)
+              * smoothstep(CROSSHAIR_GAP_INNER - fw, CROSSHAIR_GAP_INNER + fw, absX)
+              * smoothstep(CROSSHAIR_GAP_OUTER + fw, CROSSHAIR_GAP_OUTER - fw, absX);
+    let vLine = smoothstep(CROSSHAIR_THICKNESS + fw, CROSSHAIR_THICKNESS - fw, absX)
+              * smoothstep(CROSSHAIR_GAP_INNER - fw, CROSSHAIR_GAP_INNER + fw, absY)
+              * smoothstep(CROSSHAIR_GAP_OUTER + fw, CROSSHAIR_GAP_OUTER - fw, absY);
+    let crosshairAlpha = max(hLine, vLine) * 0.85;
 
-    return vec4<f32>(finalColor * 1.3, totalAlpha);
+    // ── PREDICTED POSITION RING ──
+    let predOffset = vel * (deltaTime * min(1.0 + speed * 0.002, 1.5) * TRACKER_SIZE_INV);
+    let predDist = length(pos - predOffset);
+    let predRingAlpha = ring(predDist, searchR, 0.0075, fw) * 0.45 * speedFade;
+
+    // ── VELOCITY INDICATOR ──
+    let velAngle = atan2(vel.y, vel.x);
+    let normDiff = atan2(sin(angle - velAngle), cos(angle - velAngle));
+    let absNormDiff = abs(normDiff);
+    let fw2 = fw * 2.0;
+    let velAngularMask = smoothstep(0.04 + fw2, 0.04 - fw2, absNormDiff);
+    let velEnd = 0.20 + clamp(log(1.0 + speed * 0.02) * 0.5, 0.0, 1.0) * 0.66;
+    let velRadialMask = smoothstep(0.20 - fw, 0.20 + fw, dist) * smoothstep(velEnd + fw, velEnd - fw, dist);
+    let velAlpha = velAngularMask * velRadialMask * speedFade * 0.7;
+
+    // ── VELOCITY DIAMOND (oriented in movement direction on outer ring) ──
+    let velDir = vec2<f32>(cos(velAngle), sin(velAngle));
+    let velPerp = vec2<f32>(-sin(velAngle), cos(velAngle));
+    let velDotOffset = pos - velDir * OUTER_RING_RADIUS;
+    let dAlongVel = abs(dot(velDotOffset, velDir));   // distance along velocity axis
+    let dPerpVel = abs(dot(velDotOffset, velPerp));    // distance perpendicular
+    let diamondDist = dAlongVel * 0.7 + dPerpVel;     // elongated diamond (pointy along vel)
+    let velDotAlpha = smoothstep(0.08 + fw, 0.08 - fw, diamondDist) * speedFade * 0.9;
+
+    // ── CENTER DOT ──
+    let centerDot = smoothstep(0.035 + fw, 0.035 - fw, dist) * 0.9;
+
+    // ── COMBINE ──
+    let sStruct = max(max(outerRingAlpha, searchRingAlpha), max(crosshairAlpha, centerDot));
+    let sVel = max(velAlpha, predRingAlpha);
+    let s = max(max(sStruct, sVel), velDotAlpha);
+
+    // ── GLOW ──
+    let outerGlow = exp(-abs(dist - OUTER_RING_RADIUS) * 10.0) * 0.25;
+    let predGlow = exp(-abs(predDist - searchR) * 16.0) * 0.1 * speedFade;
+    let crossGlowH = exp(-absY * 12.0) * smoothstep(0.28, 0.35, absX) * smoothstep(CROSSHAIR_GAP_OUTER + 0.05, CROSSHAIR_GAP_OUTER - 0.05, absX) * 0.08;
+    let crossGlowV = exp(-absX * 12.0) * smoothstep(0.28, 0.35, absY) * smoothstep(CROSSHAIR_GAP_OUTER + 0.05, CROSSHAIR_GAP_OUTER - 0.05, absY) * 0.08;
+    let glow = outerGlow + predGlow + crossGlowH + crossGlowV;
+
+    let totalAlpha = max(s, glow);
+    if (totalAlpha <= 0.005) { discard; }
+
+    // ── COLOR ──
+    let isLost = step(f32(tracker.expectedCount), f32(MIN_PARTICLES));
+    let velWeight = sVel / max(s, 0.001);
+    let dotWeight = velDotAlpha / max(s, 0.001);
+    let normalColor = mix(mix(COLOR_BRIGHT, COLOR_CYAN, smoothstep(0.1, 0.9, dist)), COLOR_VELOCITY, velWeight);
+    let withDot = mix(normalColor, COLOR_DIAMOND, dotWeight);
+    let color = mix(withDot, COLOR_LOST, isLost) * (1.0 + s * 0.4);
+
+    return vec4<f32>(color, totalAlpha);
 }

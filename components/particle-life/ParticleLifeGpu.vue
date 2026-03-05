@@ -998,6 +998,7 @@ export default defineComponent({
             renderPass.setPipeline(renderTrackerPipeline)
             renderPass.setBindGroup(0, cameraBindGroup)
             renderPass.setBindGroup(1, trackerRenderBindGroup)
+            renderPass.setBindGroup(2, deltaTimeBindGroup)
             renderPass.draw(4, 1, 0, 0)
             renderPass.end()
         }
@@ -1966,7 +1967,7 @@ export default defineComponent({
             });
             deltaTimeBindGroupLayout = device.createBindGroupLayout({
                 entries: [
-                    { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // deltaTimeBuffer
+                    { binding: 0, visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // deltaTimeBuffer
                 ],
             })
             cameraBindGroupLayout = device.createBindGroupLayout({
@@ -2321,7 +2322,7 @@ export default defineComponent({
             const renderTrackerShader = device.createShaderModule({ code: renderTrackerShaderCode })
             renderTrackerPipeline = device.createRenderPipeline({
                 layout: device.createPipelineLayout({
-                    bindGroupLayouts: [cameraBindGroupLayout, trackerRenderBindGroupLayout]
+                    bindGroupLayouts: [cameraBindGroupLayout, trackerRenderBindGroupLayout, deltaTimeBindGroupLayout]
                 }),
                 vertex: { module: renderTrackerShader, entryPoint: 'vertexMain' },
                 fragment: { module: renderTrackerShader, entryPoint: 'fragmentMain', targets: [{
