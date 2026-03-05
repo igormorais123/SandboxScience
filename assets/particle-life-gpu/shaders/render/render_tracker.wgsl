@@ -23,7 +23,7 @@ const TAU_INV: f32 = 1.0 / (2.0 * 3.14159265);
 
 const COLOR_BRIGHT: vec3<f32>   = vec3<f32>(0.85, 1.0, 1.0);
 const COLOR_CYAN: vec3<f32>     = vec3<f32>(0.4, 0.92, 1.0);
-const COLOR_VELOCITY: vec3<f32> = vec3<f32>(1.0, 0.65, 0.25);
+const COLOR_VELOCITY: vec3<f32> = vec3<f32>(1.0, 0.55, 0.15);
 const COLOR_DIAMOND: vec3<f32>  = vec3<f32>(1.0, 0.45, 0.1);
 const COLOR_LOST: vec3<f32>     = vec3<f32>(1.0, 0.15, 0.1);
 

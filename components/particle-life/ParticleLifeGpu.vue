@@ -157,43 +157,67 @@
                             </RangeInput>
 
                             <hr border-gray-500 my-2>
-                            <div flex items-start justify-between mb-2>
-                                <p underline text-gray-300 mb-1>Cinematic Camera :</p>
-                                <ToggleSwitch label="Auto. Drift" colorful-label v-model="particleLife.isDriftCamActive"
-                                              tooltip="Enables smooth automatic camera panning and zooming for a cinematic viewing experience.">
-                                </ToggleSwitch>
+                            <div flex items-center justify-between>
+                                <p underline text-gray-300>Cinematic Mode :</p>
+                                <button btn px-3 py-1 text-xs rounded-full font-medium flex items-center ring-1 transition-all relative
+                                        :class="particleLife.isDriftCamActive
+                                            ? 'bg-violet-600/80 hover:bg-violet-500/80 ring-violet-400/50 text-white'
+                                            : 'bg-violet-900/60 hover:bg-violet-800/70 ring-violet-500/30 text-violet-300'"
+                                        @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
+                                    <span v-if="particleLife.isDriftCamActive" class="absolute -top-1 -right-1 flex size-3">
+                                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 ring-1 ring-violet-300/50 opacity-75"></span>
+                                        <span class="relative inline-flex size-3 rounded-full bg-violet-400"></span>
+                                    </span>
+                                    <span i-tabler-video text-xs mr-1></span>
+                                    {{ particleLife.isDriftCamActive ? 'Drifting...' : 'Enable Drift' }}
+                                </button>
                             </div>
-                            <RangeInput input label="Drift Speed"
-                                        tooltip="Controls the automatic camera movement speed. <br> - <b>Higher</b> → faster tracking. <br> - <b>Lower</b> → smoother cinematic effect."
-                                        :min="0.01" :max="1.0" :step="0.01" v-model="particleLife.driftCamSpeed" mt-2>
-                            </RangeInput>
-                            <RangeInput input label="Pan Amplitude"
-                                        tooltip="Controls how far the camera moves from center. <br> - <b>0.5</b> → half the simulation area. <br> - <b>1.0</b> → full edges."
-                                        :min="0.05" :max="1.0" :step="0.05" v-model="particleLife.driftCamAmplitude" mt-2>
-                            </RangeInput>
-                            <RangeInputMinMax input label="Zoom Range" mt-4
-                                              tooltip="Sets the min/max zoom levels for automatic cinematic zoom."
-                                              :min="0.1" :max="5" :step="0.05" :range-offset="0.1" v-model="particleLife.driftCamZoomRange">
-                            </RangeInputMinMax>
+                            <p v-if="!particleLife.isDriftCamActive" class="text-sm text-gray-500 mt-1">
+                                Auto camera panning & zooming.
+                            </p>
+                            <div v-else flex flex-col gap-2 mt-2>
+                                <RangeInput input label="Drift Speed"
+                                            tooltip="Controls the automatic camera movement speed. <br> - <b>Higher</b> → faster tracking. <br> - <b>Lower</b> → smoother cinematic effect."
+                                            :min="0.01" :max="1.0" :step="0.01" v-model="particleLife.driftCamSpeed">
+                                </RangeInput>
+                                <RangeInput input label="Pan Amplitude"
+                                            tooltip="Controls how far the camera moves from center. <br> - <b>0.5</b> → half the simulation area. <br> - <b>1.0</b> → full edges."
+                                            :min="0.05" :max="1.0" :step="0.05" v-model="particleLife.driftCamAmplitude">
+                                </RangeInput>
+                                <RangeInputMinMax input label="Zoom Range" mt-2
+                                                  tooltip="Sets the min/max zoom levels for automatic cinematic zoom."
+                                                  :min="0.1" :max="5" :step="0.05" :range-offset="0.1" v-model="particleLife.driftCamZoomRange">
+                                </RangeInputMinMax>
+                            </div>
 
                             <hr border-gray-500 my-2>
-                            <div flex items-start justify-between mb-2>
-                                <p underline text-gray-300 mb-1>Particle Tracker :</p>
-                                <button v-if="!particleLife.isTrackerActive" btn px-2 py-1 text-xs rounded bg="violet-600 hover:violet-500"
-                                        @click="startTrackerSelection">
-                                    Select Zone
-                                </button>
-                                <button v-else btn px-2 py-1 text-xs rounded bg="rose-600 hover:rose-500"
-                                        @click="stopTracker">
-                                    Stop Tracking
+                            <div flex items-center justify-between>
+                                <p underline text-gray-300>Creature Tracking :</p>
+                                <button btn px-3 py-1 text-xs rounded-full font-medium flex items-center ring-1 transition-all relative
+                                        :class="particleLife.isTrackerSelectionActive
+                                            ? 'bg-amber-700/80 hover:bg-amber-600/80 ring-amber-500/50 text-white animate-pulse'
+                                            : particleLife.isTrackerActive
+                                                ? 'bg-rose-600/80 hover:bg-rose-500/80 ring-rose-400/50 text-white'
+                                                : 'bg-rose-900/60 hover:bg-rose-800/70 ring-rose-500/30 text-rose-300'"
+                                        @click="particleLife.isTrackerSelectionActive ? cancelTrackerSelection() : particleLife.isTrackerActive ? stopTracker() : startTrackerSelection()">
+                                    <span v-if="particleLife.isTrackerActive" class="absolute -top-1 -right-1 flex size-3">
+                                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 ring-1 ring-rose-300/50 opacity-75"></span>
+                                        <span class="relative inline-flex size-3 rounded-full bg-rose-400"></span>
+                                    </span>
+                                    <span :class="particleLife.isTrackerSelectionActive ? 'i-tabler-marquee-2' : 'i-tabler-target'" text-xs mr-1></span>
+                                    {{ particleLife.isTrackerSelectionActive ? 'Selecting...' : particleLife.isTrackerActive ? 'Tracking...' : 'Select & Track' }}
                                 </button>
                             </div>
-                            <div v-if="particleLife.isTrackerActive" mt-3>
+                            <p v-if="!particleLife.isTrackerActive && !particleLife.isTrackerSelectionActive" class="text-sm text-gray-500 mt-1">
+                                Pick a creature to follow.
+                            </p>
+                            <p v-else-if="particleLife.isTrackerSelectionActive" class="text-sm text-amber-500/80 mt-1">
+                                Draw a rectangle around the creature.
+                            </p>
+                            <div v-else flex flex-col gap-2 mt-2>
                                 <ToggleSwitch label="Camera Follow" colorful-label v-model="particleLife.isTrackerCameraActive"
                                               tooltip="When enabled, the camera will smoothly follow the tracked creature.">
                                 </ToggleSwitch>
-                            </div>
-                            <div v-if="particleLife.isTrackerActive" mt-2>
                                 <ToggleSwitch label="Show Indicator" colorful-label v-model="particleLife.isTrackerIndicatorVisible"
                                               tooltip="Show or hide the visual tracker indicator overlay.">
                                 </ToggleSwitch>
@@ -226,21 +250,17 @@
             </template>
             <template #bottom-actions>
                 <button type="button" name="Cinematic Camera" aria-label="Cinematic Camera" title="Cinematic Camera"
-                        btn rounded-full flex items-center justify-center p-2 pointer-events-auto
-                        class="backdrop-blur-sm"
+                        btn rounded-full flex items-center justify-center p-2 backdrop-blur-sm pointer-events-auto
                         :class="particleLife.isDriftCamActive ? 'bg-violet-600/90 hover:bg-violet-500/90' : 'bg-violet-900/80 hover:bg-violet-800/80'"
                         @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
                     <span i-tabler-video :class="particleLife.isDriftCamActive ? 'text-white' : 'text-violet-300'"></span>
                     <span v-if="particleLife.isDriftCamActive" class="absolute -top-0.5 -right-0.5 flex size-3">
-                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 ring-1 ring-cyan-300/50 opacity-75"></span>
-                        <span class="relative inline-flex size-3 rounded-full bg-cyan-400"></span>
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 ring-1 ring-violet-300/50 opacity-75"></span>
+                        <span class="relative inline-flex size-3 rounded-full bg-violet-400"></span>
                     </span>
                 </button>
                 <TrackerToggle
-                    :is-active="particleLife.isTrackerActive"
-                    v-model:camera-active="particleLife.isTrackerCameraActive"
-                    v-model:indicator-visible="particleLife.isTrackerIndicatorVisible"
-                    @toggle="particleLife.isTrackerActive ? stopTracker() : startTrackerSelection()">
+                    @toggle="particleLife.isTrackerSelectionActive ? cancelTrackerSelection() : particleLife.isTrackerActive ? stopTracker() : startTrackerSelection()">
                 </TrackerToggle>
                 <button type="button" name="Randomize" aria-label="Randomize" title="Randomize simulation"
                         btn rounded-full flex items-center justify-center p-2 pointer-events-auto
@@ -856,6 +876,10 @@ export default defineComponent({
         const startTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = true
             particleLife.isRunning = false // Pause the simulation while selecting the tracker zone
+        }
+        const cancelTrackerSelection = () => {
+            particleLife.isTrackerSelectionActive = false
+            particleLife.isRunning = true // Resume the simulation if tracker selection is canceled
         }
         const stopTracker = () => {
             particleLife.isTrackerActive = false
@@ -3311,7 +3335,7 @@ export default defineComponent({
             updateSimWidth, updateSimHeight, updateNumParticles, setNewNumParticles, setNewNumTypes,
             updateRulesMatrixValue, updateMinMatrixValue, updateMaxMatrixValue, newRandomRulesMatrix,
             updateRulesMatrix, updateParticlePositions, updateColors, loadPreset,
-            startTrackerSelection, stopTracker, onTrackerSelected,
+            startTrackerSelection, cancelTrackerSelection, stopTracker, onTrackerSelected,
             rulesOptions, paletteOptions, positionOptions
         }
     }

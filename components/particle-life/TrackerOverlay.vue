@@ -2,12 +2,12 @@
     <div absolute w-full h-full>
         <canvas id="trackerCanvas" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
 
-        <div v-if="isSelecting" class="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm ring-1 ring-rose-500/40 px-5 py-2.5 rounded-full text-sm animate-pulse">
+        <div v-if="isSelecting" class="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm ring-1 ring-amber-500/40 px-5 py-2.5 rounded-full text-sm animate-pulse">
             <span i-tabler-target text-rose-400></span>
             <span text-gray-200>Draw a zone around the creature to track</span>
         </div>
 
-        <div v-if="isSelecting" class="absolute inset-0 pointer-events-none border-3 border-dashed border-red-500/70 animate-pulse rounded-sm"></div>
+        <div v-if="isSelecting" class="absolute inset-0 pointer-events-none border-3 border-dashed border-amber-500/70 animate-pulse rounded-sm"></div>
     </div>
 </template>
 
@@ -24,7 +24,7 @@ export default defineComponent({
 
         const isSelecting = ref<boolean>(true)
         let trackerAreaBorderSize: number = 4
-        let trackerAreaBorderColor: string = '#1b50a8'
+        let trackerAreaBorderColor: string = '#06b6d4' // cyan-500
 
         let isHandlingTrackerArea: boolean = false
         let startingTrackerArea: { x: number, y: number } | null = null
