@@ -180,7 +180,9 @@ fn finalizeTracker() {
         let newExpected = u32(f32(expectedCount) * 0.97 + f32(currentCount) * 0.03);
         trackerState.expectedCount = max(newExpected, MIN_PARTICLES);
     } else {
-        // No valid level found: predict position using last known velocity
+        // No valid level found: decelerate and continue in predicted direction
+        trackerState.vx *= 0.98;
+        trackerState.vy *= 0.98;
         trackerState.x = trackerState.x + trackerState.vx * predFactor;
         trackerState.y = trackerState.y + trackerState.vy * predFactor;
 
