@@ -68,7 +68,10 @@ struct VertexOutput {
 @vertex
 fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     let quadPos = QUAD_VERTICES[vertexIndex];
-    let maxSize = max(TRACKER_SIZE, tracker.searchRadius) * 4.0;
+    let vel = vec2<f32>(tracker.vx, tracker.vy);
+    let predFactor = (1.0 - simOptions.frictionFactor) * deltaTime;
+    let predReach = length(vel) * predFactor + tracker.searchRadius; // Total reach including predicted movement
+    let maxSize = max(TRACKER_SIZE, predReach) + 16.0; // Add padding to ensure full visibility of rings
     let worldPos = vec2<f32>(tracker.x, tracker.y) + quadPos * maxSize;
     let clipPos = (worldPos - vec2<f32>(camera.centerX, camera.centerY)) * vec2<f32>(camera.scaleX, -camera.scaleY);
     return VertexOutput(

@@ -1992,7 +1992,7 @@ export default defineComponent({
             });
             deltaTimeBindGroupLayout = device.createBindGroupLayout({
                 entries: [
-                    { binding: 0, visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // deltaTimeBuffer
+                    { binding: 0, visibility: GPUShaderStage.COMPUTE | GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // deltaTimeBuffer
                 ],
             })
             cameraBindGroupLayout = device.createBindGroupLayout({
