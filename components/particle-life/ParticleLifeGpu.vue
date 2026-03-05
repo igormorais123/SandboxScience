@@ -1023,6 +1023,7 @@ export default defineComponent({
             renderPass.setBindGroup(0, cameraBindGroup)
             renderPass.setBindGroup(1, trackerRenderBindGroup)
             renderPass.setBindGroup(2, deltaTimeBindGroup)
+            renderPass.setBindGroup(3, simOptionsBindGroup)
             renderPass.draw(4, 1, 0, 0)
             renderPass.end()
         }
@@ -2346,7 +2347,7 @@ export default defineComponent({
             const renderTrackerShader = device.createShaderModule({ code: renderTrackerShaderCode })
             renderTrackerPipeline = device.createRenderPipeline({
                 layout: device.createPipelineLayout({
-                    bindGroupLayouts: [cameraBindGroupLayout, trackerRenderBindGroupLayout, deltaTimeBindGroupLayout]
+                    bindGroupLayouts: [cameraBindGroupLayout, trackerRenderBindGroupLayout, deltaTimeBindGroupLayout, simOptionsBindGroupLayout]
                 }),
                 vertex: { module: renderTrackerShader, entryPoint: 'vertexMain' },
                 fragment: { module: renderTrackerShader, entryPoint: 'fragmentMain', targets: [{

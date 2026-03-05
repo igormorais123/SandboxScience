@@ -14,6 +14,21 @@ struct TrackerState {
     _padding1: u32,
     _padding2: u32,
 };
+struct SimOptions {
+    simWidth: f32,
+    simHeight: f32,
+    gridWidth: u32,
+    gridHeight: u32,
+    cellSize: f32,
+    numParticles: u32,
+    numTypes: u32,
+    particleSize: f32,
+    particleOpacity: f32,
+    isWallRepel: u32,
+    isWallWrap: u32,
+    forceFactor: f32,
+    frictionFactor: f32,
+};
 
 const MIN_PARTICLES: u32 = 16u;
 const TRACKER_SIZE: f32 = 75.0;
@@ -43,6 +58,7 @@ const QUAD_VERTICES = array<vec2<f32>, 4>(
 @group(0) @binding(0) var<uniform> camera: Camera;
 @group(1) @binding(0) var<storage, read> tracker: TrackerState;
 @group(2) @binding(0) var<uniform> deltaTime: f32;
+@group(3) @binding(0) var<uniform> simOptions: SimOptions;
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
@@ -102,7 +118,8 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let crosshairAlpha = max(hLine, vLine) * 0.85;
 
     // ── PREDICTED POSITION RING ──
-    let predOffset = vel * (deltaTime * min(1.0 + speed * 0.002, 1.5) * TRACKER_SIZE_INV);
+    let predFactor = (1.0 - simOptions.frictionFactor) * deltaTime;
+    let predOffset = vel * (predFactor * TRACKER_SIZE_INV);
     let predDist = length(pos - predOffset);
     let predRingAlpha = ring(predDist, searchR, 0.0075, fw) * 0.45 * speedFade;
 

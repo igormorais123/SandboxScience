@@ -83,11 +83,10 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
     let baseRadiusSq = baseRadius * baseRadius;
     let baseRadiusInv = 1.0 / baseRadius;
 
-    // Predict reference position based on current velocity
-    let speedSq = tVx * tVx + tVy * tVy;
-    let predictionFactor = min(1.0 + sqrt(speedSq) * 0.002, 1.5);
-    let refX = tX + tVx * deltaTime * predictionFactor;
-    let refY = tY + tVy * deltaTime * predictionFactor;
+    // Predicted reference position based on velocity (matches physics: vel *= 1-friction, pos += vel*dt)
+    let predFactor = (1.0 - simOptions.frictionFactor) * deltaTime;
+    let refX = tX + tVx * predFactor;
+    let refY = tY + tVy * predFactor;
 
     let particle = particles[tid];
     let dx = particle.x - refX;
@@ -112,6 +111,7 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
     let dist = distSq * distInv;
 
     // Directional bonus: favor particles in movement direction (0.7x to 1.3x)
+    let speedSq = tVx * tVx + tVy * tVy;
     var dirBonus: f32 = 1.0;
     if (speedSq > 0.01) {
         let speedInv = inverseSqrt(speedSq);
@@ -138,13 +138,11 @@ fn accumulateParticles(@builtin(global_invocation_id) globalId: vec3u) {
 @compute @workgroup_size(1)
 fn finalizeTracker() {
     let baseRadius = max(simOptions.cellSize * 0.8, MIN_RADIUS);
+    let predFactor = (1.0 - simOptions.frictionFactor) * deltaTime;
     let expectedCount = trackerState.expectedCount;
 
     // Dynamic threshold: 15% of expectedCount, minimum MIN_PARTICLES
     let dynamicMinParticles = max(MIN_PARTICLES, u32(f32(expectedCount) * 0.15));
-
-    // Compute current speed for prediction scaling
-    let speed = sqrt(trackerState.vx * trackerState.vx + trackerState.vy * trackerState.vy);
 
     // Find first level (most precise) with enough particles
     var bestLevel: i32 = -1;
@@ -168,10 +166,9 @@ fn finalizeTracker() {
         let newVx = f32(atomicLoad(&levels[lvl].sumVx)) * SCALE_INV * totalWeightInv;
         let newVy = f32(atomicLoad(&levels[lvl].sumVy)) * SCALE_INV * totalWeightInv;
 
-        // Apply offset to predicted position (same prediction as accumulateParticles)
-        let predictionFactor = min(1.0 + speed * 0.002, 1.5);
-        let predX = trackerState.x + trackerState.vx * deltaTime * predictionFactor;
-        let predY = trackerState.y + trackerState.vy * deltaTime * predictionFactor;
+        // Apply offset to predicted position
+        let predX = trackerState.x + trackerState.vx * predFactor;
+        let predY = trackerState.y + trackerState.vy * predFactor;
 
         trackerState.x = predX + offsetX;
         trackerState.y = predY + offsetY;
@@ -183,10 +180,9 @@ fn finalizeTracker() {
         let newExpected = u32(f32(expectedCount) * 0.97 + f32(currentCount) * 0.03);
         trackerState.expectedCount = max(newExpected, MIN_PARTICLES);
     } else {
-        // No valid level found: predict position using velocity only
-        let predictionFactor = min(1.0 + speed * 0.001, 2.0);
-        trackerState.x = trackerState.x + trackerState.vx * deltaTime * predictionFactor;
-        trackerState.y = trackerState.y + trackerState.vy * deltaTime * predictionFactor;
+        // No valid level found: predict position using last known velocity
+        trackerState.x = trackerState.x + trackerState.vx * predFactor;
+        trackerState.y = trackerState.y + trackerState.vy * predFactor;
 
         trackerState.searchRadius = baseRadius * RADIUS_MULTIPLIER[NUM_LEVELS - 1u];
 
