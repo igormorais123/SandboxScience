@@ -198,7 +198,7 @@ export default defineComponent({
         const generalSettings = ref<boolean>(false)
 
         const canSave = computed(() => {
-            return forceMatrix.value || radiusMatrices.value || colors.value || generalSettings.value || name.value.trim().length > 0
+            return forceMatrix.value || radiusMatrices.value || colors.value || generalSettings.value
         })
 
         const closeModal = () => {
