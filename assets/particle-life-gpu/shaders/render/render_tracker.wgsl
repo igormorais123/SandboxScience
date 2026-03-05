@@ -52,7 +52,7 @@ struct VertexOutput {
 @vertex
 fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     let quadPos = QUAD_VERTICES[vertexIndex];
-    let maxSize = max(TRACKER_SIZE, tracker.searchRadius) * 1.15;
+    let maxSize = max(TRACKER_SIZE, tracker.searchRadius) * 4.0;
     let worldPos = vec2<f32>(tracker.x, tracker.y) + quadPos * maxSize;
     let clipPos = (worldPos - vec2<f32>(camera.centerX, camera.centerY)) * vec2<f32>(camera.scaleX, -camera.scaleY);
     return VertexOutput(
