@@ -5,6 +5,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const engineType = ref<'CPU' | 'GPU' | 'GPU3D'>('GPU') // Engine type
     const sidebarLeftOpen = ref<boolean>(false) // Is sidebar left open
     const isLockedPointer = ref<boolean>(false) // Prevent lifeCanvas events from being triggered
+    const isHudLocked = ref<boolean>(false) // Disable HUD interactions during blocking actions (e.g. tracker selection)
 
     const isRunning = ref<boolean>(true) // Is the simulation running
 
@@ -87,7 +88,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     }
 
     return {
-        engineType, sidebarLeftOpen, isLockedPointer,
+        engineType, sidebarLeftOpen, isLockedPointer, isHudLocked,
         isRunning,
         rulesMatrix, minRadiusMatrix, maxRadiusMatrix, currentColors,
         simWidth, simHeight, linkProportions,

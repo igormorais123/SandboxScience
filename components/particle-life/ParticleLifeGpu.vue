@@ -252,7 +252,7 @@
                 <button type="button" name="Cinematic Camera" aria-label="Cinematic Camera" title="Cinematic Camera"
                         btn rounded-full flex items-center justify-center p-2 backdrop-blur-sm pointer-events-auto
                         :class="particleLife.isDriftCamActive ? 'bg-violet-600/90 hover:bg-violet-500/90' : 'bg-violet-900/80 hover:bg-violet-800/80'"
-                        @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
+                        @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive" :disabled="particleLife.isHudLocked">
                     <span i-tabler-video :class="particleLife.isDriftCamActive ? 'text-white' : 'text-violet-300'"></span>
                     <span v-if="particleLife.isDriftCamActive" class="absolute -top-0.5 -right-0.5 flex size-3">
                         <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 ring-1 ring-violet-300/50 opacity-75"></span>
@@ -265,7 +265,7 @@
                 <button type="button" name="Randomize" aria-label="Randomize" title="Randomize simulation"
                         btn rounded-full flex items-center justify-center p-2 pointer-events-auto
                         class="backdrop-blur-sm bg-[#094F5D]/90 hover:bg-[#0B5F6F]/90"
-                        @click="regenerateLife">
+                        @click="regenerateLife" :disabled="particleLife.isHudLocked">
                     <span i-game-icons-perspective-dice-six-faces-random text-2xl></span>
                 </button>
             </template>
@@ -283,29 +283,29 @@
                 <div flex>Fps: <div ml-1 min-w-8>{{ fps }}</div></div>
 <!--                <div flex ml-3>Process: <div ml-1 min-w-7>{{ Math.round(executionTime) }}</div></div>-->
             </div>
-            <BrushSettings :store="particleLife" pointer-events-auto mt-2 mr-1 />
+            <BrushSettings :store="particleLife" mt-2 mr-1 pointer-events-auto :class="particleLife.isHudLocked && '!pointer-events-none [&_*]:!pointer-events-none opacity-40'" />
 
-            <div class="faded-hover-effect" pointer-events-auto mr-1>
+            <div class="faded-hover-effect" mr-1>
                 <button type="button" title="Debugger" aria-label="Debugger" btn w-8 aspect-square rounded-full p1 flex items-center justify-center bg="#D62839 hover:#DC4151" mt-2
-                        @click="particleLife.isDebugBinsActive = !particleLife.isDebugBinsActive">
+                        @click="particleLife.isDebugBinsActive = !particleLife.isDebugBinsActive" :disabled="particleLife.isHudLocked">
                     <span text-sm :class="particleLife.isDebugBinsActive ? 'i-tabler-bug-filled' : 'i-tabler-bug'"></span>
                 </button>
             </div>
         </div>
-        <div fixed z-10 bottom-2 flex justify-center items-end class="left-1/2 transform -translate-x-1/2"> <!-- faded-hover-effect -->
-            <button type="button" name="Toggle Fullscreen" aria-label="Toggle Fullscreen" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="toggleFullscreen">
+        <div fixed z-10 bottom-2 flex justify-center items-end pointer-events-none class="left-1/2 transform -translate-x-1/2"> <!-- faded-hover-effect -->
+            <button type="button" name="Toggle Fullscreen" aria-label="Toggle Fullscreen" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="toggleFullscreen">
                 <span :class="isFullscreen ? 'i-tabler-maximize-off' : 'i-tabler-maximize'"></span>
             </button>
-            <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="handleZoom(-1, true)">
+            <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="handleZoom(-1, true)">
                 <span i-tabler-zoom-out></span>
             </button>
-            <button type="button" name="Play/Pause" aria-label="Play/Pause" btn p3 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="particleLife.isRunning = !particleLife.isRunning">
+            <button type="button" name="Play/Pause" aria-label="Play/Pause" btn p3 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="particleLife.isRunning = !particleLife.isRunning">
                 <span text-xl :class="particleLife.isRunning ? 'i-tabler-player-pause-filled' : 'i-tabler-player-play-filled'"></span>
             </button>
-            <button type="button" name="Step" aria-label="Step" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isRunning" @click="step">
+            <button type="button" name="Step" aria-label="Step" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isRunning || particleLife.isHudLocked" @click="step">
                 <span i-tabler-player-skip-forward-filled></span>
             </button>
-            <button type="button" name="Zoom In" aria-label="Zoom In" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="handleZoom(1, true)">
+            <button type="button" name="Zoom In" aria-label="Zoom In" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="handleZoom(1, true)">
                 <span i-tabler-zoom-in></span>
             </button>
         </div>
@@ -372,7 +372,7 @@ export default defineComponent({
         // Define refs and variables
         const mainContainer = ref<HTMLElement | null>(null)
         const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(mainContainer)
-        const { success } = useToasts()
+        const { success, error } = useToasts()
         const particleLife = useParticleLifeGPUStore()
         const rulesOptions = RULES_OPTIONS
         const paletteOptions = PALETTE_OPTIONS
@@ -876,6 +876,7 @@ export default defineComponent({
         const startTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = true
             particleLife.isRunning = false // Pause the simulation while selecting the tracker zone
+            particleLife.isBrushActive = false // Disable brush while selecting tracker zone
         }
         const cancelTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = false
@@ -883,6 +884,7 @@ export default defineComponent({
         }
         const stopTracker = () => {
             particleLife.isTrackerActive = false
+            particleLife.isTrackerSelectionActive = false
         }
         const onTrackerSelected = async (zone: { x: number, y: number, width: number, height: number }) => {
             const scaledX = zone.x * DEVICE_PIXEL_RATIO
@@ -954,7 +956,7 @@ export default defineComponent({
             }
             
             if (count < 8) {
-                console.warn('Not enough particles in selection zone:', count)
+                error(`Not enough particles to track. <br> <b>${count}</b> found, <b>8</b> minimum.`)
                 return false
             }
 
@@ -990,6 +992,7 @@ export default defineComponent({
                 targetCameraCenter.y = centerY
             }
 
+            success(`Creature <b>locked</b> - now tracking.`)
             return true
         }
         const computeTracking = (encoder: GPUCommandEncoder) => {
@@ -1071,6 +1074,7 @@ export default defineComponent({
             animationFrameId = requestAnimationFrame(frame)
         }
         const regenerateLife = async () => {
+            stopTracker()
             cancelAnimationLoop()
             destroyPipelinesAndBindGroups()
             await destroyBuffers(true)
@@ -3118,6 +3122,7 @@ export default defineComponent({
         watch(() => particleLife.isTrackerActive, (value: boolean) => isTrackerActive = value)
         watch(() => particleLife.isTrackerCameraActive, (value: boolean) => isTrackerCameraActive = value)
         watch(() => particleLife.isTrackerIndicatorVisible, (value: boolean) => isTrackerIndicatorVisible = value)
+        watch(() => particleLife.isTrackerSelectionActive, (value: boolean) => particleLife.isHudLocked = value)
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)

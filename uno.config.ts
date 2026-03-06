@@ -14,7 +14,7 @@ import fs from 'node:fs/promises'
 
 export default defineConfig({
     shortcuts: [
-        ['btn', 'px-4 py-1 rounded inline-block text-white cursor-pointer disabled:cursor-default disabled:bg-gray-600 disabled:opacity-50'],
+        ['btn', 'px-4 py-1 rounded inline-block text-white pointer-events-auto cursor-pointer disabled:cursor-default disabled:opacity-40 disabled:pointer-events-none'],
         ['icon-btn', 'inline-block cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100 hover:text-teal-600'],
     ],
     theme: {
