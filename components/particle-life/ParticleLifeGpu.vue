@@ -829,17 +829,24 @@ export default defineComponent({
             driftCamTime += (now - driftCamLastTime) * driftCamSpeed // Increment the drift camera's internal time based on the elapsed real time and the configured speed, ensuring consistent movement regardless of frame rate variations
             driftCamLastTime = now
 
-            // Horizontal pan using two combined sine waves
-            const driftTargetX = SIM_WIDTH_HALF + (
-                Math.sin(driftCamTime * 1.0 + driftCamPhase.x1) * 0.6 +   // Primary wave (60%), base freq
-                Math.sin(driftCamTime * 1.618 + driftCamPhase.x2) * 0.4   // Secondary wave (40%), golden ratio freq
-            ) * SIM_WIDTH_HALF * driftCamAmplitude
+            // Drift pan movement only when tracking is disabled
+            if (!isTrackerActive) {
+                // Horizontal pan using two combined sine waves
+                const driftTargetX = SIM_WIDTH_HALF + (
+                    Math.sin(driftCamTime * 1.0 + driftCamPhase.x1) * 0.6 +   // Primary wave (60%), base freq
+                    Math.sin(driftCamTime * 1.618 + driftCamPhase.x2) * 0.4   // Secondary wave (40%), golden ratio freq
+                ) * SIM_WIDTH_HALF * driftCamAmplitude
 
-            // Vertical pan with offset frequencies for diagonal drift
-            const driftTargetY = SIM_HEIGHT_HALF + (
-                Math.sin(driftCamTime * 1.1 + driftCamPhase.y1) * 0.6 +   // Primary wave (60%), slightly faster than X
-                Math.sin(driftCamTime * 1.414 + driftCamPhase.y2) * 0.4   // Secondary wave (40%), sqrt(2) freq
-            ) * SIM_HEIGHT_HALF * driftCamAmplitude
+                // Vertical pan with offset frequencies for diagonal drift
+                const driftTargetY = SIM_HEIGHT_HALF + (
+                    Math.sin(driftCamTime * 1.1 + driftCamPhase.y1) * 0.6 +   // Primary wave (60%), slightly faster than X
+                    Math.sin(driftCamTime * 1.414 + driftCamPhase.y2) * 0.4   // Secondary wave (40%), sqrt(2) freq
+                ) * SIM_HEIGHT_HALF * driftCamAmplitude
+
+                // Smoothly interpolate camera center towards the drift targets
+                targetCameraCenter.x += (driftTargetX - targetCameraCenter.x) * driftCamTransitionProgress
+                targetCameraCenter.y += (driftTargetY - targetCameraCenter.y) * driftCamTransitionProgress
+            }
 
             // Zoom level with slower frequencies for smooth transitions
             const driftTargetZoom = driftCamZoomCenter + (
@@ -847,9 +854,7 @@ export default defineComponent({
                 Math.sin(driftCamTime * 1.3 + driftCamPhase.z2) * 0.4     // Secondary wave (40%), faster variation
             ) * driftCamZoomAmplitude
 
-            // Smoothly interpolate camera center and zoom towards the drift targets
-            targetCameraCenter.x += (driftTargetX - targetCameraCenter.x) * driftCamTransitionProgress
-            targetCameraCenter.y += (driftTargetY - targetCameraCenter.y) * driftCamTransitionProgress
+            // Smoothly interpolate zoom towards the drift targets
             targetZoomFactor += (driftTargetZoom - targetZoomFactor) * driftCamTransitionProgress
         }
         // -------------------------------------------------------------------------------------------------------------
@@ -877,6 +882,7 @@ export default defineComponent({
             particleLife.isTrackerSelectionActive = true
             particleLife.isRunning = false // Pause the simulation while selecting the tracker zone
             particleLife.isBrushActive = false // Disable brush while selecting tracker zone
+            particleLife.isDriftCamActive = false
         }
         const cancelTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = false
@@ -885,6 +891,7 @@ export default defineComponent({
         const stopTracker = () => {
             particleLife.isTrackerActive = false
             particleLife.isTrackerSelectionActive = false
+            particleLife.isDriftCamActive = false
         }
         const onTrackerSelected = async (zone: { x: number, y: number, width: number, height: number }) => {
             const scaledX = zone.x * DEVICE_PIXEL_RATIO

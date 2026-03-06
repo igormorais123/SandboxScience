@@ -44,7 +44,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
 
     const isTrackerActive = ref<boolean>(false) // Enable tracker for the particles (follows creatures)
     const isTrackerSelectionActive = ref<boolean>(false) // Enable selection mode for the tracker (select a creature to follow)
-    const isTrackerCameraActive = ref<boolean>(false) // Enable camera follow mode for the tracker
+    const isTrackerCameraActive = ref<boolean>(true) // Enable camera follow mode for the tracker
     const isTrackerIndicatorVisible = ref<boolean>(true) // Show/hide the tracker indicator overlay
 
     // Define force properties
