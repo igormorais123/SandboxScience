@@ -16,7 +16,7 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
     props: {},
-    emits: ['trackerSelected'],
+    emits: ['trackerZoneSelected'],
     setup(props, { emit }) {
         const particleLife = useParticleLifeStore()
         let trackerCanvas: HTMLCanvasElement | undefined
@@ -86,7 +86,7 @@ export default defineComponent({
             currentTrackerArea = null
             isSelecting.value = false
 
-            emit('trackerSelected', { x, y, width, height })
+            emit('trackerZoneSelected', { x, y, width, height })
         }
         // -------------------------------------------------------------------------------------------------------------
         function drawTrackerArea() {

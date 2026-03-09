@@ -272,10 +272,7 @@
         </SidebarLeft>
         <canvas ref="canvasRef" id="canvasRef" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
         <ClientOnly>
-            <TrackerOverlay
-                v-if="particleLife.isTrackerSelectionActive"
-                @tracker-selected="onTrackerSelected">
-            </TrackerOverlay>
+            <TrackerOverlay v-if="particleLife.isTrackerSelectionActive" @tracker-zone-selected="onTrackerZoneSelected"></TrackerOverlay>
         </ClientOnly>
         <SaveModal :store="particleLife"></SaveModal>
         <div absolute top-0 right-0 flex flex-col items-end text-right pointer-events-none>
@@ -871,9 +868,6 @@ export default defineComponent({
         let isTrackerCameraActive: boolean = particleLife.isTrackerCameraActive
         let isTrackerIndicatorVisible: boolean = particleLife.isTrackerIndicatorVisible
 
-        const TRACKER_STATE_SIZE: number = 32 // x, y, vx, vy, searchRadius, expectedCount, _padding1, _padding2
-        const TRACKER_LEVELS_SIZE: number = 32 * 4 // 128 bytes for 4 levels
-
         let trackerPositionX: number = 0 // Tracker current X position (for camera tracking)
         let trackerPositionY: number = 0 // Tracker current Y position (for camera tracking)
         let lastTrackerReadTime: number = 0 // Timestamp of the last tracker state read from GPU to limit read frequency
@@ -893,7 +887,7 @@ export default defineComponent({
             particleLife.isTrackerSelectionActive = false
             particleLife.isDriftCamActive = false
         }
-        const onTrackerSelected = async (zone: { x: number, y: number, width: number, height: number }) => {
+        const onTrackerZoneSelected = async (zone: { x: number, y: number, width: number, height: number }) => {
             const scaledX = zone.x * DEVICE_PIXEL_RATIO
             const scaledY = zone.y * DEVICE_PIXEL_RATIO
             const scaledWidth = zone.width * DEVICE_PIXEL_RATIO
@@ -925,7 +919,7 @@ export default defineComponent({
             if (now - lastTrackerReadTime < 16) return
             lastTrackerReadTime = now
             
-            const arrayBuffer = await readBufferFromGPU(trackerStateBuffer, TRACKER_STATE_SIZE)
+            const arrayBuffer = await readBufferFromGPU(trackerStateBuffer, 32)
             const trackerData = new Float32Array(arrayBuffer)
 
             trackerPositionX = trackerData[0]  // x
@@ -979,7 +973,7 @@ export default defineComponent({
             const initialSearchRadius = Math.max(zoneRadius, minRadius)
             
             // Initialize tracker state on GPU (32 bytes)
-            const stateData = new ArrayBuffer(TRACKER_STATE_SIZE)
+            const stateData = new ArrayBuffer(32)
             const view = new DataView(stateData)
             view.setFloat32(0, centerX, true)              // x
             view.setFloat32(4, centerY, true)              // y
@@ -992,7 +986,7 @@ export default defineComponent({
             device.queue.writeBuffer(trackerStateBuffer!, 0, stateData)
 
             // Clear levels buffer
-            device.queue.writeBuffer(trackerLevelsBuffer!, 0, new ArrayBuffer(TRACKER_LEVELS_SIZE))
+            device.queue.writeBuffer(trackerLevelsBuffer!, 0, new ArrayBuffer(32 * 4)) // 128 bytes for 4 levels
 
             if (isTrackerCameraActive) {
                 targetCameraCenter.x = centerX
@@ -1697,11 +1691,11 @@ export default defineComponent({
         }
         const createTrackerComputeBuffers = () => {
             trackerStateBuffer = device.createBuffer({
-                size: TRACKER_STATE_SIZE,
+                size: 32, // x, y, vx, vy, searchRadius, expectedCount, _padding1, _padding2
                 usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
             })
             trackerLevelsBuffer = device.createBuffer({
-                size: TRACKER_LEVELS_SIZE,
+                size: 32 * 4, // 128 bytes for 4 levels
                 usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
             })
         }
@@ -3348,7 +3342,7 @@ export default defineComponent({
             updateSimWidth, updateSimHeight, updateNumParticles, setNewNumParticles, setNewNumTypes,
             updateRulesMatrixValue, updateMinMatrixValue, updateMaxMatrixValue, newRandomRulesMatrix,
             updateRulesMatrix, updateParticlePositions, updateColors, loadPreset,
-            startTrackerSelection, cancelTrackerSelection, stopTracker, onTrackerSelected,
+            startTrackerSelection, cancelTrackerSelection, stopTracker, onTrackerZoneSelected,
             rulesOptions, paletteOptions, positionOptions
         }
     }
