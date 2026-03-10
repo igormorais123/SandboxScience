@@ -27,8 +27,8 @@ struct Particle {
     particleType : f32,
 }
 struct BrushOptions {
-    brushX: f32,
-    brushY: f32,
+    brushClipX: f32,
+    brushClipY: f32,
     brushVx: f32,
     brushVy: f32,
     brushRadius: f32,
@@ -39,12 +39,19 @@ struct BrushTypes {
     count: u32,
     types: array<u32>,
 };
+struct Camera {
+    centerX: f32,
+    centerY: f32,
+    scaleX: f32,
+    scaleY: f32,
+}
 
 @group(0) @binding(0) var<storage, read> particleBuffer: array<Particle>;
 @group(0) @binding(1) var<storage, read_write> particleKeepFlags: array<u32>;
 @group(1) @binding(0) var<uniform> simOptions: SimOptions;
 @group(2) @binding(0) var<uniform> brushOptions: BrushOptions;
 @group(2) @binding(1) var<storage, read> brushTypes: BrushTypes;
+@group(2) @binding(2) var<uniform> camera: Camera;
 
 @compute @workgroup_size(64)
 fn markForErase(@builtin(global_invocation_id) global_id: vec3<u32>) {
@@ -55,7 +62,10 @@ fn markForErase(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let width = simOptions.simWidth;
     let height = simOptions.simHeight;
 
-    var distVec = vec2<f32>(particle.x, particle.y) - vec2<f32>(brushOptions.brushX, brushOptions.brushY);
+    let brushX = camera.centerX + brushOptions.brushClipX / camera.scaleX;
+    let brushY = camera.centerY + brushOptions.brushClipY / camera.scaleY;
+
+    var distVec = vec2<f32>(particle.x, particle.y) - vec2<f32>(brushX, brushY);
     if (simOptions.isWallWrap == 1u) {
         distVec.x = distVec.x - width * round(distVec.x / width);
         distVec.y = distVec.y - height * round(distVec.y / height);

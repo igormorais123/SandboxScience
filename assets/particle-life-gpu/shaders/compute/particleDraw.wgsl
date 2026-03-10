@@ -27,8 +27,8 @@ struct Particle {
     particleType : f32,
 }
 struct BrushOptions {
-    brushX: f32,
-    brushY: f32,
+    brushClipX: f32,
+    brushClipY: f32,
     brushVx: f32,
     brushVy: f32,
     brushRadius: f32,
@@ -38,6 +38,12 @@ struct BrushOptions {
 struct BrushTypes {
     count: u32,
     types: array<u32>,
+};
+struct Camera {
+    centerX: f32,
+    centerY: f32,
+    scaleX: f32,
+    scaleY: f32,
 };
 
 fn pcgHash(input: u32) -> u32 {
@@ -54,18 +60,21 @@ fn randomFloat(seed: ptr<function, u32>) -> f32 {
 @group(1) @binding(0) var<uniform> simOptions: SimOptions;
 @group(2) @binding(0) var<uniform> brushOptions: BrushOptions;
 @group(2) @binding(1) var<storage, read> brushTypes: BrushTypes;
+@group(2) @binding(2) var<uniform> camera: Camera;
 
 @compute @workgroup_size(64)
 fn drawParticles(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let index = simOptions.numParticles + global_id.x;
 
-    var seed = index + u32(brushOptions.brushX * 1000.0) + u32(brushOptions.brushY * 1000.0);
+    let brushX = camera.centerX + brushOptions.brushClipX / camera.scaleX;
+    let brushY = camera.centerY + brushOptions.brushClipY / camera.scaleY;
 
-    var brushPos = vec2<f32>(brushOptions.brushX, brushOptions.brushY);
+    var brushPos = vec2<f32>(brushX, brushY);
     if (simOptions.isWallWrap == 1u) {
         let simSize = vec2<f32>(simOptions.simWidth, simOptions.simHeight);
         brushPos = (fract(brushPos / simSize) * simSize);
     }
+    var seed = index + u32(brushX * 1000.0) + u32(brushY * 1000.0);
     let angle = randomFloat(&seed) * 2.0 * 3.1415926535;
     let radius = randomFloat(&seed) * brushOptions.brushRadius;
     let posX = brushPos.x + cos(angle) * radius;

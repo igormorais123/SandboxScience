@@ -361,6 +361,7 @@ import renderBrushCircleShaderCode from 'assets/particle-life-gpu/shaders/render
 import renderBinsShaderCode from 'assets/particle-life-gpu/shaders/render/render_bins.wgsl?raw';
 import renderTrackerShaderCode from 'assets/particle-life-gpu/shaders/render/render_tracker.wgsl?raw';
 import trackerComputeShaderCode from 'assets/particle-life-gpu/shaders/compute/trackerCompute.wgsl?raw';
+import trackerCameraUpdateShaderCode from 'assets/particle-life-gpu/shaders/compute/trackerCameraUpdate.wgsl?raw';
 
 export default defineComponent({
     name: 'ParticleLifeGpu',
@@ -860,17 +861,16 @@ export default defineComponent({
         let trackerLevelsBuffer: GPUBuffer | undefined
         let trackerAccumulatePipeline: GPUComputePipeline
         let trackerFinalizePipeline: GPUComputePipeline
+        let trackerCameraUpdatePipeline: GPUComputePipeline
         let trackerComputeBindGroupLayout: GPUBindGroupLayout
         let trackerComputeBindGroup: GPUBindGroup
+        let trackerCameraUpdateBindGroupLayout: GPUBindGroupLayout
+        let trackerCameraUpdateBindGroup: GPUBindGroup
         let trackerRenderBindGroup: GPUBindGroup
 
         let isTrackerActive: boolean = particleLife.isTrackerActive
         let isTrackerCameraActive: boolean = particleLife.isTrackerCameraActive
         let isTrackerIndicatorVisible: boolean = particleLife.isTrackerIndicatorVisible
-
-        let trackerPositionX: number = 0 // Tracker current X position (for camera tracking)
-        let trackerPositionY: number = 0 // Tracker current Y position (for camera tracking)
-        let lastTrackerReadTime: number = 0 // Timestamp of the last tracker state read from GPU to limit read frequency
 
         const startTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = true
@@ -882,7 +882,8 @@ export default defineComponent({
             particleLife.isTrackerSelectionActive = false
             particleLife.isRunning = true // Resume the simulation if tracker selection is canceled
         }
-        const stopTracker = () => {
+        const stopTracker = async () => {
+            if (isTrackerCameraActive) await syncCameraFromGPU()
             particleLife.isTrackerActive = false
             particleLife.isTrackerSelectionActive = false
             particleLife.isDriftCamActive = false
@@ -910,27 +911,17 @@ export default defineComponent({
             particleLife.isTrackerSelectionActive = false
             particleLife.isRunning = true
         }
-        // Reads tracker state from GPU and updates camera position (~60Hz)
-        const updateCameraTrackingPosition = async () => {
-            if (!trackerStateBuffer) return
+        // Syncs CPU camera to GPU camera position (used when switching between tracker camera and free camera modes to prevent jumps)
+        const syncCameraFromGPU = async () => {
+            if (!cameraBuffer) return
             
-            // Limit read frequency to ~60Hz to avoid performance issues
-            const now = performance.now()
-            if (now - lastTrackerReadTime < 16) return
-            lastTrackerReadTime = now
-            
-            const arrayBuffer = await readBufferFromGPU(trackerStateBuffer, 32)
-            const trackerData = new Float32Array(arrayBuffer)
+            const arrayBuffer = await readBufferFromGPU(cameraBuffer, 16)
+            const cameraData = new Float32Array(arrayBuffer)
 
-            trackerPositionX = trackerData[0]  // x
-            trackerPositionY = trackerData[1]  // y
-
-            if (isTrackerCameraActive) {
-                targetCameraCenter.x = trackerPositionX
-                targetCameraCenter.y = trackerPositionY
-            }
+            cameraCenter.x = targetCameraCenter.x = cameraData[0]  // centerX
+            cameraCenter.y = targetCameraCenter.y = cameraData[1]  // centerY
+            cameraChanged = true
         }
-
         // Initialize tracker state based on a user-selected zone, calculating the center of mass
         const initializeTrackerFromZone = async (zone: { x: number, y: number, width: number, height: number }): Promise<boolean> => {
             // Read the current particle positions and velocities from the GPU to calculate the center of mass and average
@@ -1014,6 +1005,14 @@ export default defineComponent({
             finalizePass.setBindGroup(2, deltaTimeBindGroup)
             finalizePass.dispatchWorkgroups(1)
             finalizePass.end()
+            
+            if (isTrackerCameraActive) {
+                const cameraUpdatePass = encoder.beginComputePass()
+                cameraUpdatePass.setPipeline(trackerCameraUpdatePipeline)
+                cameraUpdatePass.setBindGroup(0, trackerCameraUpdateBindGroup)
+                cameraUpdatePass.dispatchWorkgroups(1)
+                cameraUpdatePass.end()
+            }
         }
         const renderTrackerIndicator = (encoder: GPUCommandEncoder) => {
             const renderPass = encoder.beginRenderPass({
@@ -1075,7 +1074,7 @@ export default defineComponent({
             animationFrameId = requestAnimationFrame(frame)
         }
         const regenerateLife = async () => {
-            stopTracker()
+            if (isTrackerActive) await stopTracker()
             cancelAnimationLoop()
             destroyPipelinesAndBindGroups()
             await destroyBuffers(true)
@@ -1096,10 +1095,13 @@ export default defineComponent({
             if (isDriftCamActive) handleDriftCamera()
 
             const zoomDiff = targetZoomFactor - zoomFactor
-            const panXDiff = targetCameraCenter.x - cameraCenter.x
-            const panYDiff = targetCameraCenter.y - cameraCenter.y
             if (Math.abs(zoomDiff) > 0.001) handleZoomSmoothing(zoomDiff)
-            if (Math.abs(panXDiff) > 0.001 || Math.abs(panYDiff) > 0.001) handleMoveSmoothing(panXDiff, panYDiff)
+
+            if (!(isTrackerActive && isTrackerCameraActive)) {
+                const panXDiff = targetCameraCenter.x - cameraCenter.x
+                const panYDiff = targetCameraCenter.y - cameraCenter.y
+                if (Math.abs(panXDiff) > 0.001 || Math.abs(panYDiff) > 0.001) handleMoveSmoothing(panXDiff, panYDiff)
+            }
 
             if (isBrushActive && showBrushCircle) updateBrushOptionsBuffer()
 
@@ -1152,10 +1154,7 @@ export default defineComponent({
             else computeBruteForce(encoder)
             computeAdvance(encoder)
             
-            if (isTrackerActive) {
-                computeTracking(encoder)
-                if (isTrackerCameraActive) updateCameraTrackingPosition()
-            }
+            if (isTrackerActive) computeTracking(encoder)
             
             renderParticles(encoder)
 
@@ -1233,9 +1232,13 @@ export default defineComponent({
         // -------------------------------------------------------------------------------------------------------------
         const renderParticles = (encoder: GPUCommandEncoder) => {
             if (cameraChanged) {
-                device.queue.writeBuffer(cameraBuffer!, 0, new Float32Array([
-                    cameraCenter.x, cameraCenter.y, cameraScaleX, cameraScaleY
-                ]))
+                if (isTrackerActive && isTrackerCameraActive) { // Only update zoom in tracker camera mode, as the center is controlled by the tracker
+                    device.queue.writeBuffer(cameraBuffer!, 8, new Float32Array([cameraScaleX, cameraScaleY]))
+                } else {
+                    device.queue.writeBuffer(cameraBuffer!, 0, new Float32Array([
+                        cameraCenter.x, cameraCenter.y, cameraScaleX, cameraScaleY
+                    ]))
+                }
                 updateInfiniteRenderOptions()
                 cameraChanged = false
             }
@@ -1439,7 +1442,7 @@ export default defineComponent({
             const cameraData = new Float32Array([cameraCenter.x, cameraCenter.y, cameraScaleX, cameraScaleY])
             cameraBuffer = device.createBuffer({
                 size: cameraData.byteLength,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
                 mappedAtCreation: true
             });
             new Float32Array(cameraBuffer.getMappedRange()).set(cameraData)
@@ -1564,8 +1567,8 @@ export default defineComponent({
             if (brushOptionsBindGroup) updateBrushesBindGroup()
         }
         const updateBrushOptionsBuffer = () => {
-            const brushX = cameraCenter.x + (pointerX / CANVAS_WIDTH * 2 - 1) / cameraScaleX
-            const brushY = cameraCenter.y + (pointerY / CANVAS_HEIGHT * 2 - 1) / cameraScaleY
+            const brushClipX = pointerX / CANVAS_WIDTH * 2 - 1
+            const brushClipY = pointerY / CANVAS_HEIGHT * 2 - 1
             const brushVx = (pointerX - lastFramePointerX) / (cameraScaleX * CANVAS_WIDTH * 0.5) / smoothedDeltaTime
             const brushVy = (pointerY - lastFramePointerY) / (cameraScaleY * CANVAS_HEIGHT * 0.5) / smoothedDeltaTime
 
@@ -1573,8 +1576,8 @@ export default defineComponent({
 
             const brushOptionsData = new ArrayBuffer(28)
             const brushOptionsView = new DataView(brushOptionsData)
-            brushOptionsView.setFloat32(0, brushX, true)
-            brushOptionsView.setFloat32(4, brushY, true)
+            brushOptionsView.setFloat32(0, brushClipX, true)
+            brushOptionsView.setFloat32(4, brushClipY, true)
             brushOptionsView.setFloat32(8, brushVx, true)
             brushOptionsView.setFloat32(12, brushVy, true)
             brushOptionsView.setFloat32(16, brushRadius, true)
@@ -1790,6 +1793,13 @@ export default defineComponent({
                     { binding: 0, resource: { buffer: trackerStateBuffer! } },
                 ],
             })
+            trackerCameraUpdateBindGroup = device.createBindGroup({
+                layout: trackerCameraUpdateBindGroupLayout,
+                entries: [
+                    { binding: 0, resource: { buffer: trackerStateBuffer! } },
+                    { binding: 1, resource: { buffer: cameraBuffer! } },
+                ],
+            })
         }
         const updateBrushesBindGroup = () => {
             brushOptionsBindGroup = undefined as any
@@ -1798,6 +1808,7 @@ export default defineComponent({
                 entries: [
                     { binding: 0, resource: { buffer: brushOptionsBuffer! } },
                     { binding: 1, resource: { buffer: brushesBuffer! } },
+                    { binding: 2, resource: { buffer: cameraBuffer! } },
                 ],
             })
         }
@@ -2031,6 +2042,7 @@ export default defineComponent({
                 entries: [
                     { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // brushOptionsBuffer
                     { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } }, // brushesBuffer
+                    { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // cameraBuffer
                 ],
             })
             particleEraseBindGroupLayout = device.createBindGroupLayout({
@@ -2079,6 +2091,12 @@ export default defineComponent({
                     { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } }, // particleBuffer
                     { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // trackerStateBuffer
                     { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // trackerLevelsBuffer
+                ],
+            })
+            trackerCameraUpdateBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } }, // trackerStateBuffer
+                    { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // cameraBuffer
                 ],
             })
         }
@@ -2217,6 +2235,13 @@ export default defineComponent({
                     bindGroupLayouts: [trackerComputeBindGroupLayout, simOptionsBindGroupLayout, deltaTimeBindGroupLayout]
                 }),
                 compute: { module: trackerComputeShader, entryPoint: 'finalizeTracker' }
+            })
+            const trackerCameraUpdateShader = device.createShaderModule({ code: trackerCameraUpdateShaderCode })
+            trackerCameraUpdatePipeline = device.createComputePipeline({
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [trackerCameraUpdateBindGroupLayout]
+                }),
+                compute: { module: trackerCameraUpdateShader, entryPoint: 'main' }
             })
         }
         const particleNormalBlending: GPUBlendState = {
@@ -3121,9 +3146,12 @@ export default defineComponent({
         }, { deep: true })
 
         watch(() => particleLife.isTrackerActive, (value: boolean) => isTrackerActive = value)
-        watch(() => particleLife.isTrackerCameraActive, (value: boolean) => isTrackerCameraActive = value)
         watch(() => particleLife.isTrackerIndicatorVisible, (value: boolean) => isTrackerIndicatorVisible = value)
         watch(() => particleLife.isTrackerSelectionActive, (value: boolean) => particleLife.isHudLocked = value)
+        watch(() => particleLife.isTrackerCameraActive, async (value: boolean) => {
+            if (isTrackerActive && !value) await syncCameraFromGPU()
+            isTrackerCameraActive = value
+        })
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)
@@ -3226,6 +3254,10 @@ export default defineComponent({
             interactionMatrixBuffer?.destroy(); interactionMatrixBuffer = undefined;
             simOptionsBuffer?.destroy(); simOptionsBuffer = undefined;
             glowOptionsBuffer?.destroy(); glowOptionsBuffer = undefined;
+            infiniteRenderOptionsBuffer?.destroy(); infiniteRenderOptionsBuffer = undefined;
+            debugOptionsBuffer?.destroy(); debugOptionsBuffer = undefined;
+            brushOptionsBuffer?.destroy(); brushOptionsBuffer = undefined;
+            brushesBuffer?.destroy(); brushesBuffer = undefined;
             particleHashesBuffer?.destroy(); particleHashesBuffer = undefined;
             cellHeadsBuffer?.destroy(); cellHeadsBuffer = undefined;
             particleNextIndicesBuffer?.destroy(); particleNextIndicesBuffer = undefined;
@@ -3305,11 +3337,14 @@ export default defineComponent({
             offscreenTextureBindGroup = undefined as any;
             composeHdrBindGroup = undefined as any;
             glowOptionsBindGroup = undefined as any;
+            brushOptionsBindGroup = undefined as any;
 
             trackerAccumulatePipeline = undefined as any;
             trackerFinalizePipeline = undefined as any;
+            trackerCameraUpdatePipeline = undefined as any;
             renderTrackerPipeline = undefined as any;
             trackerComputeBindGroup = undefined as any;
+            trackerCameraUpdateBindGroup = undefined as any;
             trackerRenderBindGroup = undefined as any;
         }
         const cancelAnimationLoop = () => {
