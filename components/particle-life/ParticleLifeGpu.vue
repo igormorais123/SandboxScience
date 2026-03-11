@@ -765,7 +765,11 @@ export default defineComponent({
             lastPointerX = pointerX
             lastPointerY = pointerY
         }
-        const handleMoveSmoothing = (panXDiff: number, panYDiff: number) => {
+        const handleMoveSmoothing = () => {
+            const panXDiff = targetCameraCenter.x - cameraCenter.x
+            const panYDiff = targetCameraCenter.y - cameraCenter.y
+            if (Math.abs(panXDiff) < 0.001 && Math.abs(panYDiff) < 0.001) return
+
             cameraCenter.x += panXDiff * panSmoothing
             cameraCenter.y += panYDiff * panSmoothing
             cameraChanged = true;
@@ -777,7 +781,10 @@ export default defineComponent({
             const zoomDelta = delta * zoomIntensity
             targetZoomFactor = Math.max(0.15, Math.min(1000.0, targetZoomFactor * (1 + zoomDelta)))
         }
-        const handleZoomSmoothing = (zoomDiff: number) => {
+        const handleZoomSmoothing = () => {
+            const zoomDiff = targetZoomFactor - zoomFactor
+            if (Math.abs(zoomDiff) < 0.001) return
+
             const mouseClipX = (lastZoomPositionX / CANVAS_WIDTH) * 2 - 1
             const mouseClipY = (lastZoomPositionY / CANVAS_HEIGHT) * 2 - 1
 
@@ -1114,20 +1121,11 @@ export default defineComponent({
             // }
 
             if (isDriftCamActive) handleDriftCamera()
-
-            const zoomDiff = targetZoomFactor - zoomFactor
-            if (Math.abs(zoomDiff) > 0.001) handleZoomSmoothing(zoomDiff)
-
-            if (isCameraTracking) {
-                handleCameraTrackingMoveSmoothing()
-            } else {
-                const panXDiff = targetCameraCenter.x - cameraCenter.x
-                const panYDiff = targetCameraCenter.y - cameraCenter.y
-                if (Math.abs(panXDiff) > 0.001 || Math.abs(panYDiff) > 0.001) handleMoveSmoothing(panXDiff, panYDiff)
-            }
+            if (isCameraTracking) handleCameraTrackingMoveSmoothing()
+            else handleMoveSmoothing()
+            handleZoomSmoothing()
 
             if (isBrushActive && showBrushCircle) updateBrushOptionsBuffer()
-
             if (isBrushErasing) await eraseWithBrush()
             else if (isBrushDrawing) await drawWithBrush()
             else if (isUpdateNumParticlesPending) await updateNumParticles(NEW_NUM_PARTICLES)
