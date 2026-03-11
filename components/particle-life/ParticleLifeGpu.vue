@@ -209,10 +209,10 @@
                                 </button>
                             </div>
                             <p v-if="!particleLife.isTrackerActive && !particleLife.isTrackerSelectionActive" class="text-sm text-gray-500 mt-1">
-                                Pick a creature to follow.
+                                Track & follow a creature in real time.
                             </p>
                             <p v-else-if="particleLife.isTrackerSelectionActive" class="text-sm text-amber-500/80 mt-1">
-                                Draw a rectangle around the creature.
+                                Draw around a creature to start tracking.
                             </p>
                             <div v-else flex flex-col gap-2 mt-2>
                                 <ToggleSwitch label="Camera Follow" colorful-label v-model="particleLife.isTrackerCameraActive"
