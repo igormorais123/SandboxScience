@@ -27,8 +27,8 @@ struct Particle {
     particleType : f32,
 }
 struct BrushOptions {
-    brushX: f32,
-    brushY: f32,
+    brushClipX: f32,
+    brushClipY: f32,
     brushVx: f32,
     brushVy: f32,
     brushRadius: f32,
@@ -39,6 +39,12 @@ struct BrushTypes {
     count: u32,
     types: array<u32>,
 };
+struct Camera {
+    centerX: f32,
+    centerY: f32,
+    scaleX: f32,
+    scaleY: f32,
+}
 
 const BRUSH_FORCE_MULTIPLIER = 500.0;
 const BRUSH_DIRECTIONAL_STRENGTH = 40.0;
@@ -48,6 +54,7 @@ const BRUSH_DIRECTIONAL_STRENGTH = 40.0;
 @group(2) @binding(0) var<uniform> deltaTime: f32;
 @group(3) @binding(0) var<uniform> brush: BrushOptions;
 @group(3) @binding(1) var<storage, read> brushTypes: BrushTypes;
+@group(3) @binding(2) var<uniform> camera: Camera;
 
 @compute @workgroup_size(64)
 fn particleAdvance(@builtin(global_invocation_id) id : vec3u) {
@@ -56,7 +63,10 @@ fn particleAdvance(@builtin(global_invocation_id) id : vec3u) {
     let width = options.simWidth;
     let height = options.simHeight;
 
-    var distVec = vec2<f32>(particle.x, particle.y) - vec2<f32>(brush.brushX, brush.brushY);
+    let brushX = camera.centerX + brush.brushClipX / camera.scaleX;
+    let brushY = camera.centerY + brush.brushClipY / camera.scaleY;
+
+    var distVec = vec2<f32>(particle.x, particle.y) - vec2<f32>(brushX, brushY);
     if (options.isWallWrap == 1u) {
         distVec.x = distVec.x - width * round(distVec.x / width);
         distVec.y = distVec.y - height * round(distVec.y / height);

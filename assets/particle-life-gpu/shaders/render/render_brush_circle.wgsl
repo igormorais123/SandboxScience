@@ -5,8 +5,8 @@ struct Camera {
     scaleY: f32,
 };
 struct BrushOptions {
-    brushX: f32,
-    brushY: f32,
+    brushClipX: f32,
+    brushClipY: f32,
     brushVx: f32,
     brushVy: f32,
     brushRadius: f32,
@@ -32,7 +32,11 @@ struct VertexOutput {
 @vertex
 fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     let quadPos = QUAD_VERTICES[vertexIndex];
-    let worldPos = vec2<f32>(brush.brushX, brush.brushY) + quadPos * brush.brushRadius;
+
+    let brushX = camera.centerX + brush.brushClipX / camera.scaleX;
+    let brushY = camera.centerY + brush.brushClipY / camera.scaleY;
+
+    let worldPos = vec2<f32>(brushX, brushY) + quadPos * brush.brushRadius;
     let clipPos = (worldPos - vec2<f32>(camera.centerX, camera.centerY)) * vec2<f32>(camera.scaleX, -camera.scaleY);
     return VertexOutput(
         vec4<f32>(clipPos, 0.0, 1.0),
