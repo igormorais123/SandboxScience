@@ -16,13 +16,21 @@ struct Camera {
     scaleY: f32,
 }
 
+struct CameraOffset {
+    x: f32,
+    y: f32,
+}
+
 @group(0) @binding(0) var<storage, read> tracker: TrackerState;
 @group(0) @binding(1) var<storage, read_write> camera: Camera;
+@group(0) @binding(2) var<uniform> offset: CameraOffset;
 
 const SMOOTHING_FACTOR: f32 = 0.75;
 
 @compute @workgroup_size(1)
 fn main() {
-    camera.centerX += (tracker.x - camera.centerX) * SMOOTHING_FACTOR;
-    camera.centerY += (tracker.y - camera.centerY) * SMOOTHING_FACTOR;
+    let targetX = tracker.x + offset.x;
+    let targetY = tracker.y + offset.y;
+    camera.centerX += (targetX - camera.centerX) * SMOOTHING_FACTOR;
+    camera.centerY += (targetY - camera.centerY) * SMOOTHING_FACTOR;
 }
