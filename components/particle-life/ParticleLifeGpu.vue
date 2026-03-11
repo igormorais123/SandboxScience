@@ -760,8 +760,8 @@ export default defineComponent({
             const worldDx = dx / (cameraScaleX * CANVAS_WIDTH * 0.5)
             const worldDy = dy / (cameraScaleY * CANVAS_HEIGHT * 0.5)
             if (isCameraTracking) {
-                trackerCameraOffset.x -= worldDx
-                trackerCameraOffset.y -= worldDy
+                targetTrackerCameraOffset.x -= worldDx
+                targetTrackerCameraOffset.y -= worldDy
             } else {
                 targetCameraCenter.x -= worldDx
                 targetCameraCenter.y -= worldDy
@@ -874,13 +874,27 @@ export default defineComponent({
             targetZoomFactor += (driftTargetZoom - targetZoomFactor) * driftCamTransitionProgress
         }
         const handleCameraTrackingMoveSmoothing = () => {
-            if (isDragging) {
-                device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([trackerCameraOffset.x, trackerCameraOffset.y]))
-            } else if (Math.abs(trackerCameraOffset.x) > 0.001 || Math.abs(trackerCameraOffset.y) > 0.001) {
-                trackerCameraOffset.x *= (1 - panSmoothing)
-                trackerCameraOffset.y *= (1 - panSmoothing)
-                device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([trackerCameraOffset.x, trackerCameraOffset.y]))
+            if (!isDragging) {
+                targetTrackerCameraOffset.x += (0 - targetTrackerCameraOffset.x) * panSmoothing
+                targetTrackerCameraOffset.y += (0 - targetTrackerCameraOffset.y) * panSmoothing
             }
+
+            const dx = targetTrackerCameraOffset.x - trackerCameraOffset.x
+            const dy = targetTrackerCameraOffset.y - trackerCameraOffset.y
+            if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) {
+                if (!isDragging) {
+                    trackerCameraOffset.x = 0
+                    trackerCameraOffset.y = 0
+                    targetTrackerCameraOffset.x = 0
+                    targetTrackerCameraOffset.y = 0
+                }
+                return
+            }
+            trackerCameraOffset.x += dx * panSmoothing
+            trackerCameraOffset.y += dy * panSmoothing
+            device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([
+                trackerCameraOffset.x, trackerCameraOffset.y
+            ]))
         }
         // -------------------------------------------------------------------------------------------------------------
         // GPU Tracker buffers
@@ -901,6 +915,7 @@ export default defineComponent({
         let isTrackerIndicatorVisible: boolean = particleLife.isTrackerIndicatorVisible
         let isCameraTracking: boolean = isTrackerActive && isTrackerCameraActive
         let trackerCameraOffset: { x: number, y: number } = { x: 0, y: 0 }
+        let targetTrackerCameraOffset: { x: number, y: number } = { x: 0, y: 0 }
 
         const startTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = true
@@ -914,10 +929,26 @@ export default defineComponent({
         }
         const stopTracker = async () => {
             if (isTrackerCameraActive) await syncCameraFromGPU()
-            trackerCameraOffset = { x: 0, y: 0 }
+            resetTrackerCameraOffset()
             particleLife.isTrackerActive = false
             particleLife.isTrackerSelectionActive = false
             particleLife.isDriftCamActive = false
+        }
+        const resetTrackerCameraOffset = () => {
+            trackerCameraOffset = { x: 0, y: 0 }
+            targetTrackerCameraOffset = { x: 0, y: 0 }
+            device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([0, 0]))
+        }
+        // Syncs CPU camera to GPU camera position (used when switching between tracker camera and free camera modes to prevent jumps)
+        const syncCameraFromGPU = async () => {
+            if (!cameraBuffer) return
+
+            const arrayBuffer = await readBufferFromGPU(cameraBuffer, 16)
+            const cameraData = new Float32Array(arrayBuffer)
+
+            cameraCenter.x = targetCameraCenter.x = cameraData[0]  // centerX
+            cameraCenter.y = targetCameraCenter.y = cameraData[1]  // centerY
+            cameraChanged = true
         }
         const onTrackerZoneSelected = async (zone: { x: number, y: number, width: number, height: number }) => {
             const scaledX = zone.x * DEVICE_PIXEL_RATIO
@@ -941,17 +972,6 @@ export default defineComponent({
             if (success) particleLife.isTrackerActive = true
             particleLife.isTrackerSelectionActive = false
             particleLife.isRunning = true
-        }
-        // Syncs CPU camera to GPU camera position (used when switching between tracker camera and free camera modes to prevent jumps)
-        const syncCameraFromGPU = async () => {
-            if (!cameraBuffer) return
-            
-            const arrayBuffer = await readBufferFromGPU(cameraBuffer, 16)
-            const cameraData = new Float32Array(arrayBuffer)
-
-            cameraCenter.x = targetCameraCenter.x = cameraData[0]  // centerX
-            cameraCenter.y = targetCameraCenter.y = cameraData[1]  // centerY
-            cameraChanged = true
         }
         // Initialize tracker state based on a user-selected zone, calculating the center of mass
         const initializeTrackerFromZone = async (zone: { x: number, y: number, width: number, height: number }): Promise<boolean> => {
@@ -1735,6 +1755,7 @@ export default defineComponent({
             new Float32Array(trackerCameraOptionsBuffer.getMappedRange()).set([0, 0, particleLife.trackerCameraSmoothing, 0])
             trackerCameraOptionsBuffer.unmap()
             trackerCameraOffset = { x: 0, y: 0 }
+            targetTrackerCameraOffset = { x: 0, y: 0 }
         }
         const updateInteractionMatrixBuffer = () => {
             const stride = 4; // 4 octets par couple
@@ -3189,6 +3210,7 @@ export default defineComponent({
         })
         watch(() => particleLife.isTrackerCameraActive, async (value: boolean) => {
             if (isTrackerActive && !value) await syncCameraFromGPU()
+            resetTrackerCameraOffset()
             isTrackerCameraActive = value
             isCameraTracking = isTrackerActive && isTrackerCameraActive
         })
