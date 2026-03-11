@@ -36,8 +36,8 @@ struct TrackerState {
     vy: f32,
     searchRadius: f32,
     expectedCount: u32,
-    _padding1: u32,
-    _padding2: u32,
+    baseCameraX: f32,
+    baseCameraY: f32,
 }
 
 // Accumulator for each search radius level (uses atomics for parallel accumulation)

@@ -221,7 +221,7 @@
                                 <ToggleSwitch label="Show Indicator" colorful-label v-model="particleLife.isTrackerIndicatorVisible"
                                               tooltip="Show or hide the visual tracker indicator overlay.">
                                 </ToggleSwitch>
-                                <RangeInput v-if="particleLife.isTrackerCameraActive" input label="Smoothing"
+                                <RangeInput input label="Smoothing"
                                             tooltip="Controls how smoothly the camera follows the tracked creature. <br> Lower values give a slower, cinematic follow. Higher values make the camera snap to the target."
                                             :min="0.01" :max="1" :step="0.01" v-model="particleLife.trackerCameraSmoothing">
                                 </RangeInput>
@@ -1023,8 +1023,8 @@ export default defineComponent({
             view.setFloat32(12, avgVy, true)               // vy
             view.setFloat32(16, initialSearchRadius, true) // searchRadius
             view.setUint32(20, count, true)                // expectedCount
-            view.setUint32(24, 0, true)                    // _padding1
-            view.setUint32(28, 0, true)                    // _padding2
+            view.setFloat32(24, cameraCenter.x, true)      // baseCameraX
+            view.setFloat32(28, cameraCenter.y, true)      // baseCameraY
             device.queue.writeBuffer(trackerStateBuffer!, 0, stateData)
 
             // Clear levels buffer
@@ -2151,7 +2151,7 @@ export default defineComponent({
             })
             trackerCameraUpdateBindGroupLayout = device.createBindGroupLayout({
                 entries: [
-                    { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } }, // trackerStateBuffer
+                    { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // trackerStateBuffer
                     { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // cameraBuffer
                     { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // trackerCameraOptionsBuffer
                 ],
@@ -3210,6 +3210,8 @@ export default defineComponent({
         })
         watch(() => particleLife.isTrackerCameraActive, async (value: boolean) => {
             if (isTrackerActive && !value) await syncCameraFromGPU()
+            // Update baseCameraX/Y to current camera position so smoothing starts from here when tracker camera is re-enabled.
+            if (isTrackerActive && value) device.queue.writeBuffer(trackerStateBuffer!, 24, new Float32Array([cameraCenter.x, cameraCenter.y]))
             resetTrackerCameraOffset()
             isTrackerCameraActive = value
             isCameraTracking = isTrackerActive && isTrackerCameraActive

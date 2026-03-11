@@ -5,8 +5,8 @@ struct TrackerState {
     vy: f32,
     searchRadius: f32,
     expectedCount: u32,
-    _padding1: u32,
-    _padding2: u32,
+    baseCameraX: f32,
+    baseCameraY: f32,
 }
 
 struct Camera {
@@ -22,14 +22,21 @@ struct TrackerCameraOptions {
     smoothing: f32,
 }
 
-@group(0) @binding(0) var<storage, read> tracker: TrackerState;
+@group(0) @binding(0) var<storage, read_write> tracker: TrackerState;
 @group(0) @binding(1) var<storage, read_write> camera: Camera;
 @group(0) @binding(2) var<uniform> cameraOptions: TrackerCameraOptions;
 
 @compute @workgroup_size(1)
 fn main() {
-    let targetX = tracker.x + cameraOptions.panOffsetX;
-    let targetY = tracker.y + cameraOptions.panOffsetY;
-    camera.centerX += (targetX - camera.centerX) * cameraOptions.smoothing;
-    camera.centerY += (targetY - camera.centerY) * cameraOptions.smoothing;
+    // Smooth base camera position towards tracker (tracker smoothing only)
+    let newBaseX = tracker.baseCameraX + (tracker.x - tracker.baseCameraX) * cameraOptions.smoothing;
+    let newBaseY = tracker.baseCameraY + (tracker.y - tracker.baseCameraY) * cameraOptions.smoothing;
+
+    // Persist base position for next frame
+    tracker.baseCameraX = newBaseX;
+    tracker.baseCameraY = newBaseY;
+
+    // Apply pan offset directly (already smoothed by panSmoothing on CPU)
+    camera.centerX = newBaseX + cameraOptions.panOffsetX;
+    camera.centerY = newBaseY + cameraOptions.panOffsetY;
 }
