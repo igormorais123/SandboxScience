@@ -221,6 +221,10 @@
                                 <ToggleSwitch label="Show Indicator" colorful-label v-model="particleLife.isTrackerIndicatorVisible"
                                               tooltip="Show or hide the visual tracker indicator overlay.">
                                 </ToggleSwitch>
+                                <RangeInput v-if="particleLife.isTrackerCameraActive" input label="Smoothing"
+                                            tooltip="Controls how smoothly the camera follows the tracked creature. <br> Lower values give a slower, cinematic follow. Higher values make the camera snap to the target."
+                                            :min="0.01" :max="1" :step="0.01" v-model="particleLife.trackerCameraSmoothing">
+                                </RangeInput>
                             </div>
                         </Collapse>
                         <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
@@ -756,8 +760,8 @@ export default defineComponent({
             const worldDx = dx / (cameraScaleX * CANVAS_WIDTH * 0.5)
             const worldDy = dy / (cameraScaleY * CANVAS_HEIGHT * 0.5)
             if (isCameraTracking) {
-                trackerPanOffset.x -= worldDx
-                trackerPanOffset.y -= worldDy
+                trackerCameraOffset.x -= worldDx
+                trackerCameraOffset.y -= worldDy
             } else {
                 targetCameraCenter.x -= worldDx
                 targetCameraCenter.y -= worldDy
@@ -871,18 +875,18 @@ export default defineComponent({
         }
         const handleCameraTrackingMoveSmoothing = () => {
             if (isDragging) {
-                device.queue.writeBuffer(trackerPanOffsetBuffer!, 0, new Float32Array([trackerPanOffset.x, trackerPanOffset.y]))
-            } else if (Math.abs(trackerPanOffset.x) > 0.001 || Math.abs(trackerPanOffset.y) > 0.001) {
-                trackerPanOffset.x *= (1 - panSmoothing)
-                trackerPanOffset.y *= (1 - panSmoothing)
-                device.queue.writeBuffer(trackerPanOffsetBuffer!, 0, new Float32Array([trackerPanOffset.x, trackerPanOffset.y]))
+                device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([trackerCameraOffset.x, trackerCameraOffset.y]))
+            } else if (Math.abs(trackerCameraOffset.x) > 0.001 || Math.abs(trackerCameraOffset.y) > 0.001) {
+                trackerCameraOffset.x *= (1 - panSmoothing)
+                trackerCameraOffset.y *= (1 - panSmoothing)
+                device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([trackerCameraOffset.x, trackerCameraOffset.y]))
             }
         }
         // -------------------------------------------------------------------------------------------------------------
         // GPU Tracker buffers
         let trackerStateBuffer: GPUBuffer | undefined
         let trackerLevelsBuffer: GPUBuffer | undefined
-        let trackerPanOffsetBuffer: GPUBuffer | undefined
+        let trackerCameraOptionsBuffer: GPUBuffer | undefined
         let trackerAccumulatePipeline: GPUComputePipeline
         let trackerFinalizePipeline: GPUComputePipeline
         let trackerCameraUpdatePipeline: GPUComputePipeline
@@ -896,7 +900,7 @@ export default defineComponent({
         let isTrackerCameraActive: boolean = particleLife.isTrackerCameraActive
         let isTrackerIndicatorVisible: boolean = particleLife.isTrackerIndicatorVisible
         let isCameraTracking: boolean = isTrackerActive && isTrackerCameraActive
-        let trackerPanOffset: { x: number, y: number } = { x: 0, y: 0 }
+        let trackerCameraOffset: { x: number, y: number } = { x: 0, y: 0 }
 
         const startTrackerSelection = () => {
             particleLife.isTrackerSelectionActive = true
@@ -910,7 +914,7 @@ export default defineComponent({
         }
         const stopTracker = async () => {
             if (isTrackerCameraActive) await syncCameraFromGPU()
-            trackerPanOffset = { x: 0, y: 0 }
+            trackerCameraOffset = { x: 0, y: 0 }
             particleLife.isTrackerActive = false
             particleLife.isTrackerSelectionActive = false
             particleLife.isDriftCamActive = false
@@ -1723,11 +1727,14 @@ export default defineComponent({
                 size: 32 * 4, // 128 bytes for 4 levels
                 usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
             })
-            trackerPanOffsetBuffer = device.createBuffer({
-                size: 8, // offsetX, offsetY
+            trackerCameraOptionsBuffer = device.createBuffer({
+                size: 16, // panOffsetX, panOffsetY, smoothing, _padding
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                mappedAtCreation: true,
             })
-            trackerPanOffset = { x: 0, y: 0 }
+            new Float32Array(trackerCameraOptionsBuffer.getMappedRange()).set([0, 0, particleLife.trackerCameraSmoothing, 0])
+            trackerCameraOptionsBuffer.unmap()
+            trackerCameraOffset = { x: 0, y: 0 }
         }
         const updateInteractionMatrixBuffer = () => {
             const stride = 4; // 4 octets par couple
@@ -1825,7 +1832,7 @@ export default defineComponent({
                 entries: [
                     { binding: 0, resource: { buffer: trackerStateBuffer! } },
                     { binding: 1, resource: { buffer: cameraBuffer! } },
-                    { binding: 2, resource: { buffer: trackerPanOffsetBuffer! } },
+                    { binding: 2, resource: { buffer: trackerCameraOptionsBuffer! } },
                 ],
             })
         }
@@ -2125,7 +2132,7 @@ export default defineComponent({
                 entries: [
                     { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } }, // trackerStateBuffer
                     { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // cameraBuffer
-                    { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // trackerPanOffsetBuffer
+                    { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // trackerCameraOptionsBuffer
                 ],
             })
         }
@@ -3185,6 +3192,9 @@ export default defineComponent({
             isTrackerCameraActive = value
             isCameraTracking = isTrackerActive && isTrackerCameraActive
         })
+        watch(() => particleLife.trackerCameraSmoothing, (value: number) => {
+            device.queue.writeBuffer(trackerCameraOptionsBuffer!, 8, new Float32Array([value]))
+        })
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)
@@ -3307,7 +3317,7 @@ export default defineComponent({
             
             trackerStateBuffer?.destroy(); trackerStateBuffer = undefined;
             trackerLevelsBuffer?.destroy(); trackerLevelsBuffer = undefined;
-            trackerPanOffsetBuffer?.destroy(); trackerPanOffsetBuffer = undefined;
+            trackerCameraOptionsBuffer?.destroy(); trackerCameraOptionsBuffer = undefined;
 
             if (!keepTexture) {
                 offscreenTexture?.destroy(); offscreenTexture = undefined;
