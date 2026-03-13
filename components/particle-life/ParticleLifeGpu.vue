@@ -809,7 +809,6 @@ export default defineComponent({
             const worldYBefore = cameraCenter.y + mouseClipY / cameraScaleY
 
             zoomFactor += zoomDiff * zoomSmoothing
-
             updateCameraScaleFactors()
 
             const worldXAfter = cameraCenter.x + mouseClipX / cameraScaleX
@@ -908,6 +907,15 @@ export default defineComponent({
             device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([
                 trackerCameraOffset.x, trackerCameraOffset.y
             ]))
+        }
+        const handleCameraTrackingZoomSmoothing = () => {
+            const zoomDiff = targetZoomFactor - zoomFactor
+            if (Math.abs(zoomDiff) < 0.001) return
+
+            zoomFactor += zoomDiff * zoomSmoothing
+            updateCameraScaleFactors()
+
+            cameraChanged = true
         }
         // -------------------------------------------------------------------------------------------------------------
         // GPU Tracker buffers
@@ -1158,9 +1166,13 @@ export default defineComponent({
             // }
 
             if (isDriftCamActive) handleDriftCamera()
-            if (isCameraTracking) handleCameraTrackingMoveSmoothing()
-            else handleMoveSmoothing()
-            handleZoomSmoothing()
+            if (isCameraTracking) {
+                handleCameraTrackingMoveSmoothing()
+                handleCameraTrackingZoomSmoothing()
+            } else {
+                handleMoveSmoothing()
+                handleZoomSmoothing()
+            }
 
             if (isBrushActive && showBrushCircle) updateBrushOptionsBuffer()
             if (isBrushErasing) await eraseWithBrush()
