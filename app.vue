@@ -2,6 +2,7 @@
     <NuxtLayout>
         <NuxtPage />
         <AppToasts />
+        <DonationModal />
     </NuxtLayout>
 </template>
 
