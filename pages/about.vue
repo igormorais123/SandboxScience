@@ -22,12 +22,13 @@
                         We appreciate your understanding and encourage you to provide feedback to help us improve the site.
                     </p>
                     <p mt-4>
-                        We are excited to announce that Sandbox Science will soon become open-source, inviting everyone to
-                        contribute to its development. Whether you’re a developer, a designer, or simply passionate about
-                        science, you’ll be able to join us in shaping the future of this project.
+                        Sandbox Science is open-source and licensed under the
+                        <NuxtLink to="https://github.com/DicSo92/SandboxScience/blob/master/LICENSE" target="_blank" class="text-#2A9D8F hover:underline">GNU Affero General Public License v3.0 (AGPL-3.0)</NuxtLink>.
+                        We invite everyone to contribute to its development. Whether you're a developer, a designer, or simply passionate about
+                        science, you can join us in shaping the future of this project.
                     </p>
                     <p mt-4>
-                        In the meantime, you can join our community on Discord to share your feedback, discuss ideas,
+                        You can join our community on Discord to share your feedback, discuss ideas,
                         and connect with other science enthusiasts. We look forward to hearing from you and working together.
                     </p>
                 </div>

@@ -1,7 +1,18 @@
 {
-    "name": "nuxt-app",
+    "name": "sandbox-science",
+    "description": "An interactive platform offering educational scientific simulations like Game of Life and Particle Life.",
     "type": "module",
     "private": true,
+    "license": "AGPL-3.0-or-later",
+    "author": "Charly Luzzi (DicSo92)",
+    "homepage": "https://sandbox-science.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DicSo92/SandboxScience.git"
+    },
+    "bugs": {
+        "url": "https://github.com/DicSo92/SandboxScience/issues"
+    },
     "scripts": {
         "build": "nuxt build",
         "dev": "nuxt dev",

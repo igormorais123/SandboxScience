@@ -53,7 +53,7 @@ This will create an optimized version of the project in the \`dist\` directory, 
 
 ## 🤝 Contributing
 
-We are excited to open-source Sandbox Science soon and welcome contributions from the community. Here’s how you can get involved:
+Sandbox Science is open-source and we welcome contributions from the community! Here's how you can get involved:
 
 1. **Fork the repository**
 2. **Create a new branch**
@@ -70,6 +70,8 @@ Please ensure your changes adhere to our [contribution guidelines](CONTRIBUTING.
 Join our [Discord community](https://discord.com/invite/z5yuzkFpCA) to share feedback, suggest new features, and engage with other science enthusiasts. Your insights and contributions help us improve Sandbox Science.
 
 ## 📜 License
+
+Copyright (C) 2024-2026 Charly Luzzi (DicSo92)
 
 This project is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE). You can use, modify, and distribute the software, but modifications must also be shared under AGPL-3.0. See the [LICENSE](LICENSE) file for more details.
 
