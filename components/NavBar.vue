@@ -33,7 +33,12 @@
                     </NuxtLink>
                 </div>
             </div>
-            <div flex>
+            <div flex items-center>
+                <button type="button" name="Donate" aria-label="Donate" title="Donate" @click="openDonationModal()"
+                        class="flex items-center py-1 px-2.5 mr-2 rounded-lg text-xs font-medium transition-all duration-200 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 hover:text-rose-200 border border-rose-500/30 hover:border-rose-500/50">
+                    <span i-tabler-heart-filled text-sm mr-1 class="animate-heartbeat"></span>
+                    Donate
+                </button>
                 <NuxtLink to="https://github.com/DicSo92/SandboxScience" title="Github" aria-label="Github" target="_blank" external class="flex items-center py-0 mx-1">
                     <button type="button" name="Github" aria-label="Github" text="zinc-3 hover:zinc-1" flex>
                         <span i-carbon-logo-github text-lg m-0.5></span>
@@ -56,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-
+const { open: openDonationModal } = useDonationModal()
 </script>
 
 <style scoped>

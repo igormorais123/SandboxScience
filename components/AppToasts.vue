@@ -9,7 +9,7 @@
                              :class="toastTypes[toast.type].classes"
                         >
                             <span class="text-sm" :class="toastTypes[toast.type].icon"></span>
-                            <p class="flex-1">{{ toast.message }}</p>
+                            <p class="flex-1" v-html="toast.message"></p>
                             <button type="button" @click="removeToast(toast.id)" class="ml-2 text-xs opacity-70 hover:opacity-100">
                                 ✕
                             </button>
@@ -32,7 +32,7 @@ const toastTypes: Record<ToastType, { classes: string, icon: string }> = {
     },
     error: {
         classes: 'bg-red-900/70 border-red-200/70 text-red-50 backdrop-blur-sm',
-        icon: 'i-tabler-x text-red-100',
+        icon: 'i-tabler-exclamation-circle text-red-100',
     },
     warning: {
         classes: 'bg-amber-900/70 border-amber-100/70 text-amber-50 backdrop-blur-sm',

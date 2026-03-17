@@ -155,6 +155,80 @@
                                         tooltip="Adjusts the smoothness of camera panning. <br> Lower values create more inertia for a gliding effect, while higher values make the movement stop more abruptly."
                                         :min="0.01" :max="0.5" :step="0.01" v-model="particleLife.panSmoothing" mt-2>
                             </RangeInput>
+
+                            <hr border-gray-500 my-2>
+                            <div flex items-center justify-between>
+                                <p underline text-gray-300>Cinematic Mode :</p>
+                                <button btn px-3 py-1 text-xs rounded-full font-medium flex items-center ring-1 transition-all relative
+                                        :class="particleLife.isDriftCamActive
+                                            ? 'bg-violet-600/80 hover:bg-violet-500/80 ring-violet-400/50 text-white'
+                                            : 'bg-violet-900/60 hover:bg-violet-800/70 ring-violet-500/30 text-violet-300'"
+                                        @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive">
+                                    <span v-if="particleLife.isDriftCamActive" class="absolute -top-1 -right-1 flex size-3">
+                                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 ring-1 ring-violet-300/50 opacity-75"></span>
+                                        <span class="relative inline-flex size-3 rounded-full bg-violet-400"></span>
+                                    </span>
+                                    <span i-tabler-video text-xs mr-1></span>
+                                    {{ particleLife.isDriftCamActive ? 'Drifting...' : 'Enable Drift' }}
+                                </button>
+                            </div>
+                            <p v-if="!particleLife.isDriftCamActive" class="text-sm text-gray-500 mt-1">
+                                Auto camera panning & zooming.
+                            </p>
+                            <div v-else flex flex-col gap-2 mt-2>
+                                 <ToggleSwitch label="Reset Path on Pan" colorful-label v-model="particleLife.driftCamResetOnPan"
+                                               tooltip="Starts a new drift trajectory after manual panning or zooming, instead of resuming the previous path.">
+                                </ToggleSwitch>
+                                <RangeInput input label="Drift Speed"
+                                            tooltip="Controls the automatic camera movement speed. <br> - <b>Higher</b> → faster tracking. <br> - <b>Lower</b> → smoother cinematic effect."
+                                            :min="0.01" :max="1.0" :step="0.01" v-model="particleLife.driftCamSpeed">
+                                </RangeInput>
+                                <RangeInput input label="Pan Amplitude"
+                                            tooltip="Controls how far the camera moves from center. <br> - <b>0.5</b> → half the simulation area. <br> - <b>1.0</b> → full edges."
+                                            :min="0.05" :max="1.0" :step="0.05" v-model="particleLife.driftCamAmplitude">
+                                </RangeInput>
+                                <RangeInputMinMax input label="Zoom Range" mt-2
+                                                  tooltip="Sets the min/max zoom levels for automatic cinematic zoom."
+                                                  :min="0.1" :max="5" :step="0.05" :range-offset="0.1" v-model="particleLife.driftCamZoomRange">
+                                </RangeInputMinMax>
+                            </div>
+
+                            <hr border-gray-500 my-2>
+                            <div flex items-center justify-between>
+                                <p underline text-gray-300>Creature Tracking :</p>
+                                <button btn px-3 py-1 text-xs rounded-full font-medium flex items-center ring-1 transition-all relative
+                                        :class="particleLife.isTrackerSelectionActive
+                                            ? 'bg-amber-700/80 hover:bg-amber-600/80 ring-amber-500/50 text-white animate-pulse'
+                                            : particleLife.isTrackerActive
+                                                ? 'bg-rose-600/80 hover:bg-rose-500/80 ring-rose-400/50 text-white'
+                                                : 'bg-rose-900/60 hover:bg-rose-800/70 ring-rose-500/30 text-rose-300'"
+                                        @click="particleLife.isTrackerSelectionActive ? cancelTrackerSelection() : particleLife.isTrackerActive ? stopTracker() : startTrackerSelection()">
+                                    <span v-if="particleLife.isTrackerActive" class="absolute -top-1 -right-1 flex size-3">
+                                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 ring-1 ring-rose-300/50 opacity-75"></span>
+                                        <span class="relative inline-flex size-3 rounded-full bg-rose-400"></span>
+                                    </span>
+                                    <span :class="particleLife.isTrackerSelectionActive ? 'i-tabler-marquee-2' : 'i-tabler-target'" text-xs mr-1></span>
+                                    {{ particleLife.isTrackerSelectionActive ? 'Selecting...' : particleLife.isTrackerActive ? 'Tracking...' : 'Select & Track' }}
+                                </button>
+                            </div>
+                            <p v-if="!particleLife.isTrackerActive && !particleLife.isTrackerSelectionActive" class="text-sm text-gray-500 mt-1">
+                                Track & follow a creature in real time.
+                            </p>
+                            <p v-else-if="particleLife.isTrackerSelectionActive" class="text-sm text-amber-500/80 mt-1">
+                                Draw around a creature to start tracking.
+                            </p>
+                            <div v-else flex flex-col gap-2 mt-2>
+                                <ToggleSwitch label="Camera Follow" colorful-label v-model="particleLife.isTrackerCameraActive"
+                                              tooltip="When enabled, the camera will smoothly follow the tracked creature.">
+                                </ToggleSwitch>
+                                <ToggleSwitch label="Show Indicator" colorful-label v-model="particleLife.isTrackerIndicatorVisible"
+                                              tooltip="Show or hide the visual tracker indicator overlay.">
+                                </ToggleSwitch>
+                                <RangeInput input label="Smoothing"
+                                            tooltip="Controls how smoothly the camera follows the tracked creature. <br> Lower values give a slower, cinematic follow. Higher values make the camera snap to the target."
+                                            :min="0.01" :max="1" :step="0.01" v-model="particleLife.trackerCameraSmoothing">
+                                </RangeInput>
+                            </div>
                         </Collapse>
                         <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
                                   tooltip="Provides tools for visualizing the simulation's internal state. <br> Toggle the grid view to see spatial bins or activate a heatmap to analyze particle density. <br> These features are useful for debugging and performance tuning.">
@@ -181,45 +255,69 @@
                     </div>
                 </div>
             </template>
+            <template #bottom-actions>
+                <button type="button" name="Cinematic Camera" aria-label="Cinematic Camera" title="Cinematic Camera"
+                        btn rounded-full flex items-center justify-center p-2 backdrop-blur-sm pointer-events-auto
+                        :class="particleLife.isDriftCamActive ? 'bg-violet-600/90 hover:bg-violet-500/90' : 'bg-violet-900/80 hover:bg-violet-800/80'"
+                        @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive" :disabled="particleLife.isHudLocked">
+                    <span i-tabler-video :class="particleLife.isDriftCamActive ? 'text-white' : 'text-violet-300'"></span>
+                    <span v-if="particleLife.isDriftCamActive" class="absolute -top-0.5 -right-0.5 flex size-3">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 ring-1 ring-violet-300/50 opacity-75"></span>
+                        <span class="relative inline-flex size-3 rounded-full bg-violet-400"></span>
+                    </span>
+                </button>
+                <TrackerToggle
+                    @toggle="particleLife.isTrackerSelectionActive ? cancelTrackerSelection() : particleLife.isTrackerActive ? stopTracker() : startTrackerSelection()">
+                </TrackerToggle>
+                <button type="button" name="Randomize" aria-label="Randomize" title="Randomize simulation"
+                        btn rounded-full flex items-center justify-center p-2 pointer-events-auto
+                        class="backdrop-blur-sm bg-[#094F5D]/90 hover:bg-[#0B5F6F]/90"
+                        @click="regenerateLife" :disabled="particleLife.isHudLocked">
+                    <span i-game-icons-perspective-dice-six-faces-random text-2xl></span>
+                </button>
+            </template>
         </SidebarLeft>
         <canvas ref="canvasRef" id="canvasRef" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
+        <ClientOnly>
+            <TrackerOverlay v-if="particleLife.isTrackerSelectionActive" @tracker-zone-selected="onTrackerZoneSelected"></TrackerOverlay>
+        </ClientOnly>
         <SaveModal :store="particleLife"></SaveModal>
         <div absolute top-0 right-0 flex flex-col items-end text-right pointer-events-none>
             <div flex items-center text-start text-xs pl-4 pr-1 bg-slate-800 rounded-bl-xl style="padding-bottom: 1px; opacity: 75%" >
                 <div flex>Fps: <div ml-1 min-w-8>{{ fps }}</div></div>
 <!--                <div flex ml-3>Process: <div ml-1 min-w-7>{{ Math.round(executionTime) }}</div></div>-->
             </div>
-            <BrushSettings :store="particleLife" pointer-events-auto mt-2 mr-1 />
+            <BrushSettings :store="particleLife" mt-2 mr-1 pointer-events-auto :class="particleLife.isHudLocked && '!pointer-events-none [&_*]:!pointer-events-none opacity-40'" />
 
-            <div class="faded-hover-effect" pointer-events-auto mr-1>
+            <div class="faded-hover-effect" mr-1>
                 <button type="button" title="Debugger" aria-label="Debugger" btn w-8 aspect-square rounded-full p1 flex items-center justify-center bg="#D62839 hover:#DC4151" mt-2
-                        @click="particleLife.isDebugBinsActive = !particleLife.isDebugBinsActive">
+                        @click="particleLife.isDebugBinsActive = !particleLife.isDebugBinsActive" :disabled="particleLife.isHudLocked">
                     <span text-sm :class="particleLife.isDebugBinsActive ? 'i-tabler-bug-filled' : 'i-tabler-bug'"></span>
                 </button>
             </div>
         </div>
-        <div fixed z-10 bottom-2 flex justify-center items-end class="left-1/2 transform -translate-x-1/2"> <!-- faded-hover-effect -->
-            <button type="button" name="Randomize" aria-label="Randomize" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="[#094F5D]/80 hover:[#0B5F6F]/80" @click="regenerateLife">
-                <span i-game-icons-perspective-dice-six-faces-random></span>
-            </button>
-<!--            3D-->
-            <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="handleZoom(-1, true)">
-                <span i-tabler-zoom-out></span>
-            </button>
-            <button type="button" name="Play/Pause" aria-label="Play/Pause" btn p3 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="particleLife.isRunning = !particleLife.isRunning">
-                <span text-xl :class="particleLife.isRunning ? 'i-tabler-player-pause-filled' : 'i-tabler-player-play-filled'"></span>
-            </button>
-            <button type="button" name="Step" aria-label="Step" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isRunning" @click="step">
-                <span i-tabler-player-skip-forward-filled></span>
-            </button>
-            <button type="button" name="Zoom In" aria-label="Zoom In" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="handleZoom(1, true)">
-                <span i-tabler-zoom-in></span>
-            </button>
-            <button type="button" name="Toggle Fullscreen" aria-label="Toggle Fullscreen" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" @click="toggleFullscreen">
+        <div fixed z-10 bottom-2 flex justify-center items-end pointer-events-none class="left-1/2 transform -translate-x-1/2"> <!-- faded-hover-effect -->
+            <button type="button" name="Toggle Fullscreen" aria-label="Toggle Fullscreen" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="toggleFullscreen">
                 <span :class="isFullscreen ? 'i-tabler-maximize-off' : 'i-tabler-maximize'"></span>
             </button>
+            <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="handleZoom(-1, true)">
+                <span i-tabler-zoom-out></span>
+            </button>
+            <button type="button" name="Play/Pause" aria-label="Play/Pause" btn p3 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="particleLife.isRunning = !particleLife.isRunning">
+                <span text-xl :class="particleLife.isRunning ? 'i-tabler-player-pause-filled' : 'i-tabler-player-play-filled'"></span>
+            </button>
+            <button type="button" name="Step" aria-label="Step" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isRunning || particleLife.isHudLocked" @click="step">
+                <span i-tabler-player-skip-forward-filled></span>
+            </button>
+            <button type="button" name="Zoom In" aria-label="Zoom In" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="handleZoom(1, true)">
+                <span i-tabler-zoom-in></span>
+            </button>
         </div>
-        <section fixed z-10 bottom-2 right-2 flex>
+        <section fixed z-10 bottom-2 right-2 flex items-end>
+            <button type="button" name="Donate" aria-label="Donate" title="Donate" @click="openDonationModal()"
+                    class="donation-glow group relative flex items-center mr-2 p-1.2 rounded-full backdrop-blur-sm transition-all duration-300 bg-rose-600/80 hover:bg-rose-500/90 border border-rose-400/50 hover:border-rose-300/70 text-white">
+                <span i-tabler-heart-filled class="animate-heartbeat"></span>
+            </button>
             <NuxtLink to="https://github.com/DicSo92/SandboxScience" title="Github" aria-label="Github" target="_blank" flex items-center py-0 mr-2>
                 <button type="button" name="Github" aria-label="Github" class="bg-slate-900/80 ring-1 ring-zinc-4/50 rounded-lg p-1 backdrop-blur-sm" text="zinc-2 hover:zinc-4" flex>
                     <span i-carbon-logo-github text-xl></span>
@@ -242,6 +340,8 @@ import MatrixSettings from "~/components/particle-life/MatrixSettings.vue";
 import BrushSettings from "~/components/particle-life/BrushSettings.vue";
 import SaveModal from "~/components/particle-life/SaveModal.vue";
 import PresetPanel from "~/components/particle-life/PresetPanel.vue";
+import TrackerOverlay from "~/components/particle-life/TrackerOverlay.vue";
+import TrackerToggle from "~/components/particle-life/TrackerToggle.vue";
 import { RULES_OPTIONS, generateRules } from '~/helpers/utils/rulesGenerator';
 import { PALETTE_OPTIONS, generateColors } from "~/helpers/utils/colorsGenerator";
 import { POSITION_OPTIONS, generatePositions } from "~/helpers/utils/positionsGenerator";
@@ -270,15 +370,19 @@ import particleCompactShaderCode from 'assets/particle-life-gpu/shaders/compute/
 import particleDrawShaderCode from 'assets/particle-life-gpu/shaders/compute/particleDraw.wgsl?raw';
 import renderBrushCircleShaderCode from 'assets/particle-life-gpu/shaders/render/render_brush_circle.wgsl?raw';
 import renderBinsShaderCode from 'assets/particle-life-gpu/shaders/render/render_bins.wgsl?raw';
+import renderTrackerShaderCode from 'assets/particle-life-gpu/shaders/render/render_tracker.wgsl?raw';
+import trackerComputeShaderCode from 'assets/particle-life-gpu/shaders/compute/trackerCompute.wgsl?raw';
+import trackerCameraUpdateShaderCode from 'assets/particle-life-gpu/shaders/compute/trackerCameraUpdate.wgsl?raw';
 
 export default defineComponent({
     name: 'ParticleLifeGpu',
-    components: { PresetPanel, SaveModal, BrushSettings, MatrixSettings, WallStateSelection, WrapModeSelection },
+    components: { PresetPanel, SaveModal, BrushSettings, MatrixSettings, WallStateSelection, WrapModeSelection, TrackerOverlay, TrackerToggle },
     setup() {
         // Define refs and variables
         const mainContainer = ref<HTMLElement | null>(null)
         const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(mainContainer)
-        const { success } = useToasts()
+        const { success, error } = useToasts()
+        const { open: openDonationModal } = useDonationModal()
         const particleLife = useParticleLifeGPUStore()
         const rulesOptions = RULES_OPTIONS
         const paletteOptions = PALETTE_OPTIONS
@@ -302,6 +406,8 @@ export default defineComponent({
         let CANVAS_HEIGHT: number = 0
         let SIM_WIDTH: number = 0
         let SIM_HEIGHT: number = 0
+        let SIM_WIDTH_HALF: number = 0
+        let SIM_HEIGHT_HALF: number = 0
         let CELL_SIZE: number = 0
         let baseSimWidth: number = 0
         let baseSimHeight: number = 0
@@ -347,6 +453,20 @@ export default defineComponent({
         let lastFramePointerY: number = 0
         let cameraChanged: boolean = true
         let infiniteTotalInstances: number = 0 // Total number of instances for infinite rendering
+
+        // Define properties for the drift camera
+        let isDriftCamActive: boolean = particleLife.isDriftCamActive // Enable drift camera mode (slow automatic movement)
+        let driftCamResetOnPan: boolean = particleLife.driftCamResetOnPan // Reset drift camera trajectory when user pans/zooms
+        const driftCamSmoothing: number = 0.0003 // Smoothing factor for camera movement (affects panning and zooming, 0.1 = fast, 0.01 = slow)
+        let driftCamSpeed: number = particleLife.driftCamSpeed // Drift camera speed (0.1 = slow, 1.0 = fast)
+        let driftCamAmplitude: number = particleLife.driftCamAmplitude // Amplitude of camera movement (0.5 = half the simulation size, 1.0 = full simulation size)
+        let driftCamZoomRange: number[] = particleLife.driftCamZoomRange // Range of zoom levels for driftCam (min, max)
+        let driftCamZoomCenter: number = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5 // Center zoom level for driftCam
+        let driftCamZoomAmplitude: number = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
+        let driftCamTime: number = 0 // Time variable for the drift camera, incremented each frame based on the driftCamSpeed to create continuous movement
+        let driftCamLastTime: number = 0 // Last timestamp when the drift camera was updated, used to calculate elapsed time for consistent movement regardless of frame rate
+        let driftCamTransitionProgress: number = 0 // Smoothly blend camera position from its current location to the drift trajectory when driftCam is enabled, and reset to 0 whenever the user manually pans/zooms the camera, allowing for a seamless transition back to the drift movement
+        let driftCamPhase = { x1: 0, x2: 0, y1: 0, y2: 0, z1: 0, z2: 0 } // Phase offsets for the sine waves controlling camera movement and zoom
 
         // Define variables for the simulation
         let repel: number = particleLife.repel // Repel force between particles
@@ -430,6 +550,7 @@ export default defineComponent({
         let renderOffscreenPipeline: GPURenderPipeline
         let composeInfinitePipeline: GPURenderPipeline
         let composeHdrPipeline: GPURenderPipeline
+        let renderTrackerPipeline: GPURenderPipeline
 
         let renderPipelineAdditive: GPURenderPipeline
         let renderMirrorPipelineAdditive: GPURenderPipeline
@@ -479,6 +600,7 @@ export default defineComponent({
         let glowOptionsBindGroupLayout: GPUBindGroupLayout
         let infiniteRenderOptionsBindGroupLayout: GPUBindGroupLayout
         let brushOptionsBindGroupLayout: GPUBindGroupLayout
+        let trackerRenderBindGroupLayout: GPUBindGroupLayout
 
         let particleErasePipeline: GPUComputePipeline;
         let particleCompactPipeline: GPUComputePipeline;
@@ -558,10 +680,15 @@ export default defineComponent({
                 isBrushErasing = false
                 isBrushDrawing = false
                 isApplyingBrushForce = false
+                if (isDriftCamActive && driftCamResetOnPan) initDriftCamera()
             })
             useEventListener(canvasRef.value, 'wheel', (e) => {
                 if (e.deltaY < 0) handleZoom(1) // Zoom in
                 else handleZoom(-1) // Zoom out
+                if (isDriftCamActive) {
+                    driftCamTransitionProgress = 0 // Reset drift cam transition when user interacts with the camera
+                    if (driftCamResetOnPan) initDriftCamera()
+                }
             })
         })
         // -------------------------------------------------------------------------------------------------------------
@@ -581,6 +708,8 @@ export default defineComponent({
         function setSimSizeBasedOnScreen() {
             particleLife.simWidth = SIM_WIDTH = baseSimWidth = CANVAS_WIDTH
             particleLife.simHeight = SIM_HEIGHT = baseSimHeight = CANVAS_HEIGHT
+            SIM_WIDTH_HALF = SIM_WIDTH * 0.5
+            SIM_HEIGHT_HALF = SIM_HEIGHT * 0.5
             updateCameraScaleFactors()
         }
         function setSimSize() {
@@ -588,6 +717,8 @@ export default defineComponent({
                 particleLife.simWidth = SIM_WIDTH = CELL_SIZE * Math.round(baseSimWidth / CELL_SIZE)
                 particleLife.simHeight = SIM_HEIGHT = CELL_SIZE * Math.round(baseSimHeight / CELL_SIZE)
             }
+            SIM_WIDTH_HALF = SIM_WIDTH * 0.5
+            SIM_HEIGHT_HALF = SIM_HEIGHT * 0.5
             updateCameraScaleFactors()
             updateBinningParameters()
             updateOffscreenMirrorResources()
@@ -633,18 +764,29 @@ export default defineComponent({
             }
         }
         function centerView() {
-            cameraCenter = { x: SIM_WIDTH / 2, y: SIM_HEIGHT / 2 }
-            targetCameraCenter = { x: SIM_WIDTH / 2, y: SIM_HEIGHT / 2 }
+            cameraCenter = { x: SIM_WIDTH_HALF, y: SIM_HEIGHT_HALF }
+            targetCameraCenter = { x: SIM_WIDTH_HALF, y: SIM_HEIGHT_HALF }
         }
         function handleMove() {
             const dx = pointerX - lastPointerX
             const dy = pointerY - lastPointerY
-            targetCameraCenter.x -= dx / (cameraScaleX * CANVAS_WIDTH * 0.5)
-            targetCameraCenter.y -= dy / (cameraScaleY * CANVAS_HEIGHT * 0.5)
+            const worldDx = dx / (cameraScaleX * CANVAS_WIDTH * 0.5)
+            const worldDy = dy / (cameraScaleY * CANVAS_HEIGHT * 0.5)
+            if (isCameraTracking) {
+                targetTrackerCameraOffset.x -= worldDx
+                targetTrackerCameraOffset.y -= worldDy
+            } else {
+                targetCameraCenter.x -= worldDx
+                targetCameraCenter.y -= worldDy
+            }
             lastPointerX = pointerX
             lastPointerY = pointerY
         }
-        const handleMoveSmoothing = (panXDiff: number, panYDiff: number) => {
+        const handleMoveSmoothing = () => {
+            const panXDiff = targetCameraCenter.x - cameraCenter.x
+            const panYDiff = targetCameraCenter.y - cameraCenter.y
+            if (Math.abs(panXDiff) < 0.001 && Math.abs(panYDiff) < 0.001) return
+
             cameraCenter.x += panXDiff * panSmoothing
             cameraCenter.y += panYDiff * panSmoothing
             cameraChanged = true;
@@ -656,7 +798,10 @@ export default defineComponent({
             const zoomDelta = delta * zoomIntensity
             targetZoomFactor = Math.max(0.15, Math.min(1000.0, targetZoomFactor * (1 + zoomDelta)))
         }
-        const handleZoomSmoothing = (zoomDiff: number) => {
+        const handleZoomSmoothing = () => {
+            const zoomDiff = targetZoomFactor - zoomFactor
+            if (Math.abs(zoomDiff) < 0.001) return
+
             const mouseClipX = (lastZoomPositionX / CANVAS_WIDTH) * 2 - 1
             const mouseClipY = (lastZoomPositionY / CANVAS_HEIGHT) * 2 - 1
 
@@ -664,7 +809,6 @@ export default defineComponent({
             const worldYBefore = cameraCenter.y + mouseClipY / cameraScaleY
 
             zoomFactor += zoomDiff * zoomSmoothing
-
             updateCameraScaleFactors()
 
             const worldXAfter = cameraCenter.x + mouseClipX / cameraScaleX
@@ -678,6 +822,286 @@ export default defineComponent({
             targetCameraCenter.y += worldYCenter
 
             cameraChanged = true
+        }
+        // -------------------------------------------------------------------------------------------------------------
+        const initDriftCamera = () => {
+            driftCamTransitionProgress = 0
+            driftCamTime = 0
+            driftCamLastTime = performance.now() / 1000
+
+            const clamp = (v: number) => Math.max(-1, Math.min(1, v))
+            // Calculates sine wave phase offsets so the drift camera starts smoothly from the current position without jumping and follows a "randomized" trajectory
+            const findMatchingPhases = (target: number) => {
+                const p2 = Math.random() * Math.PI * 2 // Random initial phase for the secondary wave
+                const primaryWaveValue = (clamp(target) - Math.sin(p2) * 0.4) / 0.6 // Calculate the required phase for the primary wave to achieve the target position, given the random secondary wave phase and their respective amplitudes (0.6 and 0.4)
+                const p1 = Math.asin(clamp(primaryWaveValue)) // Calculate the primary wave phase using arcsin, which gives a value between -π/2 and π/2. This ensures that the combined sine waves will start at the current camera position
+                return { p1, p2 }
+            }
+
+            // Calculate the initial phases for X, Y, and Z (zoom) based on the current camera position and zoom level to ensure that when driftCam is enabled, the camera starts moving smoothly from its current position without any sudden jumps.
+            const phasesX = findMatchingPhases((cameraCenter.x - SIM_WIDTH_HALF) / (SIM_WIDTH_HALF * driftCamAmplitude))
+            const phasesY = findMatchingPhases((cameraCenter.y - SIM_HEIGHT_HALF) / (SIM_HEIGHT_HALF * driftCamAmplitude))
+            const phasesZ = findMatchingPhases((zoomFactor - driftCamZoomCenter) / driftCamZoomAmplitude)
+
+            driftCamPhase = { x1: phasesX.p1, x2: phasesX.p2, y1: phasesY.p1, y2: phasesY.p2, z1: phasesZ.p1, z2: phasesZ.p2}
+        }
+        const handleDriftCamera = () => {
+            const now = performance.now() / 1000
+            if (isDragging) {
+                driftCamLastTime = now // Update last time to prevent large jumps in camera position when the user stops dragging after a long interaction
+                driftCamTransitionProgress = 0 // Reset transition when users pans to allow for a smooth blend back to the drift trajectory when they stop interacting
+                return
+            }
+
+            driftCamTransitionProgress += (1 - driftCamTransitionProgress) * driftCamSmoothing // Progressive transition towards the drift trajectory after pans/zooms, creating a smooth blending effect
+            driftCamTime += (now - driftCamLastTime) * driftCamSpeed // Increment the drift camera's internal time based on the elapsed real time and the configured speed, ensuring consistent movement regardless of frame rate variations
+            driftCamLastTime = now
+
+            // Drift pan movement only when tracking is disabled
+            if (!isTrackerActive) {
+                // Horizontal pan using two combined sine waves
+                const driftTargetX = SIM_WIDTH_HALF + (
+                    Math.sin(driftCamTime * 1.0 + driftCamPhase.x1) * 0.6 +   // Primary wave (60%), base freq
+                    Math.sin(driftCamTime * 1.618 + driftCamPhase.x2) * 0.4   // Secondary wave (40%), golden ratio freq
+                ) * SIM_WIDTH_HALF * driftCamAmplitude
+
+                // Vertical pan with offset frequencies for diagonal drift
+                const driftTargetY = SIM_HEIGHT_HALF + (
+                    Math.sin(driftCamTime * 1.1 + driftCamPhase.y1) * 0.6 +   // Primary wave (60%), slightly faster than X
+                    Math.sin(driftCamTime * 1.414 + driftCamPhase.y2) * 0.4   // Secondary wave (40%), sqrt(2) freq
+                ) * SIM_HEIGHT_HALF * driftCamAmplitude
+
+                // Smoothly interpolate camera center towards the drift targets
+                targetCameraCenter.x += (driftTargetX - targetCameraCenter.x) * driftCamTransitionProgress
+                targetCameraCenter.y += (driftTargetY - targetCameraCenter.y) * driftCamTransitionProgress
+            }
+
+            // Zoom level with slower frequencies for smooth transitions
+            const driftTargetZoom = driftCamZoomCenter + (
+                Math.sin(driftCamTime * 0.7 + driftCamPhase.z1) * 0.6 +   // Primary wave (60%), slow zoom
+                Math.sin(driftCamTime * 1.3 + driftCamPhase.z2) * 0.4     // Secondary wave (40%), faster variation
+            ) * driftCamZoomAmplitude
+
+            // Smoothly interpolate zoom towards the drift targets
+            targetZoomFactor += (driftTargetZoom - targetZoomFactor) * driftCamTransitionProgress
+        }
+        const handleCameraTrackingMoveSmoothing = () => {
+            if (!isDragging) {
+                targetTrackerCameraOffset.x += (0 - targetTrackerCameraOffset.x) * panSmoothing
+                targetTrackerCameraOffset.y += (0 - targetTrackerCameraOffset.y) * panSmoothing
+            }
+
+            const dx = targetTrackerCameraOffset.x - trackerCameraOffset.x
+            const dy = targetTrackerCameraOffset.y - trackerCameraOffset.y
+            if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) {
+                if (!isDragging) {
+                    trackerCameraOffset.x = 0
+                    trackerCameraOffset.y = 0
+                    targetTrackerCameraOffset.x = 0
+                    targetTrackerCameraOffset.y = 0
+                }
+                return
+            }
+            trackerCameraOffset.x += dx * panSmoothing
+            trackerCameraOffset.y += dy * panSmoothing
+            device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([
+                trackerCameraOffset.x, trackerCameraOffset.y
+            ]))
+        }
+        const handleCameraTrackingZoomSmoothing = () => {
+            const zoomDiff = targetZoomFactor - zoomFactor
+            if (Math.abs(zoomDiff) < 0.001) return
+
+            zoomFactor += zoomDiff * zoomSmoothing
+            updateCameraScaleFactors()
+
+            cameraChanged = true
+        }
+        // -------------------------------------------------------------------------------------------------------------
+        // GPU Tracker buffers
+        let trackerStateBuffer: GPUBuffer | undefined
+        let trackerLevelsBuffer: GPUBuffer | undefined
+        let trackerCameraOptionsBuffer: GPUBuffer | undefined
+        let trackerAccumulatePipeline: GPUComputePipeline
+        let trackerFinalizePipeline: GPUComputePipeline
+        let trackerCameraUpdatePipeline: GPUComputePipeline
+        let trackerComputeBindGroupLayout: GPUBindGroupLayout
+        let trackerComputeBindGroup: GPUBindGroup
+        let trackerCameraUpdateBindGroupLayout: GPUBindGroupLayout
+        let trackerCameraUpdateBindGroup: GPUBindGroup
+        let trackerRenderBindGroup: GPUBindGroup
+
+        let isTrackerActive: boolean = particleLife.isTrackerActive
+        let isTrackerCameraActive: boolean = particleLife.isTrackerCameraActive
+        let isTrackerIndicatorVisible: boolean = particleLife.isTrackerIndicatorVisible
+        let isCameraTracking: boolean = isTrackerActive && isTrackerCameraActive
+        let trackerCameraOffset: { x: number, y: number } = { x: 0, y: 0 }
+        let targetTrackerCameraOffset: { x: number, y: number } = { x: 0, y: 0 }
+
+        const startTrackerSelection = () => {
+            particleLife.isTrackerSelectionActive = true
+            particleLife.isRunning = false // Pause the simulation while selecting the tracker zone
+            particleLife.isBrushActive = false // Disable brush while selecting tracker zone
+            particleLife.isDriftCamActive = false
+        }
+        const cancelTrackerSelection = () => {
+            particleLife.isTrackerSelectionActive = false
+            particleLife.isRunning = true // Resume the simulation if tracker selection is canceled
+        }
+        const stopTracker = async () => {
+            if (isTrackerCameraActive) await syncCameraFromGPU()
+            resetTrackerCameraOffset()
+            particleLife.isTrackerActive = false
+            particleLife.isTrackerSelectionActive = false
+            particleLife.isDriftCamActive = false
+        }
+        const resetTrackerCameraOffset = () => {
+            trackerCameraOffset = { x: 0, y: 0 }
+            targetTrackerCameraOffset = { x: 0, y: 0 }
+            device.queue.writeBuffer(trackerCameraOptionsBuffer!, 0, new Float32Array([0, 0]))
+        }
+        // Syncs CPU camera to GPU camera position (used when switching between tracker camera and free camera modes to prevent jumps)
+        const syncCameraFromGPU = async () => {
+            if (!cameraBuffer) return
+
+            const arrayBuffer = await readBufferFromGPU(cameraBuffer, 16)
+            const cameraData = new Float32Array(arrayBuffer)
+
+            cameraCenter.x = targetCameraCenter.x = cameraData[0]  // centerX
+            cameraCenter.y = targetCameraCenter.y = cameraData[1]  // centerY
+            cameraChanged = true
+        }
+        const onTrackerZoneSelected = async (zone: { x: number, y: number, width: number, height: number }) => {
+            const scaledX = zone.x * DEVICE_PIXEL_RATIO
+            const scaledY = zone.y * DEVICE_PIXEL_RATIO
+            const scaledWidth = zone.width * DEVICE_PIXEL_RATIO
+            const scaledHeight = zone.height * DEVICE_PIXEL_RATIO
+            
+            const centerScreenX = scaledX + scaledWidth / 2
+            const centerScreenY = scaledY + scaledHeight / 2
+            
+            // Convert screen coordinates to world coordinates
+            const worldX = cameraCenter.x + (centerScreenX / CANVAS_WIDTH * 2 - 1) / cameraScaleX
+            const worldY = cameraCenter.y + (centerScreenY / CANVAS_HEIGHT * 2 - 1) / cameraScaleY
+
+            // Calculate the world size of the selected zone based on the current camera zoom level
+            const worldWidth = (scaledWidth / CANVAS_WIDTH) * 2 / cameraScaleX
+            const worldHeight = (scaledHeight / CANVAS_HEIGHT) * 2 / cameraScaleY
+
+            const success = await initializeTrackerFromZone({ x: worldX, y: worldY, width: worldWidth, height: worldHeight })
+            
+            if (success) particleLife.isTrackerActive = true
+            particleLife.isTrackerSelectionActive = false
+            particleLife.isRunning = true
+        }
+        // Initialize tracker state based on a user-selected zone, calculating the center of mass
+        const initializeTrackerFromZone = async (zone: { x: number, y: number, width: number, height: number }): Promise<boolean> => {
+            // Read the current particle positions and velocities from the GPU to calculate the center of mass and average
+            const arrayBuffer = await readBufferFromGPU(particleBuffer!, NUM_PARTICLES * 5 * 4)
+            const particles = new Float32Array(arrayBuffer)
+
+            const zoneHalfW = zone.width * 0.5
+            const zoneHalfH = zone.height * 0.5
+            let sumX = 0, sumY = 0, sumVx = 0, sumVy = 0, count = 0
+
+            // Get the center of mass and average velocity of particles within the selected zone
+            for (let i = 0; i < NUM_PARTICLES; i++) {
+                const idx = i * 5
+                const px = particles[idx]
+                const py = particles[idx + 1]
+
+                if (Math.abs(px - zone.x) <= zoneHalfW && Math.abs(py - zone.y) <= zoneHalfH) {
+                    sumX += px
+                    sumY += py
+                    sumVx += particles[idx + 2]
+                    sumVy += particles[idx + 3]
+                    count++
+                }
+            }
+            
+            if (count < 8) {
+                error(`Not enough particles to track. <br> <b>${count}</b> found, <b>8</b> minimum.`)
+                return false
+            }
+
+            // Calculate center of mass and average velocity for the selected particles
+            const centerX = sumX / count
+            const centerY = sumY / count
+            const avgVx = sumVx / count
+            const avgVy = sumVy / count
+
+            // Determine the initial search radius
+            const minRadius = Math.max(currentMaxRadius * 0.8, 16)
+            const zoneRadius = Math.max(zoneHalfW, zoneHalfH)
+            const initialSearchRadius = Math.max(zoneRadius, minRadius)
+            
+            // Initialize tracker state on GPU (32 bytes)
+            const stateData = new ArrayBuffer(32)
+            const view = new DataView(stateData)
+            view.setFloat32(0, centerX, true)              // x
+            view.setFloat32(4, centerY, true)              // y
+            view.setFloat32(8, avgVx, true)                // vx
+            view.setFloat32(12, avgVy, true)               // vy
+            view.setFloat32(16, initialSearchRadius, true) // searchRadius
+            view.setUint32(20, count, true)                // expectedCount
+            view.setFloat32(24, cameraCenter.x, true)      // baseCameraX
+            view.setFloat32(28, cameraCenter.y, true)      // baseCameraY
+            device.queue.writeBuffer(trackerStateBuffer!, 0, stateData)
+
+            // Clear levels buffer
+            device.queue.writeBuffer(trackerLevelsBuffer!, 0, new ArrayBuffer(32 * 4)) // 128 bytes for 4 levels
+
+            if (isTrackerCameraActive) {
+                targetCameraCenter.x = centerX
+                targetCameraCenter.y = centerY
+            }
+
+            success(`Creature <b>locked</b> - now tracking.`)
+            return true
+        }
+        const computeTracking = (encoder: GPUCommandEncoder) => {
+            if (!trackerStateBuffer || !trackerLevelsBuffer) return
+
+            const accumulatePass = encoder.beginComputePass()
+            accumulatePass.setPipeline(trackerAccumulatePipeline)
+            accumulatePass.setBindGroup(0, trackerComputeBindGroup)
+            accumulatePass.setBindGroup(1, simOptionsBindGroup)
+            accumulatePass.setBindGroup(2, deltaTimeBindGroup)
+            accumulatePass.dispatchWorkgroups(Math.ceil(NUM_PARTICLES / 256))
+            accumulatePass.end()
+
+            const finalizePass = encoder.beginComputePass()
+            finalizePass.setPipeline(trackerFinalizePipeline)
+            finalizePass.setBindGroup(0, trackerComputeBindGroup)
+            finalizePass.setBindGroup(1, simOptionsBindGroup)
+            finalizePass.setBindGroup(2, deltaTimeBindGroup)
+            finalizePass.dispatchWorkgroups(1)
+            finalizePass.end()
+            
+            if (isTrackerCameraActive) computeTrackerCameraUpdate(encoder)
+        }
+        const computeTrackerCameraUpdate = (encoder: GPUCommandEncoder) => {
+            const cameraUpdatePass = encoder.beginComputePass()
+            cameraUpdatePass.setPipeline(trackerCameraUpdatePipeline)
+            cameraUpdatePass.setBindGroup(0, trackerCameraUpdateBindGroup)
+            cameraUpdatePass.dispatchWorkgroups(1)
+            cameraUpdatePass.end()
+        }
+        const renderTrackerIndicator = (encoder: GPUCommandEncoder) => {
+            const renderPass = encoder.beginRenderPass({
+                colorAttachments: [{
+                    view: ctx.getCurrentTexture().createView(),
+                    loadOp: 'load',
+                    storeOp: 'store',
+                }],
+            })
+            renderPass.setPipeline(renderTrackerPipeline)
+            renderPass.setBindGroup(0, cameraBindGroup)
+            renderPass.setBindGroup(1, trackerRenderBindGroup)
+            renderPass.setBindGroup(2, deltaTimeBindGroup)
+            renderPass.setBindGroup(3, simOptionsBindGroup)
+            renderPass.draw(4, 1, 0, 0)
+            renderPass.end()
         }
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
@@ -694,7 +1118,7 @@ export default defineComponent({
                 colorSpace: 'srgb',
             })
         }
-        const initLife = async () => {
+        const initLife = async (autoCenter: boolean = true) => {
             isInitializing = true
             setRulesMatrix(generateRules(0, NUM_TYPES)) // Random rule
             setMinRadiusMatrix(makeRandomMinRadiusMatrix())
@@ -709,7 +1133,7 @@ export default defineComponent({
             console.log("Max Radius Matrix:", maxRadiusMatrix);
 
             await nextTick()
-            centerView()
+            if (autoCenter) centerView()
 
             initColors()
             initParticles()
@@ -723,10 +1147,11 @@ export default defineComponent({
             animationFrameId = requestAnimationFrame(frame)
         }
         const regenerateLife = async () => {
+            if (isTrackerActive) await stopTracker()
             cancelAnimationLoop()
             destroyPipelinesAndBindGroups()
             await destroyBuffers(true)
-            await initLife()
+            await initLife(false)
         }
         // -------------------------------------------------------------------------------------------------------------
         // -------------------------------------------------------------------------------------------------------------
@@ -740,14 +1165,16 @@ export default defineComponent({
             //     return
             // }
 
-            const zoomDiff = targetZoomFactor - zoomFactor
-            const panXDiff = targetCameraCenter.x - cameraCenter.x
-            const panYDiff = targetCameraCenter.y - cameraCenter.y
-            if (Math.abs(zoomDiff) > 0.001) handleZoomSmoothing(zoomDiff)
-            if (Math.abs(panXDiff) > 0.001 || Math.abs(panYDiff) > 0.001) handleMoveSmoothing(panXDiff, panYDiff)
+            if (isDriftCamActive) handleDriftCamera()
+            if (isCameraTracking) {
+                handleCameraTrackingMoveSmoothing()
+                handleCameraTrackingZoomSmoothing()
+            } else {
+                handleMoveSmoothing()
+                handleZoomSmoothing()
+            }
 
             if (isBrushActive && showBrushCircle) updateBrushOptionsBuffer()
-
             if (isBrushErasing) await eraseWithBrush()
             else if (isBrushDrawing) await drawWithBrush()
             else if (isUpdateNumParticlesPending) await updateNumParticles(NEW_NUM_PARTICLES)
@@ -759,9 +1186,11 @@ export default defineComponent({
                 step()
             } else {
                 const encoder = device.createCommandEncoder()
+                if (isCameraTracking) computeTrackerCameraUpdate(encoder)
                 renderParticles(encoder)
                 if (isDebugBinsActive && useSpatialHash) renderDebugBins(encoder)
                 if (isBrushActive && showBrushCircle) renderBrushCircle(encoder)
+                if (isTrackerActive && isTrackerIndicatorVisible) renderTrackerIndicator(encoder)
                 device.queue.submit([encoder.finish()])
             }
             // device.queue.onSubmittedWorkDone().then(() => executionTime.value = performance.now() - startExecutionTime) // Approximate execution time of the GPU commands
@@ -795,10 +1224,14 @@ export default defineComponent({
             if (useSpatialHash) computeBinning(encoder)
             else computeBruteForce(encoder)
             computeAdvance(encoder)
+            
+            if (isTrackerActive) computeTracking(encoder)
+            
             renderParticles(encoder)
 
             if (isDebugBinsActive && useSpatialHash) renderDebugBins(encoder)
             if (isBrushActive && showBrushCircle) renderBrushCircle(encoder)
+            if (isTrackerActive && isTrackerIndicatorVisible) renderTrackerIndicator(encoder)
 
             device.queue.submit([encoder.finish()])
         }
@@ -870,9 +1303,13 @@ export default defineComponent({
         // -------------------------------------------------------------------------------------------------------------
         const renderParticles = (encoder: GPUCommandEncoder) => {
             if (cameraChanged) {
-                device.queue.writeBuffer(cameraBuffer!, 0, new Float32Array([
-                    cameraCenter.x, cameraCenter.y, cameraScaleX, cameraScaleY
-                ]))
+                if (isCameraTracking) { // Only update zoom factors when tracking (position is handled by the tracker camera compute shader)
+                    device.queue.writeBuffer(cameraBuffer!, 8, new Float32Array([cameraScaleX, cameraScaleY]))
+                } else {
+                    device.queue.writeBuffer(cameraBuffer!, 0, new Float32Array([
+                        cameraCenter.x, cameraCenter.y, cameraScaleX, cameraScaleY
+                    ]))
+                }
                 updateInfiniteRenderOptions()
                 cameraChanged = false
             }
@@ -1071,11 +1508,12 @@ export default defineComponent({
             updateBrushOptionsBuffer()
             updateBrushesBuffer()
             updateDebugOptionsBuffer()
+            createTrackerComputeBuffers()
             // ----------------------------------------------------------------------------------------------
             const cameraData = new Float32Array([cameraCenter.x, cameraCenter.y, cameraScaleX, cameraScaleY])
             cameraBuffer = device.createBuffer({
                 size: cameraData.byteLength,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
                 mappedAtCreation: true
             });
             new Float32Array(cameraBuffer.getMappedRange()).set(cameraData)
@@ -1200,8 +1638,8 @@ export default defineComponent({
             if (brushOptionsBindGroup) updateBrushesBindGroup()
         }
         const updateBrushOptionsBuffer = () => {
-            const brushX = cameraCenter.x + (pointerX / CANVAS_WIDTH * 2 - 1) / cameraScaleX
-            const brushY = cameraCenter.y + (pointerY / CANVAS_HEIGHT * 2 - 1) / cameraScaleY
+            const brushClipX = pointerX / CANVAS_WIDTH * 2 - 1
+            const brushClipY = pointerY / CANVAS_HEIGHT * 2 - 1
             const brushVx = (pointerX - lastFramePointerX) / (cameraScaleX * CANVAS_WIDTH * 0.5) / smoothedDeltaTime
             const brushVy = (pointerY - lastFramePointerY) / (cameraScaleY * CANVAS_HEIGHT * 0.5) / smoothedDeltaTime
 
@@ -1209,8 +1647,8 @@ export default defineComponent({
 
             const brushOptionsData = new ArrayBuffer(28)
             const brushOptionsView = new DataView(brushOptionsData)
-            brushOptionsView.setFloat32(0, brushX, true)
-            brushOptionsView.setFloat32(4, brushY, true)
+            brushOptionsView.setFloat32(0, brushClipX, true)
+            brushOptionsView.setFloat32(4, brushClipY, true)
             brushOptionsView.setFloat32(8, brushVx, true)
             brushOptionsView.setFloat32(12, brushVy, true)
             brushOptionsView.setFloat32(16, brushRadius, true)
@@ -1325,6 +1763,25 @@ export default defineComponent({
                 device.queue.writeBuffer(debugOptionsBuffer, 0, debugOptionsData)
             }
         }
+        const createTrackerComputeBuffers = () => {
+            trackerStateBuffer = device.createBuffer({
+                size: 32, // x, y, vx, vy, searchRadius, expectedCount, _padding1, _padding2
+                usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+            })
+            trackerLevelsBuffer = device.createBuffer({
+                size: 32 * 4, // 128 bytes for 4 levels
+                usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+            })
+            trackerCameraOptionsBuffer = device.createBuffer({
+                size: 16, // panOffsetX, panOffsetY, smoothing, _padding
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                mappedAtCreation: true,
+            })
+            new Float32Array(trackerCameraOptionsBuffer.getMappedRange()).set([0, 0, particleLife.trackerCameraSmoothing, 0])
+            trackerCameraOptionsBuffer.unmap()
+            trackerCameraOffset = { x: 0, y: 0 }
+            targetTrackerCameraOffset = { x: 0, y: 0 }
+        }
         const updateInteractionMatrixBuffer = () => {
             const stride = 4; // 4 octets par couple
             const interactionData = new Uint8Array(NUM_TYPES * NUM_TYPES * stride);
@@ -1410,6 +1867,20 @@ export default defineComponent({
                     { binding: 0, resource: { buffer: debugOptionsBuffer! } },
                 ],
             })
+            trackerRenderBindGroup = device.createBindGroup({
+                layout: trackerRenderBindGroupLayout,
+                entries: [
+                    { binding: 0, resource: { buffer: trackerStateBuffer! } },
+                ],
+            })
+            trackerCameraUpdateBindGroup = device.createBindGroup({
+                layout: trackerCameraUpdateBindGroupLayout,
+                entries: [
+                    { binding: 0, resource: { buffer: trackerStateBuffer! } },
+                    { binding: 1, resource: { buffer: cameraBuffer! } },
+                    { binding: 2, resource: { buffer: trackerCameraOptionsBuffer! } },
+                ],
+            })
         }
         const updateBrushesBindGroup = () => {
             brushOptionsBindGroup = undefined as any
@@ -1418,6 +1889,7 @@ export default defineComponent({
                 entries: [
                     { binding: 0, resource: { buffer: brushOptionsBuffer! } },
                     { binding: 1, resource: { buffer: brushesBuffer! } },
+                    { binding: 2, resource: { buffer: cameraBuffer! } },
                 ],
             })
         }
@@ -1459,6 +1931,7 @@ export default defineComponent({
             particleSortBindGroup = undefined as any;
             particleComputeForcesBindGroup = undefined as any;
             bruteForceBindGroup = undefined as any;
+            trackerComputeBindGroup = undefined as any;
 
             particleBufferBindGroup = device.createBindGroup({
                 layout: particleBufferBindGroupLayout,
@@ -1498,6 +1971,14 @@ export default defineComponent({
                     { binding: 0, resource: { buffer: particleTempBuffer! } },
                     { binding: 1, resource: { buffer: particleBuffer! } },
                     { binding: 2, resource: { buffer: interactionMatrixBuffer! } },
+                ],
+            })
+            trackerComputeBindGroup = device.createBindGroup({
+                layout: trackerComputeBindGroupLayout,
+                entries: [
+                    { binding: 0, resource: { buffer: particleBuffer! } },
+                    { binding: 1, resource: { buffer: trackerStateBuffer! } },
+                    { binding: 2, resource: { buffer: trackerLevelsBuffer! } },
                 ],
             })
         }
@@ -1608,7 +2089,7 @@ export default defineComponent({
             });
             deltaTimeBindGroupLayout = device.createBindGroupLayout({
                 entries: [
-                    { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // deltaTimeBuffer
+                    { binding: 0, visibility: GPUShaderStage.COMPUTE | GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // deltaTimeBuffer
                 ],
             })
             cameraBindGroupLayout = device.createBindGroupLayout({
@@ -1642,6 +2123,7 @@ export default defineComponent({
                 entries: [
                     { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // brushOptionsBuffer
                     { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } }, // brushesBuffer
+                    { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // cameraBuffer
                 ],
             })
             particleEraseBindGroupLayout = device.createBindGroupLayout({
@@ -1678,6 +2160,25 @@ export default defineComponent({
             debugOptionsBindGroupLayout = device.createBindGroupLayout({
                 entries: [
                     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // debugOptionsBuffer
+                ],
+            })
+            trackerRenderBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'read-only-storage' } }, // trackerStateBuffer
+                ],
+            })
+            trackerComputeBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } }, // particleBuffer
+                    { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // trackerStateBuffer
+                    { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // trackerLevelsBuffer
+                ],
+            })
+            trackerCameraUpdateBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // trackerStateBuffer
+                    { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // cameraBuffer
+                    { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // trackerCameraOptionsBuffer
                 ],
             })
         }
@@ -1802,6 +2303,27 @@ export default defineComponent({
                     bindGroupLayouts: [particleDrawBindGroupLayout, simOptionsBindGroupLayout, brushOptionsBindGroupLayout]
                 }),
                 compute: { module: particleDrawShader, entryPoint: 'drawParticles' },
+            })
+
+            const trackerComputeShader = device.createShaderModule({ code: trackerComputeShaderCode })
+            trackerAccumulatePipeline = device.createComputePipeline({
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [trackerComputeBindGroupLayout, simOptionsBindGroupLayout, deltaTimeBindGroupLayout]
+                }),
+                compute: { module: trackerComputeShader, entryPoint: 'accumulateParticles' }
+            })
+            trackerFinalizePipeline = device.createComputePipeline({
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [trackerComputeBindGroupLayout, simOptionsBindGroupLayout, deltaTimeBindGroupLayout]
+                }),
+                compute: { module: trackerComputeShader, entryPoint: 'finalizeTracker' }
+            })
+            const trackerCameraUpdateShader = device.createShaderModule({ code: trackerCameraUpdateShaderCode })
+            trackerCameraUpdatePipeline = device.createComputePipeline({
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [trackerCameraUpdateBindGroupLayout]
+                }),
+                compute: { module: trackerCameraUpdateShader, entryPoint: 'main' }
             })
         }
         const particleNormalBlending: GPUBlendState = {
@@ -1931,6 +2453,19 @@ export default defineComponent({
                         format: navigator.gpu.getPreferredCanvasFormat(),
                         blend: particleNormalBlending,
                     }] },
+                primitive: { topology: 'triangle-strip' },
+            })
+            // ---------------------------------------------------------------------------------------------------------
+            const renderTrackerShader = device.createShaderModule({ code: renderTrackerShaderCode })
+            renderTrackerPipeline = device.createRenderPipeline({
+                layout: device.createPipelineLayout({
+                    bindGroupLayouts: [cameraBindGroupLayout, trackerRenderBindGroupLayout, deltaTimeBindGroupLayout, simOptionsBindGroupLayout]
+                }),
+                vertex: { module: renderTrackerShader, entryPoint: 'vertexMain' },
+                fragment: { module: renderTrackerShader, entryPoint: 'fragmentMain', targets: [{
+                    format: navigator.gpu.getPreferredCanvasFormat(),
+                    blend: particleNormalBlending,
+                }] },
                 primitive: { topology: 'triangle-strip' },
             })
         }
@@ -2485,6 +3020,7 @@ export default defineComponent({
             await readBuffer.mapAsync(GPUMapMode.READ)
             const arrayBuffer = readBuffer.getMappedRange().slice(0)
             readBuffer.unmap()
+            readBuffer.destroy()
             return arrayBuffer
         }
         function resizeMatrix(matrix: number[][], oldNumTypes: number, newNumTypes: number, randomFn: () => number) {
@@ -2682,6 +3218,33 @@ export default defineComponent({
         watch(() => particleLife.showBrushCircle, (value: boolean) => showBrushCircle = value)
         watch(() => particleLife.zoomSmoothing, (value: number) => zoomSmoothing = value)
         watch(() => particleLife.panSmoothing, (value: number) => panSmoothing = value)
+        watch(() => particleLife.isDriftCamActive, (value: boolean) => { value && initDriftCamera(); isDriftCamActive = value })
+        watch(() => particleLife.driftCamResetOnPan, (value: boolean) => driftCamResetOnPan = value)
+        watch(() => particleLife.driftCamSpeed, (value: number) => driftCamSpeed = value)
+        watch(() => particleLife.driftCamAmplitude, (value: number) => driftCamAmplitude = value)
+        watch(() => particleLife.driftCamZoomRange, (value: number[]) => {
+            driftCamZoomRange = value;
+            driftCamZoomCenter = (driftCamZoomRange[1] + driftCamZoomRange[0]) * 0.5 // Center zoom level for driftCam
+            driftCamZoomAmplitude = (driftCamZoomRange[1] - driftCamZoomRange[0]) * 0.5 // Amplitude of zoom changes for driftCam
+        }, { deep: true })
+        
+        watch(() => particleLife.isTrackerIndicatorVisible, (value: boolean) => isTrackerIndicatorVisible = value)
+        watch(() => particleLife.isTrackerSelectionActive, (value: boolean) => particleLife.isHudLocked = value)
+        watch(() => particleLife.isTrackerActive, (value: boolean) => {
+            isTrackerActive = value
+            isCameraTracking = isTrackerActive && isTrackerCameraActive
+        })
+        watch(() => particleLife.isTrackerCameraActive, async (value: boolean) => {
+            if (isTrackerActive && !value) await syncCameraFromGPU()
+            // Update baseCameraX/Y to current camera position so smoothing starts from here when tracker camera is re-enabled.
+            if (isTrackerActive && value) device.queue.writeBuffer(trackerStateBuffer!, 24, new Float32Array([cameraCenter.x, cameraCenter.y]))
+            resetTrackerCameraOffset()
+            isTrackerCameraActive = value
+            isCameraTracking = isTrackerActive && isTrackerCameraActive
+        })
+        watch(() => particleLife.trackerCameraSmoothing, (value: number) => {
+            device.queue.writeBuffer(trackerCameraOptionsBuffer!, 8, new Float32Array([value]))
+        })
 
         watchAndUpdateGlowOptions(() => particleLife.glowSize, (value: number) => glowSize = value)
         watchAndUpdateGlowOptions(() => particleLife.glowIntensity, (value: number) => glowIntensity = value)
@@ -2784,6 +3347,10 @@ export default defineComponent({
             interactionMatrixBuffer?.destroy(); interactionMatrixBuffer = undefined;
             simOptionsBuffer?.destroy(); simOptionsBuffer = undefined;
             glowOptionsBuffer?.destroy(); glowOptionsBuffer = undefined;
+            infiniteRenderOptionsBuffer?.destroy(); infiniteRenderOptionsBuffer = undefined;
+            debugOptionsBuffer?.destroy(); debugOptionsBuffer = undefined;
+            brushOptionsBuffer?.destroy(); brushOptionsBuffer = undefined;
+            brushesBuffer?.destroy(); brushesBuffer = undefined;
             particleHashesBuffer?.destroy(); particleHashesBuffer = undefined;
             cellHeadsBuffer?.destroy(); cellHeadsBuffer = undefined;
             particleNextIndicesBuffer?.destroy(); particleNextIndicesBuffer = undefined;
@@ -2797,6 +3364,10 @@ export default defineComponent({
             newParticleCountBuffer?.destroy(); newParticleCountBuffer = undefined;
             newParticleCountReadBuffer?.destroy(); newParticleCountReadBuffer = undefined;
             particleCompactBuffer?.destroy(); particleCompactBuffer = undefined;
+            
+            trackerStateBuffer?.destroy(); trackerStateBuffer = undefined;
+            trackerLevelsBuffer?.destroy(); trackerLevelsBuffer = undefined;
+            trackerCameraOptionsBuffer?.destroy(); trackerCameraOptionsBuffer = undefined;
 
             if (!keepTexture) {
                 offscreenTexture?.destroy(); offscreenTexture = undefined;
@@ -2860,6 +3431,15 @@ export default defineComponent({
             offscreenTextureBindGroup = undefined as any;
             composeHdrBindGroup = undefined as any;
             glowOptionsBindGroup = undefined as any;
+            brushOptionsBindGroup = undefined as any;
+
+            trackerAccumulatePipeline = undefined as any;
+            trackerFinalizePipeline = undefined as any;
+            trackerCameraUpdatePipeline = undefined as any;
+            renderTrackerPipeline = undefined as any;
+            trackerComputeBindGroup = undefined as any;
+            trackerCameraUpdateBindGroup = undefined as any;
+            trackerRenderBindGroup = undefined as any;
         }
         const cancelAnimationLoop = () => {
             if (animationFrameId) {
@@ -2891,7 +3471,9 @@ export default defineComponent({
             updateSimWidth, updateSimHeight, updateNumParticles, setNewNumParticles, setNewNumTypes,
             updateRulesMatrixValue, updateMinMatrixValue, updateMaxMatrixValue, newRandomRulesMatrix,
             updateRulesMatrix, updateParticlePositions, updateColors, loadPreset,
-            rulesOptions, paletteOptions, positionOptions
+            startTrackerSelection, cancelTrackerSelection, stopTracker, onTrackerZoneSelected,
+            rulesOptions, paletteOptions, positionOptions,
+            openDonationModal
         }
     }
 });
@@ -2900,5 +3482,22 @@ export default defineComponent({
 <style scoped>
 canvas {
     background: black;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+}
+
+.fade-enter-to,
+.fade-leave-from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 </style>
