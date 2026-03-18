@@ -498,6 +498,8 @@ export default defineComponent({
         let isBrushErasing: boolean = false
         let isBrushDrawing: boolean = false
         let isApplyingBrushForce: boolean = false
+        let isEraseCompletionPending: boolean = false
+        let isEraseCompleting: boolean = false
         let brushType: number = particleLife.brushType // 0: Erase, 1: Draw, 2: Repulse, 3: Attract
         let brushes: number[] = particleLife.brushes
         let brushRadius: number = particleLife.brushRadius
@@ -676,11 +678,17 @@ export default defineComponent({
                 }
             })
             useEventListener(canvasRef.value, ['mouseup'], () => {
+                if (isDragging && isDriftCamActive && driftCamResetOnPan) initDriftCamera()
                 isDragging = false
                 isBrushErasing = false
                 isBrushDrawing = false
                 isApplyingBrushForce = false
-                if (isDriftCamActive && driftCamResetOnPan) initDriftCamera()
+            })
+            useEventListener(canvasRef.value, 'mouseleave', () => {
+                isDragging = false
+                isBrushErasing = false
+                isBrushDrawing = false
+                isApplyingBrushForce = false
             })
             useEventListener(canvasRef.value, 'wheel', (e) => {
                 if (e.deltaY < 0) handleZoom(1) // Zoom in
@@ -1175,10 +1183,13 @@ export default defineComponent({
             }
 
             if (isBrushActive && showBrushCircle) updateBrushOptionsBuffer()
-            if (isBrushErasing) await eraseWithBrush()
-            else if (isBrushDrawing) drawWithBrush()
-            else if (isUpdateNumParticlesPending) await updateNumParticles(NEW_NUM_PARTICLES)
-            else if (isUpdateNumTypesPending) await updateNumTypes(NEW_NUM_TYPES)
+            if (!isEraseCompleting) { // Prevent buffer mutations while async erase completion is pending
+                if (isBrushErasing) eraseWithBrush()
+                else if (isEraseCompletionPending) completeEraseWithBrush()
+                else if (isBrushDrawing) drawWithBrush()
+                else if (isUpdateNumParticlesPending) await updateNumParticles(NEW_NUM_PARTICLES)
+                else if (isUpdateNumTypesPending) await updateNumTypes(NEW_NUM_TYPES)
+            }
 
             const startExecutionTime = performance.now()
             if (isRunning) {
@@ -1741,6 +1752,10 @@ export default defineComponent({
                 })
                 new Uint8Array(simOptionsBuffer.getMappedRange()).set(new Uint8Array(simOptionsData))
                 simOptionsBuffer.unmap()
+            } else if (isEraseCompletionPending) {
+                // Skip writing numParticles during erase to avoid conflicts with GPU-side copyBufferToBuffer
+                device.queue.writeBuffer(simOptionsBuffer, 0, simOptionsData, 0, 20)
+                device.queue.writeBuffer(simOptionsBuffer, 24, simOptionsData, 24, 52)
             } else {
                 device.queue.writeBuffer(simOptionsBuffer, 0, simOptionsData)
             }
@@ -2693,7 +2708,7 @@ export default defineComponent({
             if (isInfiniteMirrorWrap && composeInfinitePipeline) updateOffscreenTextureBindGroup()
         }
         const drawWithBrush = () => {
-            if (isUpdatingParticles || !isBrushActive || brushType !== 1) return
+            if (isUpdatingParticles || isEraseCompleting || !isBrushActive || brushType !== 1) return
             isUpdatingParticles = true
 
             try {
@@ -2749,8 +2764,8 @@ export default defineComponent({
                 isUpdatingParticles = false
             }
         }
-        const eraseWithBrush = async () => {
-            if (isUpdatingParticles || !isBrushActive || brushType !== 0) return
+        const eraseWithBrush = () => {
+            if (isUpdatingParticles || isEraseCompleting || !isBrushActive || brushType !== 0) return
             isUpdatingParticles = true
 
             try {
@@ -2774,21 +2789,54 @@ export default defineComponent({
                 compactPass.dispatchWorkgroups(Math.ceil(NUM_PARTICLES / 64))
                 compactPass.end()
 
-                encoder.copyBufferToBuffer(newParticleCountBuffer!, 0, newParticleCountReadBuffer!, 0, 4)
-                device.queue.submit([encoder.finish()])
+                // Copy compacted particles back to particleBuffer (full old size)
+                encoder.copyBufferToBuffer(particleCompactBuffer!, 0, particleBuffer!, 0, NUM_PARTICLES * 20)
+                // Update GPU-side numParticles from the atomic counter (no CPU readback needed)
+                encoder.copyBufferToBuffer(newParticleCountBuffer!, 0, simOptionsBuffer!, 20, 4)
 
-                await newParticleCountReadBuffer!.mapAsync(GPUMapMode.READ)
+                device.queue.submit([encoder.finish()])
+                isEraseCompletionPending = true
+            } catch (error) {
+                console.error("Error during erase and compact operation:", error)
+            } finally {
+                isUpdatingParticles = false
+            }
+        }
+        const completeEraseWithBrush = () => {
+            if (isEraseCompleting || !isEraseCompletionPending) return
+            isEraseCompleting = true
+
+            // Copy new particle count to readback buffer
+            const readEncoder = device.createCommandEncoder({ label: 'Read Erase Count Encoder' })
+            readEncoder.copyBufferToBuffer(newParticleCountBuffer!, 0, newParticleCountReadBuffer!, 0, 4)
+            device.queue.submit([readEncoder.finish()])
+
+            // .then() instead of await prevents blocking the main loop during GPU readback
+            newParticleCountReadBuffer!.mapAsync(GPUMapMode.READ).then(() => {
                 const newCount = new Uint32Array(newParticleCountReadBuffer!.getMappedRange())[0]
                 newParticleCountReadBuffer!.unmap()
 
                 if (newCount < NUM_PARTICLES) {
+                    const oldParticleBuffer = particleBuffer
+
                     NUM_PARTICLES = newCount
                     particleLife.numParticles = newCount
-                    updateParticleBuffers()
 
-                    const copyEncoder = device.createCommandEncoder({ label: 'Copy Compacted Data' })
-                    copyEncoder.copyBufferToBuffer(particleCompactBuffer!, 0, particleBuffer!, 0, newCount * 5 * 4)
+                    particleBuffer = device.createBuffer({
+                        size: newCount * 20,
+                        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+                    })
+
+                    const copyEncoder = device.createCommandEncoder({ label: 'Copy to Resized Buffer' })
+                    copyEncoder.copyBufferToBuffer(oldParticleBuffer!, 0, particleBuffer!, 0, newCount * 20)
                     device.queue.submit([copyEncoder.finish()])
+                    oldParticleBuffer?.destroy()
+
+                    if (particleTempBuffer) particleTempBuffer.destroy(); particleTempBuffer = undefined;
+                    particleTempBuffer = device.createBuffer({
+                        size: particleBuffer.size,
+                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+                    })
 
                     updateSimOptionsBuffer()
                     updateEraseCompactBuffers()
@@ -2797,11 +2845,12 @@ export default defineComponent({
                     updateInfiniteRenderOptions()
                     hasUpdateNumParticles = true
                 }
-            } catch (error) {
-                console.error("Error during erase and compact operation:", error)
-            } finally {
-                isUpdatingParticles = false
-            }
+            }).catch((error) => {
+                console.error("Error during erase completion:", error)
+            }).finally(() => {
+                isEraseCompletionPending = false
+                isEraseCompleting = false
+            })
         }
         const setNewNumParticles = (newCount: number) => {
             NEW_NUM_PARTICLES = newCount

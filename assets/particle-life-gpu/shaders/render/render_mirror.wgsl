@@ -75,6 +75,9 @@ fn vertex_main(instanceIndex: u32, vertexIndex: u32, size: f32) -> VertexOutput 
     let invMWC = select(0.2, 0.11111111, mirrorWrapCount == 9u); // 1/5 or 1/9
     let particleIndex = u32(f32(instanceIndex) * invMWC);
     let mirrorIndex = instanceIndex - particleIndex * mirrorWrapCount;
+    if (particleIndex >= options.numParticles) {
+        return VertexOutput(vec4f(0.0), vec2f(0.0), vec4f(0.0), 0u);
+    }
 //    let mirrorIndex = instanceIndex % options.mirrorWrapCount;
 //    let particleIndex = instanceIndex / options.mirrorWrapCount;
 
