@@ -1176,7 +1176,7 @@ export default defineComponent({
 
             if (isBrushActive && showBrushCircle) updateBrushOptionsBuffer()
             if (isBrushErasing) await eraseWithBrush()
-            else if (isBrushDrawing) await drawWithBrush()
+            else if (isBrushDrawing) drawWithBrush()
             else if (isUpdateNumParticlesPending) await updateNumParticles(NEW_NUM_PARTICLES)
             else if (isUpdateNumTypesPending) await updateNumTypes(NEW_NUM_TYPES)
 
@@ -2692,10 +2692,9 @@ export default defineComponent({
 
             if (isInfiniteMirrorWrap && composeInfinitePipeline) updateOffscreenTextureBindGroup()
         }
-        const drawWithBrush = async () => {
+        const drawWithBrush = () => {
             if (isUpdatingParticles || !isBrushActive || brushType !== 1) return
             isUpdatingParticles = true
-            await device.queue.onSubmittedWorkDone()
 
             try {
                 if (!showBrushCircle) updateBrushOptionsBuffer() // Condition prevents duplicate updates
@@ -2726,7 +2725,6 @@ export default defineComponent({
                 drawPass.end()
 
                 device.queue.submit([encoder.finish()])
-                await device.queue.onSubmittedWorkDone()
 
                 oldParticleBuffer?.destroy()
 
@@ -2754,7 +2752,6 @@ export default defineComponent({
         const eraseWithBrush = async () => {
             if (isUpdatingParticles || !isBrushActive || brushType !== 0) return
             isUpdatingParticles = true
-            await device.queue.onSubmittedWorkDone()
 
             try {
                 if (!showBrushCircle) updateBrushOptionsBuffer() // Condition prevents duplicate updates
@@ -2779,7 +2776,6 @@ export default defineComponent({
 
                 encoder.copyBufferToBuffer(newParticleCountBuffer!, 0, newParticleCountReadBuffer!, 0, 4)
                 device.queue.submit([encoder.finish()])
-                await device.queue.onSubmittedWorkDone()
 
                 await newParticleCountReadBuffer!.mapAsync(GPUMapMode.READ)
                 const newCount = new Uint32Array(newParticleCountReadBuffer!.getMappedRange())[0]
@@ -2793,7 +2789,6 @@ export default defineComponent({
                     const copyEncoder = device.createCommandEncoder({ label: 'Copy Compacted Data' })
                     copyEncoder.copyBufferToBuffer(particleCompactBuffer!, 0, particleBuffer!, 0, newCount * 5 * 4)
                     device.queue.submit([copyEncoder.finish()])
-                    await device.queue.onSubmittedWorkDone()
 
                     updateSimOptionsBuffer()
                     updateEraseCompactBuffers()
