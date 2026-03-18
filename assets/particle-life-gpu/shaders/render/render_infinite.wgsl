@@ -67,6 +67,10 @@ fn vertex_main(instanceIndex: u32, vertexIndex: u32, size: f32) -> VertexOutput 
     let copyInstanceIndex = instanceIndex / options.numParticles;
 
     let numCopiesX = u32(infiniteOptions.numCopies.x);
+    let totalCopies = numCopiesX * u32(infiniteOptions.numCopies.y);
+    if (copyInstanceIndex >= totalCopies) {
+        return VertexOutput(vec4f(0.0), vec2f(0.0), vec4f(0.0));
+    }
     let copyY = copyInstanceIndex / numCopiesX;
     let copyX = copyInstanceIndex - copyY * numCopiesX; // Faster than modulo (copyInstanceIndex % numCopiesX)
 
