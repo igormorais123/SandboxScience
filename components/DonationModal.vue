@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <Modal :modal-active="isOpen" @close="close" overlayColor="bg-gray-950/50 backdrop-blur-sm">
         <section>
             <header class="-mt-2 sm:-mt-4">
@@ -15,6 +15,7 @@
 
             <div flex flex-col gap-3>
                 <NuxtLink :to="patreonLink" target="_blank" external no-underline
+                   @click="trackDonationClick('patreon')"
                    class="group border-slate-600/50 hover:border-orange-500/50 hover:translate-x-1" rounded-xl p-4 border transition-all duration-200
                    bg="slate-800/60 hover:slate-800/90" shadow="hover:lg hover:orange-500/5">
                     <div flex items-center>
@@ -32,6 +33,7 @@
                 </NuxtLink>
 
                 <NuxtLink :to="buyMeACoffeeLink" target="_blank" external no-underline
+                          @click="trackDonationClick('buymeacoffee')"
                           class="group border-slate-600/50 hover:border-yellow-500/50 hover:translate-x-1" rounded-xl p-4 border transition-all duration-200
                           bg="slate-800/60 hover:slate-800/90" shadow="hover:lg hover:yellow-500/5">
                     <div flex items-center>
@@ -121,6 +123,7 @@
 <script setup lang="ts">
 const { isOpen, close } = useDonationModal()
 const { success } = useToasts()
+const { gtag } = useGtag()
 
 const patreonLink: string = 'https://patreon.com/SandboxScience'
 const buyMeACoffeeLink: string = 'https://buymeacoffee.com/dicso92'
@@ -133,9 +136,16 @@ const copiedLabel = ref<string | null>(null)
 const copiedBtc = computed(() => copied.value && copiedLabel.value === 'BTC')
 const copiedEth = computed(() => copied.value && copiedLabel.value === 'ETH')
 
+const trackDonationClick = (platform: string) => {
+    gtag('event', 'donation_click', {
+        event_category: 'donation',
+        event_label: platform,
+    })
+}
 const copyAddress = async (address: string, label: string) => {
     await copy(address)
     copiedLabel.value = label
     success(`${label} address copied!`)
+    trackDonationClick(`copy_${label.toLowerCase()}`)
 }
 </script>
