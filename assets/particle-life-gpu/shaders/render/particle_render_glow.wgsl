@@ -65,6 +65,9 @@ fn srgb_to_linear(color: vec3f) -> vec3f {
 }
 
 fn vertex_main(instanceIndex: u32, vertexIndex: u32, size: f32) -> VertexOutput {
+    if (instanceIndex >= options.numParticles) {
+        return VertexOutput(vec4f(0.0), vec2f(0.0), vec4f(0.0));
+    }
     let particle = particles[instanceIndex];
     let color = colors[u32(particle.particleType)];
     let particleCenterPos = vec2f(particle.x, particle.y);

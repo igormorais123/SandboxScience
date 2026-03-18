@@ -49,6 +49,9 @@ fn vertexMain(
     @builtin(instance_index) instanceIndex: u32,
     @builtin(vertex_index) vertexIndex: u32
 ) -> VertexOutput {
+    if (instanceIndex >= options.numParticles) {
+        return VertexOutput(vec4f(0.0), vec2f(0.0), vec4f(0.0));
+    }
     let particle = particles[instanceIndex];
     let offset = QUAD_VERTICES[vertexIndex];
     let color = colors[u32(particle.particleType)];
