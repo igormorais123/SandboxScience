@@ -1,0 +1,1489 @@
+{
+  "source": "banco-eleitores-rr.json",
+  "generated_at": "2026-03-18",
+  "regions": [
+    {
+      "regiao_administrativa": "Alto Alegre",
+      "amostra_n": 35,
+      "desinformacao_media": 2.8571,
+      "avaliacao_saude_media": 1.1429,
+      "avaliacao_educacao_media": 1.6857,
+      "avaliacao_seguranca_media": 1.1714,
+      "garimpo_favor_share": 0.1143,
+      "demarcacao_favor_share": 0.8,
+      "imigracao_negativa_share": 0.5143,
+      "bolsonaro_apoio_share": 0.4571,
+      "recebe_programa_social_share": 0.3714,
+      "top_preocupacoes": [
+        {
+          "tema": "Invasão de garimpeiros",
+          "freq": 13
+        },
+        {
+          "tema": "Preservação cultural",
+          "freq": 12
+        },
+        {
+          "tema": "Saúde indígena",
+          "freq": 11
+        },
+        {
+          "tema": "Contaminação por mercúrio",
+          "freq": 10
+        },
+        {
+          "tema": "Educação indígena",
+          "freq": 9
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Boca a boca",
+          "freq": 23
+        },
+        {
+          "fonte": "WhatsApp",
+          "freq": 22
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 22
+        },
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 21
+        },
+        {
+          "fonte": "FUNAI",
+          "freq": 21
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 22
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 6
+        },
+        {
+          "programa": "Bolsa Família",
+          "freq": 5
+        },
+        {
+          "programa": "Aposentadoria Rural",
+          "freq": 4
+        },
+        {
+          "programa": "Programa Prato Cheio (RR)",
+          "freq": 2
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 19
+        },
+        {
+          "rede": "YouTube",
+          "freq": 11
+        },
+        {
+          "rede": "TikTok",
+          "freq": 9
+        },
+        {
+          "rede": "Facebook",
+          "freq": 9
+        },
+        {
+          "rede": "Instagram",
+          "freq": 6
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Amajari",
+      "amostra_n": 16,
+      "desinformacao_media": 2.75,
+      "avaliacao_saude_media": 1.125,
+      "avaliacao_educacao_media": 1.6875,
+      "avaliacao_seguranca_media": 1.1875,
+      "garimpo_favor_share": 0.25,
+      "demarcacao_favor_share": 0.6875,
+      "imigracao_negativa_share": 0.625,
+      "bolsonaro_apoio_share": 0.5,
+      "recebe_programa_social_share": 0.375,
+      "top_preocupacoes": [
+        {
+          "tema": "Contaminação por mercúrio",
+          "freq": 6
+        },
+        {
+          "tema": "Saúde indígena",
+          "freq": 6
+        },
+        {
+          "tema": "Invasão de garimpeiros",
+          "freq": 5
+        },
+        {
+          "tema": "Economia",
+          "freq": 4
+        },
+        {
+          "tema": "Energia elétrica",
+          "freq": 4
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 12
+        },
+        {
+          "fonte": "Boca a boca",
+          "freq": 11
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 10
+        },
+        {
+          "fonte": "WhatsApp",
+          "freq": 10
+        },
+        {
+          "fonte": "FUNAI",
+          "freq": 7
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 10
+        },
+        {
+          "programa": "Programa Prato Cheio (RR)",
+          "freq": 2
+        },
+        {
+          "programa": "Aposentadoria Rural",
+          "freq": 2
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 2
+        },
+        {
+          "programa": "Bolsa Família",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 12
+        },
+        {
+          "rede": "YouTube",
+          "freq": 9
+        },
+        {
+          "rede": "Instagram",
+          "freq": 7
+        },
+        {
+          "rede": "Facebook",
+          "freq": 4
+        },
+        {
+          "rede": "TikTok",
+          "freq": 2
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Boa Vista",
+      "amostra_n": 650,
+      "desinformacao_media": 2.2492,
+      "avaliacao_saude_media": 1.7046,
+      "avaliacao_educacao_media": 2.6246,
+      "avaliacao_seguranca_media": 2.6908,
+      "garimpo_favor_share": 0.5138,
+      "demarcacao_favor_share": 0.26,
+      "imigracao_negativa_share": 0.6077,
+      "bolsonaro_apoio_share": 0.7169,
+      "recebe_programa_social_share": 0.2908,
+      "top_preocupacoes": [
+        {
+          "tema": "Economia",
+          "freq": 244
+        },
+        {
+          "tema": "Garimpo e desenvolvimento",
+          "freq": 146
+        },
+        {
+          "tema": "Desemprego",
+          "freq": 140
+        },
+        {
+          "tema": "Educação",
+          "freq": 136
+        },
+        {
+          "tema": "Isolamento geográfico",
+          "freq": 125
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "TikTok",
+          "freq": 351
+        },
+        {
+          "fonte": "TV Globo / Jornal Nacional",
+          "freq": 287
+        },
+        {
+          "fonte": "Instagram",
+          "freq": 277
+        },
+        {
+          "fonte": "YouTube",
+          "freq": 268
+        },
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 263
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 461
+        },
+        {
+          "programa": "Bolsa Família",
+          "freq": 44
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 41
+        },
+        {
+          "programa": "BPC",
+          "freq": 36
+        },
+        {
+          "programa": "Tarifa Social de Energia",
+          "freq": 33
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 613
+        },
+        {
+          "rede": "YouTube",
+          "freq": 348
+        },
+        {
+          "rede": "Facebook",
+          "freq": 285
+        },
+        {
+          "rede": "TikTok",
+          "freq": 258
+        },
+        {
+          "rede": "Instagram",
+          "freq": 253
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Bonfim",
+      "amostra_n": 20,
+      "desinformacao_media": 2.4,
+      "avaliacao_saude_media": 1.2,
+      "avaliacao_educacao_media": 1.8,
+      "avaliacao_seguranca_media": 1.1,
+      "garimpo_favor_share": 0.15,
+      "demarcacao_favor_share": 0.65,
+      "imigracao_negativa_share": 0.55,
+      "bolsonaro_apoio_share": 0.45,
+      "recebe_programa_social_share": 0.15,
+      "top_preocupacoes": [
+        {
+          "tema": "Saúde indígena",
+          "freq": 8
+        },
+        {
+          "tema": "Demarcação de terras",
+          "freq": 7
+        },
+        {
+          "tema": "Invasão de garimpeiros",
+          "freq": 6
+        },
+        {
+          "tema": "Energia elétrica",
+          "freq": 5
+        },
+        {
+          "tema": "Garimpo e desenvolvimento",
+          "freq": 5
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Igreja/comunidade",
+          "freq": 13
+        },
+        {
+          "fonte": "TV Globo / Jornal Nacional",
+          "freq": 13
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 13
+        },
+        {
+          "fonte": "WhatsApp",
+          "freq": 12
+        },
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 12
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 17
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 1
+        },
+        {
+          "programa": "Aposentadoria Rural",
+          "freq": 1
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 18
+        },
+        {
+          "rede": "Facebook",
+          "freq": 11
+        },
+        {
+          "rede": "YouTube",
+          "freq": 7
+        },
+        {
+          "rede": "TikTok",
+          "freq": 5
+        },
+        {
+          "rede": "Instagram",
+          "freq": 4
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Cantá",
+      "amostra_n": 35,
+      "desinformacao_media": 2.6,
+      "avaliacao_saude_media": 1.2286,
+      "avaliacao_educacao_media": 1.6571,
+      "avaliacao_seguranca_media": 1.2,
+      "garimpo_favor_share": 0.4,
+      "demarcacao_favor_share": 0.3714,
+      "imigracao_negativa_share": 0.6286,
+      "bolsonaro_apoio_share": 0.6857,
+      "recebe_programa_social_share": 0.2,
+      "top_preocupacoes": [
+        {
+          "tema": "Economia",
+          "freq": 17
+        },
+        {
+          "tema": "Desemprego",
+          "freq": 13
+        },
+        {
+          "tema": "Corrupção",
+          "freq": 10
+        },
+        {
+          "tema": "Saneamento básico",
+          "freq": 10
+        },
+        {
+          "tema": "Segurança pública",
+          "freq": 8
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Boca a boca",
+          "freq": 22
+        },
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 21
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 21
+        },
+        {
+          "fonte": "Facebook",
+          "freq": 18
+        },
+        {
+          "fonte": "Lideranças locais",
+          "freq": 17
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 28
+        },
+        {
+          "programa": "Bolsa Família",
+          "freq": 3
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 2
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 2
+        },
+        {
+          "programa": "Programa Prato Cheio (RR)",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 29
+        },
+        {
+          "rede": "Facebook",
+          "freq": 18
+        },
+        {
+          "rede": "YouTube",
+          "freq": 18
+        },
+        {
+          "rede": "Instagram",
+          "freq": 12
+        },
+        {
+          "rede": "TikTok",
+          "freq": 8
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Caracaraí",
+      "amostra_n": 40,
+      "desinformacao_media": 2.7,
+      "avaliacao_saude_media": 1.075,
+      "avaliacao_educacao_media": 1.75,
+      "avaliacao_seguranca_media": 1.1,
+      "garimpo_favor_share": 0.475,
+      "demarcacao_favor_share": 0.35,
+      "imigracao_negativa_share": 0.375,
+      "bolsonaro_apoio_share": 0.675,
+      "recebe_programa_social_share": 0.25,
+      "top_preocupacoes": [
+        {
+          "tema": "Saneamento básico",
+          "freq": 23
+        },
+        {
+          "tema": "Infraestrutura",
+          "freq": 17
+        },
+        {
+          "tema": "Economia",
+          "freq": 16
+        },
+        {
+          "tema": "Isolamento geográfico",
+          "freq": 9
+        },
+        {
+          "tema": "Desemprego",
+          "freq": 9
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "TV Globo / Jornal Nacional",
+          "freq": 25
+        },
+        {
+          "fonte": "Igreja/comunidade",
+          "freq": 24
+        },
+        {
+          "fonte": "Boca a boca",
+          "freq": 23
+        },
+        {
+          "fonte": "YouTube",
+          "freq": 22
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 19
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 30
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 3
+        },
+        {
+          "programa": "Tarifa Social de Energia",
+          "freq": 2
+        },
+        {
+          "programa": "BPC",
+          "freq": 2
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 30
+        },
+        {
+          "rede": "YouTube",
+          "freq": 16
+        },
+        {
+          "rede": "Facebook",
+          "freq": 13
+        },
+        {
+          "rede": "Instagram",
+          "freq": 13
+        },
+        {
+          "rede": "TikTok",
+          "freq": 12
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Caroebe",
+      "amostra_n": 17,
+      "desinformacao_media": 2.6471,
+      "avaliacao_saude_media": 1.0588,
+      "avaliacao_educacao_media": 1.5294,
+      "avaliacao_seguranca_media": 1.1765,
+      "garimpo_favor_share": 0.4118,
+      "demarcacao_favor_share": 0.4118,
+      "imigracao_negativa_share": 0.5294,
+      "bolsonaro_apoio_share": 0.9412,
+      "recebe_programa_social_share": 0.2941,
+      "top_preocupacoes": [
+        {
+          "tema": "Infraestrutura",
+          "freq": 8
+        },
+        {
+          "tema": "Isolamento geográfico",
+          "freq": 8
+        },
+        {
+          "tema": "Saneamento básico",
+          "freq": 5
+        },
+        {
+          "tema": "Economia",
+          "freq": 5
+        },
+        {
+          "tema": "Garimpo e desenvolvimento",
+          "freq": 4
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Boca a boca",
+          "freq": 12
+        },
+        {
+          "fonte": "Igreja/comunidade",
+          "freq": 10
+        },
+        {
+          "fonte": "TV Globo / Jornal Nacional",
+          "freq": 10
+        },
+        {
+          "fonte": "WhatsApp",
+          "freq": 9
+        },
+        {
+          "fonte": "Facebook",
+          "freq": 8
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 12
+        },
+        {
+          "programa": "Bolsa Família",
+          "freq": 3
+        },
+        {
+          "programa": "BPC",
+          "freq": 2
+        },
+        {
+          "programa": "Tarifa Social de Energia",
+          "freq": 1
+        },
+        {
+          "programa": "Programa Prato Cheio (RR)",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 14
+        },
+        {
+          "rede": "YouTube",
+          "freq": 11
+        },
+        {
+          "rede": "Facebook",
+          "freq": 7
+        },
+        {
+          "rede": "Instagram",
+          "freq": 5
+        },
+        {
+          "rede": "TikTok",
+          "freq": 5
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Iracema",
+      "amostra_n": 15,
+      "desinformacao_media": 2.2667,
+      "avaliacao_saude_media": 1.1333,
+      "avaliacao_educacao_media": 2.0667,
+      "avaliacao_seguranca_media": 1.2,
+      "garimpo_favor_share": 0.2667,
+      "demarcacao_favor_share": 0.2,
+      "imigracao_negativa_share": 0.3333,
+      "bolsonaro_apoio_share": 0.8667,
+      "recebe_programa_social_share": 0.2667,
+      "top_preocupacoes": [
+        {
+          "tema": "Isolamento geográfico",
+          "freq": 8
+        },
+        {
+          "tema": "Economia",
+          "freq": 6
+        },
+        {
+          "tema": "Infraestrutura",
+          "freq": 6
+        },
+        {
+          "tema": "Educação",
+          "freq": 5
+        },
+        {
+          "tema": "Saúde pública",
+          "freq": 4
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Boca a boca",
+          "freq": 10
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 8
+        },
+        {
+          "fonte": "TV Globo / Jornal Nacional",
+          "freq": 8
+        },
+        {
+          "fonte": "YouTube",
+          "freq": 7
+        },
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 7
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 11
+        },
+        {
+          "programa": "BPC",
+          "freq": 3
+        },
+        {
+          "programa": "Bolsa Família",
+          "freq": 2
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 13
+        },
+        {
+          "rede": "YouTube",
+          "freq": 9
+        },
+        {
+          "rede": "TikTok",
+          "freq": 7
+        },
+        {
+          "rede": "Instagram",
+          "freq": 5
+        },
+        {
+          "rede": "Facebook",
+          "freq": 5
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Mucajaí",
+      "amostra_n": 35,
+      "desinformacao_media": 2.8571,
+      "avaliacao_saude_media": 1.2,
+      "avaliacao_educacao_media": 1.7714,
+      "avaliacao_seguranca_media": 1.1429,
+      "garimpo_favor_share": 0.5143,
+      "demarcacao_favor_share": 0.4,
+      "imigracao_negativa_share": 0.4286,
+      "bolsonaro_apoio_share": 0.6857,
+      "recebe_programa_social_share": 0.1429,
+      "top_preocupacoes": [
+        {
+          "tema": "Economia",
+          "freq": 11
+        },
+        {
+          "tema": "Drogas e tráfico",
+          "freq": 11
+        },
+        {
+          "tema": "Imigração venezuelana",
+          "freq": 11
+        },
+        {
+          "tema": "Isolamento geográfico",
+          "freq": 10
+        },
+        {
+          "tema": "Saúde pública",
+          "freq": 10
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "TV Globo / Jornal Nacional",
+          "freq": 21
+        },
+        {
+          "fonte": "Facebook",
+          "freq": 21
+        },
+        {
+          "fonte": "Lideranças locais",
+          "freq": 20
+        },
+        {
+          "fonte": "WhatsApp",
+          "freq": 18
+        },
+        {
+          "fonte": "Igreja/comunidade",
+          "freq": 18
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 30
+        },
+        {
+          "programa": "BPC",
+          "freq": 2
+        },
+        {
+          "programa": "Aposentadoria Rural",
+          "freq": 1
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 1
+        },
+        {
+          "programa": "Tarifa Social de Energia",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 28
+        },
+        {
+          "rede": "YouTube",
+          "freq": 16
+        },
+        {
+          "rede": "Facebook",
+          "freq": 15
+        },
+        {
+          "rede": "Instagram",
+          "freq": 12
+        },
+        {
+          "rede": "TikTok",
+          "freq": 10
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Normandia",
+      "amostra_n": 17,
+      "desinformacao_media": 2.4706,
+      "avaliacao_saude_media": 1.2353,
+      "avaliacao_educacao_media": 2.1176,
+      "avaliacao_seguranca_media": 1.1765,
+      "garimpo_favor_share": 0.1176,
+      "demarcacao_favor_share": 0.6471,
+      "imigracao_negativa_share": 0.2353,
+      "bolsonaro_apoio_share": 0.4706,
+      "recebe_programa_social_share": 0.3529,
+      "top_preocupacoes": [
+        {
+          "tema": "Invasão de garimpeiros",
+          "freq": 9
+        },
+        {
+          "tema": "Educação indígena",
+          "freq": 8
+        },
+        {
+          "tema": "Demarcação de terras",
+          "freq": 7
+        },
+        {
+          "tema": "Economia",
+          "freq": 5
+        },
+        {
+          "tema": "Imigração venezuelana",
+          "freq": 3
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 13
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 13
+        },
+        {
+          "fonte": "Missões religiosas",
+          "freq": 12
+        },
+        {
+          "fonte": "FUNAI",
+          "freq": 12
+        },
+        {
+          "fonte": "Boca a boca",
+          "freq": 10
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 11
+        },
+        {
+          "programa": "Tarifa Social de Energia",
+          "freq": 2
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 2
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 1
+        },
+        {
+          "programa": "BPC",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 14
+        },
+        {
+          "rede": "TikTok",
+          "freq": 8
+        },
+        {
+          "rede": "Facebook",
+          "freq": 7
+        },
+        {
+          "rede": "Instagram",
+          "freq": 4
+        },
+        {
+          "rede": "YouTube",
+          "freq": 4
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Pacaraima",
+      "amostra_n": 30,
+      "desinformacao_media": 2.7,
+      "avaliacao_saude_media": 1.1667,
+      "avaliacao_educacao_media": 1.7333,
+      "avaliacao_seguranca_media": 1.1667,
+      "garimpo_favor_share": 0.2333,
+      "demarcacao_favor_share": 0.6,
+      "imigracao_negativa_share": 0.7,
+      "bolsonaro_apoio_share": 0.3667,
+      "recebe_programa_social_share": 0.3,
+      "top_preocupacoes": [
+        {
+          "tema": "Saúde indígena",
+          "freq": 12
+        },
+        {
+          "tema": "Preservação cultural",
+          "freq": 9
+        },
+        {
+          "tema": "Economia",
+          "freq": 9
+        },
+        {
+          "tema": "Invasão de garimpeiros",
+          "freq": 8
+        },
+        {
+          "tema": "Educação indígena",
+          "freq": 8
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "WhatsApp",
+          "freq": 25
+        },
+        {
+          "fonte": "Boca a boca",
+          "freq": 20
+        },
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 18
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 17
+        },
+        {
+          "fonte": "Lideranças indígenas",
+          "freq": 16
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 21
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 4
+        },
+        {
+          "programa": "Bolsa Família",
+          "freq": 2
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 2
+        },
+        {
+          "programa": "Programa Prato Cheio (RR)",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 23
+        },
+        {
+          "rede": "YouTube",
+          "freq": 11
+        },
+        {
+          "rede": "Facebook",
+          "freq": 10
+        },
+        {
+          "rede": "Instagram",
+          "freq": 7
+        },
+        {
+          "rede": "TikTok",
+          "freq": 7
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Rorainópolis",
+      "amostra_n": 55,
+      "desinformacao_media": 2.7636,
+      "avaliacao_saude_media": 1.1455,
+      "avaliacao_educacao_media": 1.6,
+      "avaliacao_seguranca_media": 1.1091,
+      "garimpo_favor_share": 0.4545,
+      "demarcacao_favor_share": 0.3818,
+      "imigracao_negativa_share": 0.4727,
+      "bolsonaro_apoio_share": 0.5818,
+      "recebe_programa_social_share": 0.3818,
+      "top_preocupacoes": [
+        {
+          "tema": "Infraestrutura",
+          "freq": 24
+        },
+        {
+          "tema": "Economia",
+          "freq": 21
+        },
+        {
+          "tema": "Isolamento geográfico",
+          "freq": 20
+        },
+        {
+          "tema": "Saneamento básico",
+          "freq": 20
+        },
+        {
+          "tema": "Garimpo e desenvolvimento",
+          "freq": 10
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 34
+        },
+        {
+          "fonte": "TV Globo / Jornal Nacional",
+          "freq": 34
+        },
+        {
+          "fonte": "Igreja/comunidade",
+          "freq": 30
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 27
+        },
+        {
+          "fonte": "WhatsApp",
+          "freq": 27
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 34
+        },
+        {
+          "programa": "Programa Prato Cheio (RR)",
+          "freq": 11
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 6
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 4
+        },
+        {
+          "programa": "Bolsa Família",
+          "freq": 4
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 38
+        },
+        {
+          "rede": "Facebook",
+          "freq": 26
+        },
+        {
+          "rede": "YouTube",
+          "freq": 20
+        },
+        {
+          "rede": "Instagram",
+          "freq": 14
+        },
+        {
+          "rede": "TikTok",
+          "freq": 14
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "São João da Baliza",
+      "amostra_n": 15,
+      "desinformacao_media": 2.8,
+      "avaliacao_saude_media": 1.1333,
+      "avaliacao_educacao_media": 1.8,
+      "avaliacao_seguranca_media": 1.0,
+      "garimpo_favor_share": 0.4667,
+      "demarcacao_favor_share": 0.1333,
+      "imigracao_negativa_share": 0.4,
+      "bolsonaro_apoio_share": 0.7333,
+      "recebe_programa_social_share": 0.3333,
+      "top_preocupacoes": [
+        {
+          "tema": "Infraestrutura",
+          "freq": 9
+        },
+        {
+          "tema": "Saneamento básico",
+          "freq": 7
+        },
+        {
+          "tema": "Transporte público",
+          "freq": 4
+        },
+        {
+          "tema": "Desemprego",
+          "freq": 4
+        },
+        {
+          "tema": "Economia",
+          "freq": 4
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "YouTube",
+          "freq": 10
+        },
+        {
+          "fonte": "Boca a boca",
+          "freq": 8
+        },
+        {
+          "fonte": "WhatsApp",
+          "freq": 8
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 7
+        },
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 7
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 10
+        },
+        {
+          "programa": "Aposentadoria Rural",
+          "freq": 3
+        },
+        {
+          "programa": "Programa Prato Cheio (RR)",
+          "freq": 2
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 13
+        },
+        {
+          "rede": "Facebook",
+          "freq": 10
+        },
+        {
+          "rede": "YouTube",
+          "freq": 7
+        },
+        {
+          "rede": "Instagram",
+          "freq": 5
+        },
+        {
+          "rede": "TikTok",
+          "freq": 4
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "São Luiz",
+      "amostra_n": 10,
+      "desinformacao_media": 2.5,
+      "avaliacao_saude_media": 1.0,
+      "avaliacao_educacao_media": 1.3,
+      "avaliacao_seguranca_media": 1.3,
+      "garimpo_favor_share": 0.5,
+      "demarcacao_favor_share": 0.5,
+      "imigracao_negativa_share": 0.4,
+      "bolsonaro_apoio_share": 0.8,
+      "recebe_programa_social_share": 0.3,
+      "top_preocupacoes": [
+        {
+          "tema": "Saneamento básico",
+          "freq": 5
+        },
+        {
+          "tema": "Infraestrutura",
+          "freq": 4
+        },
+        {
+          "tema": "Economia",
+          "freq": 3
+        },
+        {
+          "tema": "Queimadas",
+          "freq": 3
+        },
+        {
+          "tema": "Corrupção",
+          "freq": 3
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "YouTube",
+          "freq": 7
+        },
+        {
+          "fonte": "Igreja/comunidade",
+          "freq": 6
+        },
+        {
+          "fonte": "Boca a boca",
+          "freq": 6
+        },
+        {
+          "fonte": "Rádio",
+          "freq": 6
+        },
+        {
+          "fonte": "Lideranças locais",
+          "freq": 6
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 7
+        },
+        {
+          "programa": "BPC",
+          "freq": 1
+        },
+        {
+          "programa": "Seguro Defeso",
+          "freq": 1
+        },
+        {
+          "programa": "Programa Prato Cheio (RR)",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 8
+        },
+        {
+          "rede": "Facebook",
+          "freq": 7
+        },
+        {
+          "rede": "YouTube",
+          "freq": 5
+        },
+        {
+          "rede": "Instagram",
+          "freq": 3
+        },
+        {
+          "rede": "TikTok",
+          "freq": 3
+        }
+      ]
+    },
+    {
+      "regiao_administrativa": "Uiramutã",
+      "amostra_n": 10,
+      "desinformacao_media": 2.5,
+      "avaliacao_saude_media": 1.2,
+      "avaliacao_educacao_media": 1.6,
+      "avaliacao_seguranca_media": 1.2,
+      "garimpo_favor_share": 0.0,
+      "demarcacao_favor_share": 0.7,
+      "imigracao_negativa_share": 0.3,
+      "bolsonaro_apoio_share": 0.1,
+      "recebe_programa_social_share": 0.2,
+      "top_preocupacoes": [
+        {
+          "tema": "Preservação cultural",
+          "freq": 5
+        },
+        {
+          "tema": "Saúde indígena",
+          "freq": 4
+        },
+        {
+          "tema": "Educação indígena",
+          "freq": 4
+        },
+        {
+          "tema": "Desemprego",
+          "freq": 3
+        },
+        {
+          "tema": "Contaminação por mercúrio",
+          "freq": 3
+        }
+      ],
+      "top_fontes": [
+        {
+          "fonte": "Boca a boca",
+          "freq": 8
+        },
+        {
+          "fonte": "Missões religiosas",
+          "freq": 7
+        },
+        {
+          "fonte": "Lideranças indígenas",
+          "freq": 7
+        },
+        {
+          "fonte": "FUNAI",
+          "freq": 7
+        },
+        {
+          "fonte": "Rede Amazônica",
+          "freq": 6
+        }
+      ],
+      "top_programas": [
+        {
+          "programa": "nenhum",
+          "freq": 8
+        },
+        {
+          "programa": "Auxílio Gás",
+          "freq": 1
+        },
+        {
+          "programa": "Aposentadoria Rural",
+          "freq": 1
+        }
+      ],
+      "top_redes": [
+        {
+          "rede": "WhatsApp",
+          "freq": 6
+        },
+        {
+          "rede": "Facebook",
+          "freq": 5
+        },
+        {
+          "rede": "YouTube",
+          "freq": 4
+        },
+        {
+          "rede": "TikTok",
+          "freq": 2
+        }
+      ]
+    }
+  ]
+}

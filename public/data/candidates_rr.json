@@ -1,0 +1,242 @@
+[
+  {
+    "id": "cand-rr-teresa-surita",
+    "nome_urna": "TERESA SURITA",
+    "partido": "MDB",
+    "cargo": "governador",
+    "cor_campanha": "#2563eb",
+    "orientacao_politica": "centro",
+    "posicao_bolsonaro": "critico_moderado",
+    "posicao_lula": "neutro",
+    "intencao_voto": 42.0,
+    "rejeicao": 26.0,
+    "conhecimento": 94.0,
+    "areas_foco": [
+      "Gestao urbana",
+      "Boa Vista",
+      "Experiencia administrativa"
+    ]
+  },
+  {
+    "id": "cand-rr-arthur-henrique",
+    "nome_urna": "ARTHUR HENRIQUE",
+    "partido": "PL",
+    "cargo": "governador",
+    "cor_campanha": "#1d4ed8",
+    "orientacao_politica": "centro-direita",
+    "posicao_bolsonaro": "apoiador_moderado",
+    "posicao_lula": "critico_moderado",
+    "intencao_voto": 37.0,
+    "rejeicao": 18.0,
+    "conhecimento": 82.0,
+    "areas_foco": [
+      "Boa Vista",
+      "Gestao",
+      "Educacao",
+      "Modernizacao"
+    ]
+  },
+  {
+    "id": "cand-rr-edilson-damiao",
+    "nome_urna": "EDILSON DAMIAO",
+    "partido": "REPUBLICANOS",
+    "cargo": "governador",
+    "cor_campanha": "#16a34a",
+    "orientacao_politica": "direita",
+    "posicao_bolsonaro": "apoiador_moderado",
+    "posicao_lula": "critico",
+    "intencao_voto": 35.0,
+    "rejeicao": 20.0,
+    "conhecimento": 76.0,
+    "areas_foco": [
+      "Interior",
+      "Base governista",
+      "Conservadorismo"
+    ]
+  },
+  {
+    "id": "cand-rr-antonio-denarium",
+    "nome_urna": "ANTONIO DENARIUM",
+    "partido": "PP",
+    "cargo": "senador",
+    "cor_campanha": "#2563eb",
+    "orientacao_politica": "direita",
+    "posicao_bolsonaro": "apoiador",
+    "posicao_lula": "critico",
+    "intencao_voto": 24.0,
+    "rejeicao": 33.0,
+    "conhecimento": 96.0,
+    "areas_foco": [
+      "Agronegocio",
+      "Interior",
+      "Base governista"
+    ]
+  },
+  {
+    "id": "cand-rr-chico-rodrigues",
+    "nome_urna": "CHICO RODRIGUES",
+    "partido": "PSB",
+    "cargo": "senador",
+    "cor_campanha": "#0f766e",
+    "orientacao_politica": "centro-direita",
+    "posicao_bolsonaro": "apoiador_moderado",
+    "posicao_lula": "neutro",
+    "intencao_voto": 15.0,
+    "rejeicao": 29.0,
+    "conhecimento": 88.0,
+    "areas_foco": [
+      "Experiencia",
+      "Infraestrutura",
+      "Relacoes exteriores"
+    ]
+  },
+  {
+    "id": "cand-rr-romero-juca",
+    "nome_urna": "ROMERO JUCA",
+    "partido": "MDB",
+    "cargo": "senador",
+    "cor_campanha": "#9333ea",
+    "orientacao_politica": "centro",
+    "posicao_bolsonaro": "neutro",
+    "posicao_lula": "neutro",
+    "intencao_voto": 14.0,
+    "rejeicao": 31.0,
+    "conhecimento": 90.0,
+    "areas_foco": [
+      "Articulacao politica",
+      "Experiencia",
+      "MDB"
+    ]
+  },
+  {
+    "id": "cand-rr-nicoletti",
+    "nome_urna": "NICOLETTI",
+    "partido": "PL",
+    "cargo": "senador",
+    "cor_campanha": "#1d4ed8",
+    "orientacao_politica": "direita",
+    "posicao_bolsonaro": "apoiador",
+    "posicao_lula": "critico",
+    "intencao_voto": 13.0,
+    "rejeicao": 24.0,
+    "conhecimento": 78.0,
+    "areas_foco": [
+      "Seguranca publica",
+      "Bolsonarismo",
+      "Boa Vista"
+    ]
+  },
+  {
+    "id": "cand-rr-soldado-sampaio",
+    "nome_urna": "SOLDADO SAMPAIO",
+    "partido": "REPUBLICANOS",
+    "cargo": "governador",
+    "cor_campanha": "#f97316",
+    "orientacao_politica": "centro-direita",
+    "posicao_bolsonaro": "apoiador_moderado",
+    "posicao_lula": "critico",
+    "intencao_voto": 11.8,
+    "rejeicao": 16.0,
+    "conhecimento": 68.0,
+    "areas_foco": [
+      "Assembleia Legislativa",
+      "Interior",
+      "Seguranca"
+    ]
+  },
+  {
+    "id": "cand-rr-jorge-everton",
+    "nome_urna": "JORGE EVERTON",
+    "partido": "UNIAO BRASIL",
+    "cargo": "deputado_estadual",
+    "cor_campanha": "#2563eb",
+    "orientacao_politica": "centro-direita",
+    "posicao_bolsonaro": "neutro",
+    "posicao_lula": "critico_moderado",
+    "intencao_voto": null,
+    "rejeicao": 18.0,
+    "conhecimento": 72.0,
+    "areas_foco": [
+      "Fiscalizacao",
+      "Rorainopolis",
+      "Saude",
+      "CPI das terras"
+    ]
+  },
+  {
+    "id": "cand-rr-catarina-guerra",
+    "nome_urna": "CATARINA GUERRA",
+    "partido": "UNIAO BRASIL",
+    "cargo": "deputado_estadual",
+    "cor_campanha": "#1d4ed8",
+    "orientacao_politica": "centro",
+    "posicao_bolsonaro": "neutro",
+    "posicao_lula": "neutro",
+    "intencao_voto": null,
+    "rejeicao": 16.0,
+    "conhecimento": 69.0,
+    "areas_foco": [
+      "Educacao",
+      "Saude",
+      "Boa Vista",
+      "Mulheres"
+    ]
+  },
+  {
+    "id": "cand-rr-renato-silva",
+    "nome_urna": "RENATO SILVA",
+    "partido": "PODEMOS",
+    "cargo": "deputado_estadual",
+    "cor_campanha": "#0f766e",
+    "orientacao_politica": "centro-direita",
+    "posicao_bolsonaro": "apoiador_moderado",
+    "posicao_lula": "critico",
+    "intencao_voto": null,
+    "rejeicao": 15.0,
+    "conhecimento": 64.0,
+    "areas_foco": [
+      "Servidores",
+      "Seguranca",
+      "Boa Vista",
+      "Direitos sociais"
+    ]
+  },
+  {
+    "id": "cand-rr-marcos-jorge",
+    "nome_urna": "MARCOS JORGE",
+    "partido": "REPUBLICANOS",
+    "cargo": "deputado_estadual",
+    "cor_campanha": "#16a34a",
+    "orientacao_politica": "centro-direita",
+    "posicao_bolsonaro": "apoiador_moderado",
+    "posicao_lula": "critico_moderado",
+    "intencao_voto": null,
+    "rejeicao": 17.0,
+    "conhecimento": 67.0,
+    "areas_foco": [
+      "Economia",
+      "Desenvolvimento",
+      "Boa Vista",
+      "Interior"
+    ]
+  },
+  {
+    "id": "cand-rr-eder-lourinho",
+    "nome_urna": "EDER LOURINHO",
+    "partido": "PSDB",
+    "cargo": "deputado_estadual",
+    "cor_campanha": "#9333ea",
+    "orientacao_politica": "centro",
+    "posicao_bolsonaro": "neutro",
+    "posicao_lula": "neutro",
+    "intencao_voto": null,
+    "rejeicao": 14.0,
+    "conhecimento": 62.0,
+    "areas_foco": [
+      "Municipalismo",
+      "Boa Vista",
+      "Infraestrutura",
+      "Centro"
+    ]
+  }
+]

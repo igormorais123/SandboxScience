@@ -235,6 +235,261 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     },
     colors: CLUSTERS_4.map(s => s.color),
   },
+  {
+    v: 1,
+    meta: {
+      name: 'RR — Cenario Otimista JE',
+      description: 'CNH funciona + alianca pastoral + Denarium apoia. Base domina, Campo migra para Base.',
+      category: 'Estrategia JE',
+    },
+    segments: CLUSTERS_4,
+    types: ['settings', 'forces', 'radii', 'colors'],
+    settings: { species: 4, numParticles: 1000, frictionFactor: 0.15, forceFactor: 1.0 },
+    matrices: {
+      forces: normMatrix([
+        [-50, -35, -15,  10],
+        [-35, -18, -20,   0],
+        [-15, -20,  -8,  -5],
+        [ 10,   0,  -5, -30],
+      ]),
+      minRadius: uniformRadius(4, 25, 45),
+      maxRadius: [
+        [70, 110, 85, 80],
+        [110, 85, 100, 70],
+        [85, 100, 70, 75],
+        [80, 70, 75, 60],
+      ],
+    },
+    colors: CLUSTERS_4.map(s => s.color),
+  },
+  {
+    v: 1,
+    meta: {
+      name: 'RR — Cenario Pessimista JE',
+      description: 'Concorrentes compram Mercado + fake news + crise. Base enfraquece, Campo dispersa, Mercado foge.',
+      category: 'Estrategia JE',
+    },
+    segments: CLUSTERS_4,
+    types: ['settings', 'forces', 'radii', 'colors'],
+    settings: { species: 4, numParticles: 1000, frictionFactor: 0.12, forceFactor: 1.1 },
+    matrices: {
+      forces: normMatrix([
+        [-35, -10,  -5,   8],
+        [-10,  -5, -25,   5],
+        [ -5, -25, -15,  -5],
+        [  8,   5,  -5, -40],
+      ]),
+      minRadius: uniformRadius(4, 30, 55),
+      maxRadius: uniformMaxRadius(4, 65, 90),
+    },
+    colors: CLUSTERS_4.map(s => s.color),
+  },
+  {
+    v: 1,
+    meta: {
+      name: 'RR — Cassacao Denarium',
+      description: 'Governador cassado. Maquina fragmenta: Mercado perde coesao, Campo em disputa aberta, caos.',
+      category: 'Eventos RR',
+    },
+    segments: CLUSTERS_4,
+    types: ['settings', 'forces', 'radii', 'colors'],
+    settings: { species: 4, numParticles: 1000, frictionFactor: 0.10, forceFactor: 1.2 },
+    matrices: {
+      forces: normMatrix([
+        [-40, -15,  -5,   5],
+        [-15, -10, -25,   3],
+        [ -5, -25,  -3,  -5],
+        [  5,   3,  -5, -30],
+      ]),
+      minRadius: uniformRadius(4, 32, 52),
+      maxRadius: uniformMaxRadius(4, 68, 90),
+    },
+    colors: CLUSTERS_4.map(s => s.color),
+  },
+  {
+    v: 1,
+    meta: {
+      name: 'RR — Servico de Mandato',
+      description: 'Jorge Everton entrega servicos: 300 PC aprovados, fiscalizacao, CPI Saude. Base e Campo se aproximam organicamente.',
+      category: 'Estrategia JE',
+    },
+    segments: CLUSTERS_4,
+    types: ['settings', 'forces', 'radii', 'colors'],
+    settings: { species: 4, numParticles: 1000, frictionFactor: 0.18, forceFactor: 0.9 },
+    matrices: {
+      forces: normMatrix([
+        [-45, -20, -10,   5],
+        [-20, -15, -18,   0],
+        [-10, -18,  -8,  -5],
+        [  5,   0,  -5, -35],
+      ]),
+      minRadius: uniformRadius(4, 28, 46),
+      maxRadius: uniformMaxRadius(4, 58, 78),
+    },
+    colors: CLUSTERS_4.map(s => s.color),
+  },
+]
+
+// ============================================================
+// CANDIDATOS / STAKEHOLDERS (dados do TSE + pesquisa INTEIA)
+// ============================================================
+
+export interface ElectoralCandidate {
+  id: string
+  nome: string
+  partido: string
+  cargo: string
+  cor: string
+  orientacao: number  // 0=esquerda, 1=direita
+  intencaoVoto: number | null
+  rejeicao: number
+  conhecimento: number
+  areasFoco: string[]
+  // Afinidade por cluster [Base, Campo, Mercado, Alheio] — escala -1 a +1
+  afinidadeCluster: number[]
+}
+
+export const CANDIDATOS_RR: ElectoralCandidate[] = [
+  {
+    id: 'jorge-everton', nome: 'Jorge Everton', partido: 'UNIAO', cargo: 'Deputado Estadual',
+    cor: '#2563eb', orientacao: 0.65, intencaoVoto: null, rejeicao: 18, conhecimento: 72,
+    areasFoco: ['Fiscalizacao', 'Saude', 'Seguranca', 'CNH Gratis'],
+    afinidadeCluster: [0.8, 0.5, 0.3, -0.2],
+  },
+  {
+    id: 'soldado-sampaio', nome: 'Soldado Sampaio', partido: 'REPUBLICANOS', cargo: 'Governador',
+    cor: '#f97316', orientacao: 0.70, intencaoVoto: 11.8, rejeicao: 16, conhecimento: 68,
+    areasFoco: ['Seguranca', 'Interior', 'ALE'],
+    afinidadeCluster: [0.4, 0.2, -0.1, 0.5],
+  },
+  {
+    id: 'edilson-damiao', nome: 'Edilson Damiao', partido: 'REPUBLICANOS', cargo: 'Governador',
+    cor: '#16a34a', orientacao: 0.75, intencaoVoto: 35, rejeicao: 20, conhecimento: 76,
+    areasFoco: ['Interior', 'Base governista', 'Conservadorismo'],
+    afinidadeCluster: [0.6, 0.3, 0.5, -0.3],
+  },
+  {
+    id: 'teresa-surita', nome: 'Teresa Surita', partido: 'MDB', cargo: 'Governadora',
+    cor: '#2563eb', orientacao: 0.45, intencaoVoto: 42, rejeicao: 26, conhecimento: 94,
+    areasFoco: ['Gestao urbana', 'Boa Vista', 'Experiencia'],
+    afinidadeCluster: [-0.1, 0.4, 0.3, 0.5],
+  },
+  {
+    id: 'denarium', nome: 'Antonio Denarium', partido: 'PP', cargo: 'Senador',
+    cor: '#2563eb', orientacao: 0.80, intencaoVoto: 24, rejeicao: 33, conhecimento: 96,
+    areasFoco: ['Agronegocio', 'Interior', 'Maquina'],
+    afinidadeCluster: [0.3, 0.1, 0.7, -0.4],
+  },
+  {
+    id: 'catarina-guerra', nome: 'Catarina Guerra', partido: 'UNIAO', cargo: 'Dep. Estadual',
+    cor: '#1d4ed8', orientacao: 0.50, intencaoVoto: null, rejeicao: 16, conhecimento: 69,
+    areasFoco: ['Educacao', 'Mulheres', 'Saude'],
+    afinidadeCluster: [0.2, 0.6, 0.1, 0.3],
+  },
+  {
+    id: 'eder-lourinho', nome: 'Eder Lourinho', partido: 'PSDB', cargo: 'Dep. Estadual',
+    cor: '#9333ea', orientacao: 0.50, intencaoVoto: null, rejeicao: 14, conhecimento: 62,
+    areasFoco: ['Interior', 'Infraestrutura', 'Municipalismo'],
+    afinidadeCluster: [0.1, 0.3, 0.5, 0.2],
+  },
+]
+
+// ============================================================
+// EVENTOS TEMPORARIOS (delta sobre baseline, com duracao em ticks)
+// ============================================================
+
+export interface ElectoralEvent {
+  id: string
+  nome: string
+  descricao: string
+  icone: string
+  duracao: number  // ticks
+  // Delta forces: somado ao baseline durante a duracao
+  deltaForces4: number[][]  // 4x4 normalizado [-1,1]
+  categoria: 'campanha' | 'crise' | 'competicao' | 'institucional'
+}
+
+export const EVENTOS_RR: ElectoralEvent[] = [
+  {
+    id: 'cnh-gratis', nome: 'CNH Gratis (TikTok)', descricao: 'JE lanca CNH gratis para baixa renda no TikTok. Campo atrai para Base.',
+    icone: 'i-tabler-car', duracao: 300, categoria: 'campanha',
+    deltaForces4: normMatrix([
+      [0, -10, 0, 0],
+      [-10, -3, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ]),
+  },
+  {
+    id: 'alianca-pastoral', nome: 'Alianca Pastoral', descricao: 'Pastor Diniz fecha apoio. Evangelicos migram para Base.',
+    icone: 'i-tabler-cross', duracao: 400, categoria: 'campanha',
+    deltaForces4: normMatrix([
+      [-5, -15, 0, 0],
+      [-15, -6, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ]),
+  },
+  {
+    id: 'delegado-protege', nome: 'Delegado Protege', descricao: 'Mensagem WhatsApp: delegado protege mulheres. Campo e Base se aproximam.',
+    icone: 'i-tabler-shield', duracao: 250, categoria: 'campanha',
+    deltaForces4: normMatrix([
+      [0, -8, 0, 0],
+      [-8, -5, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ]),
+  },
+  {
+    id: 'compra-voto', nome: 'Compra de Voto', descricao: 'Concorrente compra Mercado. Mercado dispersa, Campo perde eleitores.',
+    icone: 'i-tabler-cash', duracao: 350, categoria: 'competicao',
+    deltaForces4: normMatrix([
+      [0, 0, 0, 0],
+      [0, 0, -10, 0],
+      [0, -10, 5, -5],
+      [0, 0, -5, 0],
+    ]),
+  },
+  {
+    id: 'fake-news', nome: 'Fake News Massiva', descricao: 'Onda de desinformacao. Polarizacao sobe, tolerancia cai, caos.',
+    icone: 'i-tabler-alert-triangle', duracao: 200, categoria: 'crise',
+    deltaForces4: normMatrix([
+      [-5, 5, 5, 8],
+      [5, 3, -5, 5],
+      [5, -5, 3, 0],
+      [8, 5, 0, -5],
+    ]),
+  },
+  {
+    id: 'cassacao', nome: 'Cassacao Denarium', descricao: 'Governador cassado. Maquina fragmenta, Mercado dispersa, oportunidade e caos.',
+    icone: 'i-tabler-gavel', duracao: 500, categoria: 'institucional',
+    deltaForces4: normMatrix([
+      [0, 0, 0, 0],
+      [0, 2, -5, 3],
+      [0, -5, 5, 0],
+      [0, 3, 0, 5],
+    ]),
+  },
+  {
+    id: 'servico-mandato', nome: 'Servico de Mandato', descricao: 'JE entrega: 300 PC, CPI Saude, IPVA moto. Base e Campo se fortalecem.',
+    icone: 'i-tabler-clipboard-check', duracao: 400, categoria: 'campanha',
+    deltaForces4: normMatrix([
+      [-5, -5, -5, 0],
+      [-5, -3, -3, 0],
+      [-5, -3, 0, 0],
+      [0, 0, 0, 0],
+    ]),
+  },
+  {
+    id: 'crise-saude', nome: 'Crise de Saude', descricao: 'Colapso na saude publica. Engajamento sobe, Mercado se torna vulneravel.',
+    icone: 'i-tabler-heartbeat', duracao: 300, categoria: 'crise',
+    deltaForces4: normMatrix([
+      [0, 0, 0, 0],
+      [0, 0, -3, 0],
+      [0, -3, 3, -3],
+      [0, 0, -3, 0],
+    ]),
+  },
 ]
 
 // Exported segment data for use in legends and matrix headers
