@@ -1,17 +1,17 @@
 {
-    "name": "sandbox-science",
+    "name": "inteia-simulador-eleitoral",
     "description": "An interactive platform offering educational scientific simulations like Game of Life and Particle Life.",
     "type": "module",
     "private": true,
     "license": "AGPL-3.0-or-later",
-    "author": "Charly Luzzi (DicSo92)",
-    "homepage": "https://sandbox-science.com",
+    "author": "INTEIA -- Inteligencia Artificial Estrategica (inteia.com.br)",
+    "homepage": "https://inteia.com.br",
     "repository": {
         "type": "git",
-        "url": "https://github.com/DicSo92/SandboxScience.git"
+        "url": "https://github.com/igormorais123/SandboxScience.git"
     },
     "bugs": {
-        "url": "https://github.com/DicSo92/SandboxScience/issues"
+        "url": "https://github.com/igormorais123/SandboxScience/issues"
     },
     "scripts": {
         "build": "nuxt build",

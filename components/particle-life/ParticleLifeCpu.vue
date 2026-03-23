@@ -9,7 +9,7 @@
                         <div flex items-center class="-mb-0.5">
                             <div i-lets-icons-bubble text-2xl mr-2 class="text-[#2a9d8f] -mt-0.5"></div>
                             <h1 font-800 text-lg tracking-widest class="text-[#dff6f3] drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Simulador Eleitoral</h1>
-                            <p class="ml-2 px-2 py-0.5 rounded-lg ring-1 uppercase justify-center font-mono font-bold bg-amber-600/20 text-amber-400 ring-amber-500/30">
+                            <p class="ml-2 px-2 py-0.5 rounded-lg ring-1 uppercase justify-center font-mono font-bold bg-amber-600/20 text-[#c89520] ring-amber-500/30">
                                 INTEIA
                             </p>
                         </div>
@@ -283,9 +283,9 @@
                     <span i-carbon-logo-github text-xl></span>
                 </button>
             </NuxtLink>
-            <NuxtLink to="https://discord.com/invite/z5yuzkFpCA" title="Discord" aria-label="Discord" target="_blank" flex items-center py-0>
-                <button type="button" name="Discord" aria-label="Discord" class="text-zinc-2 bg-indigo-600/80 hover:bg-indigo-700/80 ring-1 ring-zinc-2/50 rounded-full p-2 backdrop-blur-sm" flex>
-                    <span i-carbon-logo-discord text-2xl></span>
+            <NuxtLink to="https://inteia.com.br" title="Site INTEIA" aria-label="Site INTEIA" target="_blank" flex items-center py-0>
+                <button type="button" name="INTEIA" aria-label="Site INTEIA" class="text-zinc-2 bg-amber-600/80 hover:bg-amber-700/80 ring-1 ring-zinc-2/50 rounded-full p-2 backdrop-blur-sm" flex>
+                    <span i-tabler-world text-2xl></span>
                 </button>
             </NuxtLink>
         </section>

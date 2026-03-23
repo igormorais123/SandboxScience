@@ -1,10 +1,10 @@
 <template>
-    <nav flex justify-center py-2 px-3 z-100 fixed top-0 left-0 right-0 class="bg-#090909AA" style="box-shadow: 0 2px 8px 0 rgba(0,0,0,.5)">
+    <nav flex justify-center py-2 px-3 z-100 fixed top-0 left-0 right-0 class="bg-#090909AA" style="box-shadow: 0 2px 8px 0 rgba(0,0,0,.5); border-bottom: 1px solid rgba(200,149,32,0.3)">
         <div flex justify-between container>
             <div flex items-center>
                 <NuxtLink to="/" title="Inicio" aria-label="Inicio" flex items-center>
                     <span class="i-custom:icon text-lg mr-1"></span>
-                    <div font-semibold>INTE<span class="text-amber-400">IA</span></div>
+                    <div font-semibold text-lg>INTE<span class="text-[#c89520]">IA</span></div>
                 </NuxtLink>
                 <div flex ml-8>
                     <Dropdown placement="left">
@@ -41,9 +41,9 @@
                         <span i-carbon-logo-github text-lg m-0.5></span>
                     </button>
                 </NuxtLink>
-                <NuxtLink to="https://discord.com/invite/z5yuzkFpCA" title="Discord" aria-label="Discord" target="_blank" external class="flex items-center py-0 ml-1.5 mr-1">
-                    <button type="button" name="Discord" aria-label="Discord" text="zinc-3 hover:zinc-1" flex>
-                        <span i-carbon-logo-discord text-lg m-0.5></span>
+                <NuxtLink to="https://inteia.com.br" title="Site INTEIA" aria-label="Site INTEIA" target="_blank" external class="flex items-center py-0 ml-1.5 mr-1">
+                    <button type="button" name="INTEIA" aria-label="Site INTEIA" text="zinc-3 hover:zinc-1" flex>
+                        <span i-tabler-world text-lg m-0.5></span>
                     </button>
                 </NuxtLink>
                 <NuxtLink to="https://x.com" title="Twitter" aria-label="Twitter" target="_blank" external class="flex items-center py-0 mx-1">

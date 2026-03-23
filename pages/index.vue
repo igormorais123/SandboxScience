@@ -3,13 +3,14 @@
         <section container class="mt-24 sm:mt-36 mb-16 sm:mb-32">
             <div flex class="px-0 xl:px-16 2xl:px-24 flex-col sm:flex-row">
                 <div class="mr-0 sm:mr-4 md:mr-6 mb-4 sm-mb-0 flex justify-center items-start md-items-center">
-                    <div class="i-custom:icon text-7xl sm:text-9xl md:text-[9.5rem]"></div>
+                    <div class="i-custom:icon text-7xl sm:text-9xl md:text-[9.5rem] text-[#c89520] drop-shadow-[0_0_20px_rgba(200,149,32,0.4)]"></div>
                 </div>
                 <div class="text-center sm:text-start">
                     <h1 class="text-4xl sm:text-5xl" font-bold text="#c89520">
                         INTE<span class="text-white">IA</span>
                     </h1>
-                    <h2 class="text-lg sm:text-2xl" font-bold mt-3>Motor visual de dinamica social com inteligencia artificial.</h2>
+                    <p class="text-sm sm:text-base mt-1 tracking-wider uppercase font-semibold text-[#c89520]/70">Inteligencia Artificial Estrategica</p>
+                    <h2 class="text-lg sm:text-2xl" font-bold mt-3>Simulacoes de dinamica social para inteligencia eleitoral</h2>
                     <p mt-4 class="text-sm sm:text-base">
                         Simule eleicoes, conflitos corporativos, dinamicas de grupo e qualquer cenario social.
                         Descreva seu caso — a IA configura. O motor simula. Voce decide.
