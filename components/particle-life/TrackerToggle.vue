@@ -1,7 +1,7 @@
 <template>
     <div class="group pointer-events-auto relative">
         <!-- Main tracker button -->
-        <button type="button" name="Particle Tracker" aria-label="Particle Tracker" title="Track a creature"
+        <button type="button" name="Rastreador de Particulas" aria-label="Rastreador de Particulas" title="Rastrear uma particula"
                 btn rounded-full flex items-center justify-center p-2
                 class="backdrop-blur-sm z-10 relative"
                 :class="particleLife.isTrackerSelectionActive
@@ -21,7 +21,7 @@
                  ? 'w-21 pl-5 pr-1 opacity-100'
                  : 'w-0 opacity-0 group-hover:w-21 group-hover:pl-5 group-hover:pr-1 group-hover:opacity-100'">
             <!-- Camera Follow toggle -->
-            <button type="button" title="Camera Follow" aria-label="Camera Follow"
+            <button type="button" title="Camera Seguidora" aria-label="Camera Seguidora"
                     class="flex items-center justify-center p-1 rounded-full ml-1.5 transition-all shrink-0"
                     :class="particleLife.isTrackerCameraActive 
                         ? 'bg-violet-600 hover:bg-violet-500 text-white'
@@ -30,7 +30,7 @@
                 <span i-tabler-route text-sm></span>
             </button>
             <!-- Indicator toggle -->
-            <button type="button" title="Show Indicator" aria-label="Show Indicator"
+            <button type="button" title="Mostrar Indicador" aria-label="Mostrar Indicador"
                     class="flex items-center justify-center p-1 rounded-full ml-1 transition-all shrink-0"
                     :class="particleLife.isTrackerIndicatorVisible 
                         ? 'bg-cyan-600 hover:bg-cyan-500 text-white'

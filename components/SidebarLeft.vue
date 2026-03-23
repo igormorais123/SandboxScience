@@ -1,22 +1,22 @@
 <template>
     <div id="sidebarLeft" z-50> <!-- faded-hover-effect -->
         <div fixed left-0 z-40 :style="toggleBtnStyle">
-            <NuxtLink to="/" title="Home" aria-label="Home">
-                <button type="button" name="Home" aria-label="Home" rounded-br-3xl btn flex items-center p-2
+            <NuxtLink to="/" title="Inicio" aria-label="Inicio">
+                <button type="button" name="Inicio" aria-label="Inicio" rounded-br-3xl btn flex items-center p-2
                         class="-mt-0.5 -ml-1 mr-px ring-1 ring-slate-500 backdrop-blur-sm" bg="slate-900/85 hover:slate-950/85">
                     <span class="i-custom:icon text-2xl"></span>
                 </button>
             </NuxtLink>
         </div>
         <div absolute left-0 top-13 z-40 :style="toggleBtnStyle">
-            <button type="button" title="Settings" aria-label="Settings" rounded-r-3xl btn flex flex-col items-center pr-2
+            <button type="button" title="Configuracoes" aria-label="Configuracoes" rounded-r-3xl btn flex flex-col items-center pr-2
                     class="-ml-1 pl-2 py-[14px] ring-1 ring-slate-500 backdrop-blur-sm" bg="cyan-900/85 hover:cyan-950/85" @click="toggle">
 <!--                <span i-tabler-settings text-lg mb-1></span>-->
                 <span class="relative flex mb-1">
                     <span i-tabler-settings v-show="!modelValue" class="absolute inline-flex text-sm h-full w-full opacity-75 ping"></span>
                     <span i-tabler-settings class="relative inline-flex text-lg"></span>
                 </span>
-                <span class="vertical-90 rotate-180" text-sm font-medium>Settings</span>
+                <span class="vertical-90 rotate-180" text-sm font-medium>Config</span>
             </button>
         </div>
         <div fixed left-2 bottom-2 z-40 :style="toggleBtnStyle" pointer-events-none>

@@ -2,25 +2,25 @@
     <div class="mx-auto">
         <div class="flex space-x-1 p-0.75 bg-slate-700/80 rounded-[0.625rem] shadow-md">
             <button key="tab-1" @click="openTab = 1" :class="openTab === 1 ? 'bg-slate-900/80' : 'hover:bg-slate-800/80'" class="pl-1 text-sm flex-1 py-1 rounded-lg focus:outline-none focus:shadow-outline-blue transition-all duration-100">
-                Forces
+                Afinidades
                 <TooltipInfo container="#mainContainer" tag="div"
-                             tooltip="Displays a grid representing interaction forces between color pairs. <br>
-                             Click on a cell to adjust the force value for the interaction between the two colors it represents.">
+                             tooltip="Grade de forcas de interacao entre segmentos. <br>
+                             Clique numa celula para ajustar a afinidade entre dois segmentos.">
                 </TooltipInfo>
             </button>
             <button key="tab-2" @click="openTab = 2" :class="openTab === 2 ? 'bg-slate-900/80' : 'hover:bg-slate-800/80'" class="pl-1 text-sm flex-1 py-1 rounded-lg focus:outline-none focus:shadow-outline-blue transition-all duration-100">
-                Min. Radius
+                Esp. Pessoal
                 <TooltipInfo container="#mainContainer" tag="div"
-                             tooltip="Displays a grid representing the minimum interaction radius for color pairs. <br>
-                             Click on a cell to set the minimum distance at which particles of the two colors will start to interact.">
+                             tooltip="Grade de distancia minima de interacao entre segmentos. <br>
+                             Clique numa celula para definir a distancia minima em que eleitores dos dois segmentos comecam a interagir.">
                 </TooltipInfo>
             </button>
             <button key="tab-3" @click="openTab = 3" :class="openTab === 3 ? 'bg-slate-900/80' : 'hover:bg-slate-800/80'" class="pl-1 text-sm flex-1 py-1 rounded-lg focus:outline-none focus:shadow-outline-blue transition-all duration-100">
-                Max. Radius
+                Alcance
                 <TooltipInfo container="#mainContainer" tag="div"
-                             tooltip="Displays a grid representing the maximum interaction radius for color pairs. <br>
-                             Click on a cell to set the maximum distance at which particles of the two colors will influence each other. <br>
-                             Increasing this value can impact performance.">
+                             tooltip="Grade de alcance maximo de influencia entre segmentos. <br>
+                             Clique numa celula para definir ate onde eleitores de dois segmentos se influenciam. <br>
+                             Aumentar este valor pode impactar o desempenho.">
                 </TooltipInfo>
             </button>
         </div>

@@ -8,7 +8,7 @@
                     <div flex justify-between items-end mb-2 px-1>
                         <div flex items-center class="-mb-0.5">
                             <div i-lets-icons-bubble text-2xl mr-2 class="text-[#2a9d8f] -mt-0.5"></div>
-                            <h1 font-800 text-lg tracking-widest class="text-[#dff6f3] drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Particle Life</h1>
+                            <h1 font-800 text-lg tracking-widest class="text-[#dff6f3] drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Simulador Eleitoral</h1>
                             <p class="ml-2 px-2 py-0.5 rounded-lg ring-1 uppercase justify-center font-mono font-bold bg-fuchsia-600/20 text-fuchsia-400 ring-fuchsia-500/30">
                                 GPU
                             </p>
@@ -17,8 +17,8 @@
                     </div>
                     <hr border-slate-500>
                     <div overflow-auto flex-1 flex flex-col gap-2 mt-2 pb-12 class="scrollableArea">
-                        <Collapse label="Presets" icon="i-tabler-sparkles text-amber-500"
-                                  tooltip="Choose predefined configurations to quickly set up your simulation.">
+                        <Collapse label="Predefinicoes" icon="i-tabler-sparkles text-amber-500"
+                                  tooltip="Escolha configuracoes predefinidas para configurar rapidamente sua simulacao.">
                             <PresetPanel :store="particleLife"
                                          @updateColors="updateColors"
                                          @updateRulesMatrix="updateRulesMatrix"
@@ -26,11 +26,11 @@
                                          @loadPreset="loadPreset">
                             </PresetPanel>
                         </Collapse>
-                        <Collapse label="Matrix Settings" icon="i-tabler-grid-4x4 text-indigo-500"
-                                  tooltip="Modify matrix values by clicking on cells in the grid. <br>
-                                  Adjust individual cell values with the slider, or click and drag to change them directly. <br>
-                                  Use Ctrl + Click to select multiple cells for group adjustments. <br>
-                                  If no cells are selected, the slider will adjust all values.">
+                        <Collapse label="Config. da Matriz" icon="i-tabler-grid-4x4 text-indigo-500"
+                                  tooltip="Modifique valores da matriz clicando nas celulas da grade. <br>
+                                  Ajuste valores individuais com o controle deslizante, ou clique e arraste para altera-los diretamente. <br>
+                                  Use Ctrl + Clique para selecionar multiplas celulas para ajustes em grupo. <br>
+                                  Se nenhuma celula estiver selecionada, o controle deslizante ajustara todos os valores.">
                             <MatrixSettings :store="particleLife"
                                             @updateRulesMatrix="updateRulesMatrixValue"
                                             @randomRulesMatrix="newRandomRulesMatrix"
@@ -38,19 +38,19 @@
                                             @updateMaxMatrix="updateMaxMatrixValue">
                             </MatrixSettings>
                         </Collapse>
-                        <Collapse label="World Settings" icon="i-tabler-world-cog text-cyan-500" opened>
-                            <RangeInput input label="Particle Count"
-                                        tooltip="Adjust the total number of particles. <br> More particles may reveal complex interactions but can increase computational demand."
+                        <Collapse label="Config. do Territorio" icon="i-tabler-world-cog text-cyan-500" opened>
+                            <RangeInput input label="Qtd. de Particulas"
+                                        tooltip="Ajuste o numero total de particulas. <br> Mais particulas podem revelar interacoes complexas, mas aumentam a demanda computacional."
                                         :min="16" :max="1048576" :step="16" v-model="particleLife.numParticles" @update:modelValue="setNewNumParticles">
                             </RangeInput>
-                            <RangeInput input label="Species Count"
-                                        tooltip="Specify the number of particle colors. <br> Each color interacts with all others, with distinct forces and interaction ranges."
+                            <RangeInput input label="Qtd. de Especies"
+                                        tooltip="Especifique o numero de cores de particulas. <br> Cada cor interage com todas as outras, com forcas e raios de interacao distintos."
                                         :min="1" :max="16" :step="1" v-model="particleLife.numColors" @update:modelValue="setNewNumTypes" mt-2>
                             </RangeInput>
                             <div flex items-center class="mt-0.5">
                                 <p class="w-2/3 text-2sm mt-1">
-                                    World Size
-                                    <TooltipInfo container="#mainContainer" tooltip="Adjust the size of the area where particles are contained." />
+                                    Tamanho do Mundo
+                                    <TooltipInfo container="#mainContainer" tooltip="Ajuste o tamanho da area onde as particulas estao contidas." />
                                 </p>
                                 <Input label="x" v-model="particleLife.simWidth" @change="updateSimWidth" mr-2 />
                                 <Input label="y" v-model="particleLife.simHeight" @change="updateSimHeight" mr-2 />
@@ -60,105 +60,105 @@
                             </div>
 
                             <hr border-gray-500 mt-1 mb-2>
-                            <p underline text-gray-300 class="-mt-0.5" mb-2>Boundary Settings :</p>
+                            <p underline text-gray-300 class="-mt-0.5" mb-2>Config. de Bordas :</p>
 
                             <WallStateSelection :store="particleLife" mb-2 />
 
                             <div flex justify-around mb-1>
                                 <div class="w-2/3 text-2sm mt-1">
-                                    Wrapping Mode
-                                    <TooltipInfo container="#mainContainer" tooltip="Wrapping render modes : <br> <small><u>Normal:</u> Simple wrap. <br> <u>Edges:</u> Wrap + finite grayscale edge tiling. <br> <u>Infinite:</u> wrap + tiles fill the viewport (higher GPU cost).</small>" />
+                                    Modo de Contorno
+                                    <TooltipInfo container="#mainContainer" tooltip="Modos de renderizacao de contorno: <br> <small><u>Normal:</u> Contorno simples. <br> <u>Bordas:</u> Contorno + ladrilhamento em escala de cinza. <br> <u>Infinito:</u> Contorno + ladrilhos preenchem a tela (maior custo de GPU).</small>" />
                                 </div>
                                 <WrapModeSelection :store="particleLife" />
                             </div>
                             <div flex justify-between>
                                 <div class="w-2/3 text-2sm mt-1">
-                                    Edges Tiling
-                                    <TooltipInfo container="#mainContainer" tooltip="Sets neighbor tiles count for Edges mode (grayscale)." />
+                                    Ladrilhamento de Bordas
+                                    <TooltipInfo container="#mainContainer" tooltip="Define a quantidade de ladrilhos vizinhos no modo Bordas (escala de cinza)." />
                                 </div>
                                 <div flex>
-                                    <SelectButton :id="5" label="Cross 5" v-model="particleLife.mirrorWrapCount" :disabled="!particleLife.isMirrorWrap" mr-2 />
+                                    <SelectButton :id="5" label="Cruz 5" v-model="particleLife.mirrorWrapCount" :disabled="!particleLife.isMirrorWrap" mr-2 />
                                     <SelectButton :id="9" label="3x3" v-model="particleLife.mirrorWrapCount" :disabled="!particleLife.isMirrorWrap" />
                                 </div>
                             </div>
                         </Collapse>
-                        <Collapse label="Physics Settings" icon="i-tabler-atom text-fuchsia-500" opened>
-                            <RangeInput input label="Repel Force"
-                                        tooltip="Adjust the force that repels particles from each other. <br> Higher values increase the separation distance."
+                        <Collapse label="Dinamica Social" icon="i-tabler-atom text-fuchsia-500" opened>
+                            <RangeInput input label="Forca de Repulsao"
+                                        tooltip="Ajuste a forca que repele as particulas umas das outras. <br> Valores maiores aumentam a distancia de separacao."
                                         :min="0.01" :max="4" :step="0.01" v-model="particleLife.repel">
                             </RangeInput>
-                            <RangeInput input label="Force Multiplier"
-                                        tooltip="Scales the interaction forces between particles. <br> Higher values make forces stronger and particles move faster."
+                            <RangeInput input label="Multiplicador de Forca"
+                                        tooltip="Escala as forcas de interacao entre particulas. <br> Valores maiores tornam as forcas mais intensas e as particulas se movem mais rapido."
                                         :min="0.01" :max="2" :step="0.01" v-model="particleLife.forceFactor" mt-2>
                             </RangeInput>
-                            <RangeInput input label="Friction"
-                                        tooltip="Controls how much friction slows particles down. <br> Higher values reduce speed and help stabilize the system."
+                            <RangeInput input label="Friccao"
+                                        tooltip="Controla quanta friccao desacelera as particulas. <br> Valores maiores reduzem a velocidade e ajudam a estabilizar o sistema."
                                         :min="0" :max="1" :step="0.01" v-model="particleLife.frictionFactor" mt-2>
                             </RangeInput>
                         </Collapse>
-                        <Collapse label="Randomizer Settings" icon="i-game-icons-perspective-dice-six-faces-random text-teal-500"
-                                  tooltip="Adjust the parameters for randomizing particle attributes. <br> Configure the ranges for minimum and maximum interaction radii.">
-                            <RangeInputMinMax input label="Min. Radius"
-                                              tooltip="Set the range for generating minimum interaction radii. <br> This determines the range of possible values for the minimum distance at which particles begin to interact."
+                        <Collapse label="Config. de Aleatorizacao" icon="i-game-icons-perspective-dice-six-faces-random text-teal-500"
+                                  tooltip="Ajuste os parametros para aleatorizar atributos das particulas. <br> Configure as faixas de raios de interacao minimo e maximo.">
+                            <RangeInputMinMax input label="Raio Min."
+                                              tooltip="Defina a faixa para gerar raios de interacao minimos. <br> Isso determina a faixa de valores possiveis para a distancia minima em que as particulas comecam a interagir."
                                               :min="0" :max="128" :step="1" v-model="particleLife.minRadiusRange">
                             </RangeInputMinMax>
-                            <RangeInputMinMax input label="Max. Radius" mt-3
-                                              tooltip="Set the range for generating maximum interaction radii. <br> This determines the range of possible values for the maximum interaction distance between particles."
+                            <RangeInputMinMax input label="Raio Max." mt-3
+                                              tooltip="Defina a faixa para gerar raios de interacao maximos. <br> Isso determina a faixa de valores possiveis para a distancia maxima de interacao entre particulas."
                                               :min="0" :max="256" :step="1" v-model="particleLife.maxRadiusRange">
                             </RangeInputMinMax>
                         </Collapse>
-                        <Collapse label="Graphics Settings" icon="i-tabler-photo-cog text-emerald-500">
-                            <RangeInput input label="Particle Size"
-                                        tooltip="Controls the overall size of the particles in the simulation, allowing you to make them larger or smaller depending on your preference. This setting does not impact performance."
+                        <Collapse label="Config. Graficas" icon="i-tabler-photo-cog text-emerald-500">
+                            <RangeInput input label="Tamanho da Particula"
+                                        tooltip="Controla o tamanho geral das particulas na simulacao, permitindo torna-las maiores ou menores conforme sua preferencia. Esta configuracao nao afeta o desempenho."
                                         :min="0.1" :max="6" :step="0.1" v-model="particleLife.particleSize">
                             </RangeInput>
-                            <RangeInput input label="Particle Opacity"
-                                        tooltip="Adjust the opacity of the particles in the simulation. <br> This setting allows you to control how transparent or opaque the particles appear."
+                            <RangeInput input label="Opacidade da Particula"
+                                        tooltip="Ajuste a opacidade das particulas na simulacao. <br> Esta configuracao permite controlar quao transparentes ou opacas as particulas aparecem."
                                         :min="0" :max="1" :step="0.01" v-model="particleLife.particleOpacity" mt-2>
                             </RangeInput>
                             <div flex justify-between mt-1>
                                 <div class="w-2/3 text-2sm mt-1">
-                                    Particle Blending
-                                    <TooltipInfo container="#mainContainer" tooltip="Particle blending modes. <br> <small><u>Normal:</u> Alpha blend (standard colors). <br> <u>Additive:</u> Adds color values. Overlaps accumulate brightness (glow-like).</small>" />
+                                    Mesclagem de Particulas
+                                    <TooltipInfo container="#mainContainer" tooltip="Modos de mesclagem de particulas. <br> <small><u>Normal:</u> Mesclagem alfa (cores padrao). <br> <u>Aditivo:</u> Soma valores de cor. Sobreposicoes acumulam brilho (efeito luminoso).</small>" />
                                 </div>
                                 <div flex>
                                     <SelectButton :id="false" label="Normal" v-model="particleLife.isAdditiveBlending" mr-2 />
-                                    <SelectButton :id="true" label="Additive" v-model="particleLife.isAdditiveBlending" />
+                                    <SelectButton :id="true" label="Aditivo" v-model="particleLife.isAdditiveBlending" />
                                 </div>
                             </div>
 
                             <hr border-gray-500 my-2>
                             <div flex items-start justify-between mb-2>
-                                <p underline text-gray-300 mb-1>Glow Settings :</p>
-                                <ToggleSwitch label="Particle Glowing" colorful-label v-model="particleLife.isParticleGlow" />
+                                <p underline text-gray-300 mb-1>Config. de Brilho :</p>
+                                <ToggleSwitch label="Brilho de Particula" colorful-label v-model="particleLife.isParticleGlow" />
                             </div>
 
-                            <RangeInput input label="Glow Size"
-                                        tooltip="Adjust the size of the glow effect around particles."
+                            <RangeInput input label="Tamanho do Brilho"
+                                        tooltip="Ajuste o tamanho do efeito de brilho ao redor das particulas."
                                         :min="0" :max="32" :step="0.1" v-model="particleLife.glowSize" mt-2>
                             </RangeInput>
-                            <RangeInput input label="Glow Intensity"
-                                        tooltip="Adjust the intensity of the glow effect around particles."
+                            <RangeInput input label="Intensidade do Brilho"
+                                        tooltip="Ajuste a intensidade do efeito de brilho ao redor das particulas."
                                         :min="0" :max="0.5" :step="0.005" v-model="particleLife.glowIntensity" mt-2>
                             </RangeInput>
-                            <RangeInput input label="Glow Steepness"
-                                        tooltip="Adjust the steepness of the glow effect around particles. <br> Higher values create a sharper transition between glowing and non-glowing areas."
+                            <RangeInput input label="Inclinacao do Brilho"
+                                        tooltip="Ajuste a inclinacao do efeito de brilho ao redor das particulas. <br> Valores maiores criam uma transicao mais acentuada entre areas com e sem brilho."
                                         :min="0" :max="12" :step="1" v-model="particleLife.glowSteepness" mt-2>
                             </RangeInput>
                         </Collapse>
-                        <Collapse label="Camera Settings" icon="i-tabler-camera-cog text-violet-500">
-                            <RangeInput input label="Zoom Smoothing"
-                                        tooltip="Adjusts the smoothness of the zoom. <br> Lower values result in a slower, more fluid zoom, while higher values make it faster and more abrupt."
+                        <Collapse label="Config. da Camera" icon="i-tabler-camera-cog text-violet-500">
+                            <RangeInput input label="Suavizacao do Zoom"
+                                        tooltip="Ajusta a suavidade do zoom. <br> Valores menores resultam em um zoom mais lento e fluido, enquanto valores maiores o tornam mais rapido e abrupto."
                                         :min="0.01" :max="0.5" :step="0.01" v-model="particleLife.zoomSmoothing">
                             </RangeInput>
-                            <RangeInput input label="Pan Smoothing"
-                                        tooltip="Adjusts the smoothness of camera panning. <br> Lower values create more inertia for a gliding effect, while higher values make the movement stop more abruptly."
+                            <RangeInput input label="Suavizacao da Panoramica"
+                                        tooltip="Ajusta a suavidade da panoramica da camera. <br> Valores menores criam mais inercia para um efeito de deslizamento, enquanto valores maiores fazem o movimento parar mais abruptamente."
                                         :min="0.01" :max="0.5" :step="0.01" v-model="particleLife.panSmoothing" mt-2>
                             </RangeInput>
 
                             <hr border-gray-500 my-2>
                             <div flex items-center justify-between>
-                                <p underline text-gray-300>Cinematic Mode :</p>
+                                <p underline text-gray-300>Modo Cinematico :</p>
                                 <button btn px-3 py-1 text-xs rounded-full font-medium flex items-center ring-1 transition-all relative
                                         :class="particleLife.isDriftCamActive
                                             ? 'bg-violet-600/80 hover:bg-violet-500/80 ring-violet-400/50 text-white'
@@ -169,33 +169,33 @@
                                         <span class="relative inline-flex size-3 rounded-full bg-violet-400"></span>
                                     </span>
                                     <span i-tabler-video text-xs mr-1></span>
-                                    {{ particleLife.isDriftCamActive ? 'Drifting...' : 'Enable Drift' }}
+                                    {{ particleLife.isDriftCamActive ? 'Derivando...' : 'Ativar Deriva' }}
                                 </button>
                             </div>
                             <p v-if="!particleLife.isDriftCamActive" class="text-sm text-gray-500 mt-1">
-                                Auto camera panning & zooming.
+                                Movimentacao e zoom automatico da camera.
                             </p>
                             <div v-else flex flex-col gap-2 mt-2>
-                                 <ToggleSwitch label="Reset Path on Pan" colorful-label v-model="particleLife.driftCamResetOnPan"
-                                               tooltip="Starts a new drift trajectory after manual panning or zooming, instead of resuming the previous path.">
+                                 <ToggleSwitch label="Reiniciar ao Mover" colorful-label v-model="particleLife.driftCamResetOnPan"
+                                               tooltip="Inicia uma nova trajetoria de deriva apos movimentacao ou zoom manual, em vez de retomar o caminho anterior.">
                                 </ToggleSwitch>
-                                <RangeInput input label="Drift Speed"
-                                            tooltip="Controls the automatic camera movement speed. <br> - <b>Higher</b> → faster tracking. <br> - <b>Lower</b> → smoother cinematic effect."
+                                <RangeInput input label="Velocidade de Deriva"
+                                            tooltip="Controla a velocidade de movimentacao automatica da camera. <br> - <b>Maior</b> → rastreamento mais rapido. <br> - <b>Menor</b> → efeito cinematico mais suave."
                                             :min="0.01" :max="1.0" :step="0.01" v-model="particleLife.driftCamSpeed">
                                 </RangeInput>
-                                <RangeInput input label="Pan Amplitude"
-                                            tooltip="Controls how far the camera moves from center. <br> - <b>0.5</b> → half the simulation area. <br> - <b>1.0</b> → full edges."
+                                <RangeInput input label="Amplitude da Panoramica"
+                                            tooltip="Controla quao longe a camera se move do centro. <br> - <b>0.5</b> → metade da area de simulacao. <br> - <b>1.0</b> → bordas completas."
                                             :min="0.05" :max="1.0" :step="0.05" v-model="particleLife.driftCamAmplitude">
                                 </RangeInput>
-                                <RangeInputMinMax input label="Zoom Range" mt-2
-                                                  tooltip="Sets the min/max zoom levels for automatic cinematic zoom."
+                                <RangeInputMinMax input label="Faixa de Zoom" mt-2
+                                                  tooltip="Define os niveis de zoom minimo/maximo para o zoom cinematico automatico."
                                                   :min="0.1" :max="5" :step="0.05" :range-offset="0.1" v-model="particleLife.driftCamZoomRange">
                                 </RangeInputMinMax>
                             </div>
 
                             <hr border-gray-500 my-2>
                             <div flex items-center justify-between>
-                                <p underline text-gray-300>Creature Tracking :</p>
+                                <p underline text-gray-300>Rastreamento de Particulas :</p>
                                 <button btn px-3 py-1 text-xs rounded-full font-medium flex items-center ring-1 transition-all relative
                                         :class="particleLife.isTrackerSelectionActive
                                             ? 'bg-amber-700/80 hover:bg-amber-600/80 ring-amber-500/50 text-white animate-pulse'
@@ -208,40 +208,40 @@
                                         <span class="relative inline-flex size-3 rounded-full bg-rose-400"></span>
                                     </span>
                                     <span :class="particleLife.isTrackerSelectionActive ? 'i-tabler-marquee-2' : 'i-tabler-target'" text-xs mr-1></span>
-                                    {{ particleLife.isTrackerSelectionActive ? 'Selecting...' : particleLife.isTrackerActive ? 'Tracking...' : 'Select & Track' }}
+                                    {{ particleLife.isTrackerSelectionActive ? 'Selecionando...' : particleLife.isTrackerActive ? 'Rastreando...' : 'Selecionar e Rastrear' }}
                                 </button>
                             </div>
                             <p v-if="!particleLife.isTrackerActive && !particleLife.isTrackerSelectionActive" class="text-sm text-gray-500 mt-1">
-                                Track & follow a creature in real time.
+                                Rastrear e seguir uma particula em tempo real.
                             </p>
                             <p v-else-if="particleLife.isTrackerSelectionActive" class="text-sm text-amber-500/80 mt-1">
-                                Draw around a creature to start tracking.
+                                Desenhe ao redor de uma particula para rastrear.
                             </p>
                             <div v-else flex flex-col gap-2 mt-2>
-                                <ToggleSwitch label="Camera Follow" colorful-label v-model="particleLife.isTrackerCameraActive"
-                                              tooltip="When enabled, the camera will smoothly follow the tracked creature.">
+                                <ToggleSwitch label="Camera Seguidora" colorful-label v-model="particleLife.isTrackerCameraActive"
+                                              tooltip="Quando ativado, a camera seguira suavemente a particula rastreada.">
                                 </ToggleSwitch>
-                                <ToggleSwitch label="Show Indicator" colorful-label v-model="particleLife.isTrackerIndicatorVisible"
-                                              tooltip="Show or hide the visual tracker indicator overlay.">
+                                <ToggleSwitch label="Mostrar Indicador" colorful-label v-model="particleLife.isTrackerIndicatorVisible"
+                                              tooltip="Mostrar ou ocultar o indicador visual de rastreamento.">
                                 </ToggleSwitch>
-                                <RangeInput input label="Smoothing"
-                                            tooltip="Controls how smoothly the camera follows the tracked creature. <br> Lower values give a slower, cinematic follow. Higher values make the camera snap to the target."
+                                <RangeInput input label="Suavizacao"
+                                            tooltip="Controla quao suavemente a camera segue a particula rastreada. <br> Valores menores dao um acompanhamento mais lento e cinematico. Valores maiores fazem a camera saltar para o alvo."
                                             :min="0.01" :max="1" :step="0.01" v-model="particleLife.trackerCameraSmoothing">
                                 </RangeInput>
                             </div>
                         </Collapse>
-                        <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500"
-                                  tooltip="Provides tools for visualizing the simulation's internal state. <br> Toggle the grid view to see spatial bins or activate a heatmap to analyze particle density. <br> These features are useful for debugging and performance tuning.">
+                        <Collapse label="Ferramentas de Depuracao" icon="i-tabler-bug text-rose-500"
+                                  tooltip="Fornece ferramentas para visualizar o estado interno da simulacao. <br> Alterne a visualizacao de grade para ver bins espaciais ou ative um mapa de calor para analisar a densidade de particulas. <br> Esses recursos sao uteis para depuracao e ajuste de desempenho.">
                             <div flex>
-                                <ToggleSwitch label="Show Bins" colorful-label v-model="particleLife.isDebugBinsActive" mr-4
-                                              tooltip="Displays the cells (bins) of the spatial partitioning system. <br> Each cell is drawn as a grid, which helps visualize how particles are grouped. <br> This is a useful debugging tool for optimizing performance.">
+                                <ToggleSwitch label="Mostrar Bins" colorful-label v-model="particleLife.isDebugBinsActive" mr-4
+                                              tooltip="Exibe as celulas (bins) do sistema de particionamento espacial. <br> Cada celula e desenhada como uma grade, ajudando a visualizar como as particulas sao agrupadas. <br> Esta e uma ferramenta util de depuracao para otimizar o desempenho.">
                                 </ToggleSwitch>
-                                <ToggleSwitch label="Show Heatmap" colorful-label v-model="particleLife.isDebugHeatmapActive"
-                                              tooltip="Enables a heatmap to visualize particle density. <br> Each grid cell is colored based on the number of particles it contains, following a gradient from blue (low density) to red (high density). <br> This helps identify areas of high concentration.">
+                                <ToggleSwitch label="Mostrar Mapa de Calor" colorful-label v-model="particleLife.isDebugHeatmapActive"
+                                              tooltip="Ativa um mapa de calor para visualizar a densidade de particulas. <br> Cada celula da grade e colorida com base no numero de particulas que contem, seguindo um gradiente de azul (baixa densidade) a vermelho (alta densidade). <br> Isso ajuda a identificar areas de alta concentracao.">
                                 </ToggleSwitch>
                             </div>
-                            <RangeInput input label="Heatmap Scale"
-                                        tooltip="Sets the number of particles in a cell that maps to the highest value on the heatmap gradient. <br> Adjusting this value scales the density visualization, helping to fine-tune how particle concentrations are displayed."
+                            <RangeInput input label="Escala do Mapa de Calor"
+                                        tooltip="Define o numero de particulas em uma celula que corresponde ao valor mais alto no gradiente do mapa de calor. <br> Ajustar este valor escala a visualizacao de densidade, ajudando a refinar como as concentracoes de particulas sao exibidas."
                                         :min="640" :max="16000" :step="16" v-model="particleLife.debugMaxParticleCount" mt-2>
                             </RangeInput>
                             <hr border-gray-500 my-2>
@@ -256,7 +256,7 @@
                 </div>
             </template>
             <template #bottom-actions>
-                <button type="button" name="Cinematic Camera" aria-label="Cinematic Camera" title="Cinematic Camera"
+                <button type="button" name="Camera Cinematica" aria-label="Camera Cinematica" title="Camera Cinematica"
                         btn rounded-full flex items-center justify-center p-2 backdrop-blur-sm pointer-events-auto
                         :class="particleLife.isDriftCamActive ? 'bg-violet-600/90 hover:bg-violet-500/90' : 'bg-violet-900/80 hover:bg-violet-800/80'"
                         @click="particleLife.isDriftCamActive = !particleLife.isDriftCamActive" :disabled="particleLife.isHudLocked">
@@ -269,7 +269,7 @@
                 <TrackerToggle
                     @toggle="particleLife.isTrackerSelectionActive ? cancelTrackerSelection() : particleLife.isTrackerActive ? stopTracker() : startTrackerSelection()">
                 </TrackerToggle>
-                <button type="button" name="Randomize" aria-label="Randomize" title="Randomize simulation"
+                <button type="button" name="Aleatorizar" aria-label="Aleatorizar" title="Aleatorizar simulacao"
                         btn rounded-full flex items-center justify-center p-2 pointer-events-auto
                         class="backdrop-blur-sm bg-[#094F5D]/90 hover:bg-[#0B5F6F]/90"
                         @click="regenerateLife" :disabled="particleLife.isHudLocked">
@@ -290,31 +290,31 @@
             <BrushSettings :store="particleLife" mt-2 mr-1 pointer-events-auto :class="particleLife.isHudLocked && '!pointer-events-none [&_*]:!pointer-events-none opacity-40'" />
 
             <div class="faded-hover-effect" mr-1>
-                <button type="button" title="Debugger" aria-label="Debugger" btn w-8 aspect-square rounded-full p1 flex items-center justify-center bg="#D62839 hover:#DC4151" mt-2
+                <button type="button" title="Depurador" aria-label="Depurador" btn w-8 aspect-square rounded-full p1 flex items-center justify-center bg="#D62839 hover:#DC4151" mt-2
                         @click="particleLife.isDebugBinsActive = !particleLife.isDebugBinsActive" :disabled="particleLife.isHudLocked">
                     <span text-sm :class="particleLife.isDebugBinsActive ? 'i-tabler-bug-filled' : 'i-tabler-bug'"></span>
                 </button>
             </div>
         </div>
         <div fixed z-10 bottom-2 flex justify-center items-end pointer-events-none class="left-1/2 transform -translate-x-1/2"> <!-- faded-hover-effect -->
-            <button type="button" name="Toggle Fullscreen" aria-label="Toggle Fullscreen" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="toggleFullscreen">
+            <button type="button" name="Tela Cheia" aria-label="Tela Cheia" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="toggleFullscreen">
                 <span :class="isFullscreen ? 'i-tabler-maximize-off' : 'i-tabler-maximize'"></span>
             </button>
-            <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="handleZoom(-1, true)">
+            <button type="button" name="Diminuir Zoom" aria-label="Diminuir Zoom" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="handleZoom(-1, true)">
                 <span i-tabler-zoom-out></span>
             </button>
-            <button type="button" name="Play/Pause" aria-label="Play/Pause" btn p3 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="particleLife.isRunning = !particleLife.isRunning">
+            <button type="button" name="Reproduzir/Pausar" aria-label="Reproduzir/Pausar" btn p3 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="particleLife.isRunning = !particleLife.isRunning">
                 <span text-xl :class="particleLife.isRunning ? 'i-tabler-player-pause-filled' : 'i-tabler-player-play-filled'"></span>
             </button>
-            <button type="button" name="Step" aria-label="Step" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isRunning || particleLife.isHudLocked" @click="step">
+            <button type="button" name="Passo" aria-label="Passo" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isRunning || particleLife.isHudLocked" @click="step">
                 <span i-tabler-player-skip-forward-filled></span>
             </button>
-            <button type="button" name="Zoom In" aria-label="Zoom In" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="handleZoom(1, true)">
+            <button type="button" name="Aumentar Zoom" aria-label="Aumentar Zoom" btn p2 rounded-full mx-1 flex items-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80" :disabled="particleLife.isHudLocked" @click="handleZoom(1, true)">
                 <span i-tabler-zoom-in></span>
             </button>
         </div>
         <section fixed z-10 bottom-2 right-2 flex items-end>
-            <button type="button" name="Donate" aria-label="Donate" title="Donate" @click="openDonationModal()"
+            <button type="button" name="Apoiar" aria-label="Apoiar" title="Apoiar" @click="openDonationModal()"
                     class="donation-glow group relative flex items-center mr-2 p-1.2 rounded-full backdrop-blur-sm transition-all duration-300 bg-rose-600/80 hover:bg-rose-500/90 border border-rose-400/50 hover:border-rose-300/70 text-white">
                 <span i-tabler-heart-filled class="animate-heartbeat"></span>
             </button>

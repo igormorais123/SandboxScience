@@ -8,9 +8,9 @@
                     <div flex justify-between items-end mb-2 px-1>
                         <div flex items-center class="-mb-0.5">
                             <div i-lets-icons-bubble text-2xl mr-2 class="text-[#2a9d8f] -mt-0.5"></div>
-                            <h1 font-800 text-lg tracking-widest class="text-[#dff6f3] drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Particle Life</h1>
-                            <p class="ml-2 px-2 py-0.5 rounded-lg ring-1 uppercase justify-center font-mono font-bold bg-sky-600/20 text-sky-400 ring-sky-500/30">
-                                CPU
+                            <h1 font-800 text-lg tracking-widest class="text-[#dff6f3] drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Simulador Eleitoral</h1>
+                            <p class="ml-2 px-2 py-0.5 rounded-lg ring-1 uppercase justify-center font-mono font-bold bg-amber-600/20 text-amber-400 ring-amber-500/30">
+                                INTEIA
                             </p>
                         </div>
 <!--                        <div rounded-lg border-2 border-white style="width: 72px;">-->
@@ -20,8 +20,8 @@
                     </div>
                     <hr border-slate-500>
                     <div overflow-auto flex-1 mt-2 class="scrollableArea">
-                        <Collapse label="Presets" icon="i-tabler-sparkles text-amber-500"
-                                  tooltip="Choose predefined configurations to quickly set up your simulation.">
+                        <Collapse label="Cenarios" icon="i-tabler-sparkles text-amber-500"
+                                  tooltip="Escolha configuracoes predefinidas para configurar rapidamente sua simulacao.">
                             <PresetPanel :store="particleLife"
                                          @updateColors="updateColors"
                                          @updateRulesMatrix="updateRulesMatrix"
@@ -29,11 +29,11 @@
                             </PresetPanel>
                         </Collapse>
 
-                        <Collapse label="Matrix Settings" icon="i-tabler-grid-4x4 text-indigo-500" mt-2
-                                  tooltip="Modify matrix values by clicking on cells in the grid. <br>
-                                  Adjust individual cell values with the slider, or click and drag to change them directly. <br>
-                                  Use Ctrl + Click to select multiple cells for group adjustments. <br>
-                                  If no cells are selected, the slider will adjust all values.">
+                        <Collapse label="Matriz de Afinidades" icon="i-tabler-grid-4x4 text-indigo-500" mt-2
+                                  tooltip="Modifique os valores da matriz clicando nas celulas. <br>
+                                  Ajuste valores individuais com o controle deslizante ou clique e arraste. <br>
+                                  Use Ctrl + Clique para selecionar multiplas celulas. <br>
+                                  Se nenhuma celula estiver selecionada, o controle ajustara todos os valores.">
                             <MatrixSettings :store="particleLife"
                                 @updateRulesMatrix="updateRulesMatrixValue"
                                 @randomRulesMatrix="newRandomRulesMatrix"
@@ -41,32 +41,32 @@
                                 @updateMaxMatrix="updateMaxMatrixValue">
                             </MatrixSettings>
                         </Collapse>
-                        <Collapse label="World Settings" icon="i-tabler-world-cog text-cyan-500" opened mt-2>
-                            <RangeInput input label="Particle Number"
-                                        tooltip="Adjust the total number of particles. <br> More particles may reveal complex interactions but can increase computational demand."
+                        <Collapse label="Config. do Territorio" icon="i-tabler-world-cog text-cyan-500" opened mt-2>
+                            <RangeInput input label="Numero de Eleitores"
+                                        tooltip="Ajuste o numero total de eleitores. <br> Mais eleitores revelam interacoes complexas mas aumentam a demanda computacional."
                                         :min="0" :max="20000" :step="10" v-model="particleLife.numParticles">
                             </RangeInput>
-                            <RangeInput input label="Color Number"
-                                        tooltip="Specify the number of particle colors. <br> Each color interacts with all others, with distinct forces and interaction ranges."
+                            <RangeInput input label="Numero de Segmentos"
+                                        tooltip="Especifique o numero de segmentos eleitorais. <br> Cada segmento interage com todos os outros, com forcas e alcances distintos."
                                         :min="1" :max="20" :step="1" v-model="particleLife.numColors" @update:modelValue="setNewNumTypes" mt-2>
                             </RangeInput>
-                            <RangeInput input label="Depth Limit"
-                                        tooltip="Set the maximum depth for particles. <br> In 3D, particles will bounce back if they exceed this limit."
+                            <RangeInput input label="Limite de Profundidade"
+                                        tooltip="Defina a profundidade maxima. <br> Em 3D, particulas voltarao se excederem este limite."
                                         :min="0" :max="1000" :step="1" v-model="particleLife.depthLimit" mt-2>
                             </RangeInput>
 
                             <div flex items-start justify-between mt-3 mb-2>
-                                <p underline text-gray-300>Walls Settings :</p>
+                                <p underline text-gray-300>Config. de Fronteiras :</p>
                                 <div flex>
-                                    <SelectButton :id="0" label="Rectangle" v-model="particleLife.wallShape" mr-2 />
-                                    <SelectButton :id="1" label="Circle" v-model="particleLife.wallShape" :disabled="particleLife.isWallWrap" />
+                                    <SelectButton :id="0" label="Retangulo" v-model="particleLife.wallShape" mr-2 />
+                                    <SelectButton :id="1" label="Circulo" v-model="particleLife.wallShape" :disabled="particleLife.isWallWrap" />
                                 </div>
                             </div>
                             <div mb-2>
                                 <WallStateSelection :store="particleLife" />
                             </div>
                             <div flex mb-1>
-                                <SelectButton :id="1" label="Screen" v-model="particleLife.screenMultiplierForGridSize" mr-1.5 />
+                                <SelectButton :id="1" label="Tela" v-model="particleLife.screenMultiplierForGridSize" mr-1.5 />
                                 <SelectButton :id="1.5" label="x1.5" v-model="particleLife.screenMultiplierForGridSize" mr-1.5 />
                                 <SelectButton :id="2" label="x2" v-model="particleLife.screenMultiplierForGridSize" mr-1.5 />
                                 <SelectButton :id="2.5" label="x2.5" v-model="particleLife.screenMultiplierForGridSize" mr-1.5 />
@@ -77,8 +77,8 @@
                             </div>
                             <div flex items-center v-if="particleLife.wallShape === 0">
                                 <p class="w-2/3 text-2sm mt-1">
-                                    Rectangle Size
-                                    <TooltipInfo container="#mainContainer" tooltip="Adjust the size of the rectangular area where particles are contained." />
+                                    Tamanho do Retangulo
+                                    <TooltipInfo container="#mainContainer" tooltip="Ajuste o tamanho da area retangular onde os eleitores estao contidos." />
                                 </p>
                                 <Input label="x" v-model="particleLife.gridWidth" @change="updateGridWidth" mr-2 />
                                 <Input label="y" v-model="particleLife.gridHeight" @change="updateGridHeight" mr-2 />
@@ -88,77 +88,77 @@
                             </div>
                             <div flex items-center justify-between mt-2 v-else>
                                 <p class="w-2/3 text-2sm mt-0.5">
-                                    Circle Size
-                                    <TooltipInfo container="#mainContainer" tooltip="Adjust the size of the circular area where particles are contained." />
+                                    Tamanho do Circulo
+                                    <TooltipInfo container="#mainContainer" tooltip="Ajuste o tamanho da area circular onde os eleitores estao contidos." />
                                 </p>
-                                <Input label="Diameter" v-model="particleLife.gridHeight" @change="updateGridHeight" mr-2 />
+                                <Input label="Diametro" v-model="particleLife.gridHeight" @change="updateGridHeight" mr-2 />
                             </div>
                         </Collapse>
-                        <Collapse label="Physics Settings" icon="i-tabler-atom text-fuchsia-500" opened mt-2>
-                            <RangeInput input label="Repel Force"
-                                        tooltip="Adjust the force that repels particles from each other. <br> Higher values increase the separation distance."
+                        <Collapse label="Dinamica Social" icon="i-tabler-atom text-fuchsia-500" opened mt-2>
+                            <RangeInput input label="Forca de Rejeicao"
+                                        tooltip="Ajuste a forca que repele eleitores entre si. <br> Valores mais altos aumentam a distancia de separacao."
                                         :min="0.01" :max="4" :step="0.01" v-model="particleLife.repel">
                             </RangeInput>
-                            <RangeInput input label="Force Multiplier"
-                                        tooltip="Scales the interaction forces between particles. <br> Higher values make forces stronger and particles move faster."
+                            <RangeInput input label="Intensidade das Relacoes"
+                                        tooltip="Escala as forcas de interacao entre eleitores. <br> Valores mais altos tornam as forcas mais fortes."
                                         :min="0.01" :max="2" :step="0.01" v-model="particleLife.forceFactor" mt-2>
                             </RangeInput>
-                            <RangeInput input label="Friction"
-                                        tooltip="Controls how much friction slows particles down. <br> Higher values reduce speed and help stabilize the system."
+                            <RangeInput input label="Inercia Social"
+                                        tooltip="Controla a resistencia a mudanca. <br> Valores mais altos reduzem velocidade e estabilizam o sistema."
                                         :min="0" :max="1" :step="0.01" v-model="particleLife.frictionFactor" mt-2>
                             </RangeInput>
                         </Collapse>
-                        <Collapse label="Randomizer Settings" icon="i-game-icons-perspective-dice-six-faces-random text-teal-500" mt-2
-                                  tooltip="Adjust the parameters for randomizing particle attributes. <br> Configure the ranges for minimum and maximum interaction radii.">
-                            <RangeInputMinMax input label="Min. Radius"
-                                              tooltip="Set the range for generating minimum interaction radii. <br> This determines the range of possible values for the minimum distance at which particles begin to interact."
+                        <Collapse label="Config. de Aleatorizacao" icon="i-game-icons-perspective-dice-six-faces-random text-teal-500" mt-2
+                                  tooltip="Ajuste os parametros para aleatorizar atributos. <br> Configure os intervalos de espaco pessoal e alcance de influencia.">
+                            <RangeInputMinMax input label="Espaco Pessoal"
+                                              tooltip="Defina o intervalo para gerar raios minimos de interacao. <br> Distancia minima em que eleitores comecam a interagir."
                                               :min="0" :max="100" :step="1" v-model="particleLife.minRadiusRange">
                             </RangeInputMinMax>
-                            <RangeInputMinMax input label="Max. Radius"
-                                              tooltip="Set the range for generating maximum interaction radii. <br> This determines the range of possible values for the maximum interaction distance between particles."
+                            <RangeInputMinMax input label="Alcance de Influencia"
+                                              tooltip="Defina o intervalo para gerar raios maximos de interacao. <br> Distancia maxima de influencia entre eleitores."
                                               :min="particleLife.minRadiusRange[1]" :max="300" :step="1" v-model="particleLife.maxRadiusRange">
                             </RangeInputMinMax>
                         </Collapse>
-                        <Collapse label="Graphics Settings" icon="i-tabler-photo-cog text-emerald-500" mt-2>
+                        <Collapse label="Config. Visuais" icon="i-tabler-photo-cog text-emerald-500" mt-2>
                             <div flex items-center justify-between mb-2>
-                                <p underline text-gray-300 class="-mt-0.5">General Settings :</p>
-                                <ToggleSwitch inactive-label="Circle Shape" v-model="particleLife.isCircle"
-                                              tooltip="Toggle between circular and square particle shapes. <br> Circular particles may slightly impact performance compared to square ones.">
+                                <p underline text-gray-300 class="-mt-0.5">Config. Gerais :</p>
+                                <ToggleSwitch inactive-label="Forma Circular" v-model="particleLife.isCircle"
+                                              tooltip="Alterne entre formas circulares e quadradas. <br> Circulos podem impactar levemente o desempenho.">
                                 </ToggleSwitch>
                             </div>
 
-                            <RangeInput input label="Particle Size"
-                                        tooltip="Controls the overall size of the particles in the simulation, allowing you to make them larger or smaller depending on your preference. This setting does not impact performance."
+                            <RangeInput input label="Tamanho do Eleitor"
+                                        tooltip="Controla o tamanho geral dos eleitores na simulacao. Nao impacta o desempenho."
                                         :min="1" :max="20" :step="1" v-model="particleLife.particleSize" mt-2>
                             </RangeInput>
                             <hr border-gray-500 my-2>
-                            <p underline text-gray-300 mb-2 >3D Settings :</p>
+                            <p underline text-gray-300 mb-2 >Config. 3D :</p>
                             <div grid grid-cols-2 gap-4>
-                                <ToggleSwitch label="Depth Size" v-model="particleLife.hasDepthSize"
-                                              tooltip="Toggles the effect where particle size changes based on their position along the Z-axis, enhancing 3D depth perception.">
+                                <ToggleSwitch label="Profundidade" v-model="particleLife.hasDepthSize"
+                                              tooltip="Ativa efeito onde o tamanho muda com base na posicao no eixo Z.">
                                 </ToggleSwitch>
-                                <ToggleSwitch label="Depth Opacity" v-model="particleLife.hasDepthOpacity"
-                                              tooltip="Toggles the effect where particle opacity changes based on their position along the Z-axis, enhancing 3D depth perception.">
+                                <ToggleSwitch label="Opacidade 3D" v-model="particleLife.hasDepthOpacity"
+                                              tooltip="Ativa efeito onde a opacidade muda com base na posicao no eixo Z.">
                                 </ToggleSwitch>
                             </div>
-                            <RangeInput input label="Min. Opacity"
-                                        tooltip="Set the minimum opacity for depth effect. <br> Lower values enhance perspective, creating a stronger depth effect when depth opacity is enabled."
+                            <RangeInput input label="Opacidade Min."
+                                        tooltip="Defina a opacidade minima para efeito de profundidade."
                                         :min="0" :max="Math.min(1, particleLife.maxOpacity)" :step="0.01" v-model="particleLife.minOpacity" mt-2>
                             </RangeInput>
-                            <RangeInput input label="Max. Opacity"
-                                        tooltip="Set the maximum opacity for depth effects. <br> Higher values reduce perspective, creating a subtler depth effect when depth opacity is enabled."
+                            <RangeInput input label="Opacidade Max."
+                                        tooltip="Defina a opacidade maxima para efeitos de profundidade."
                                         :min="particleLife.minOpacity" :max="2" :step="0.01" v-model="particleLife.maxOpacity" mt-2>
                             </RangeInput>
                         </Collapse>
-                        <Collapse label="Debug Tools" icon="i-tabler-bug text-rose-500" mt-2
-                                  tooltip="Access debugging tools to visualize and refine the simulation. <br> Manage cell boundaries, adjust cell sizes, and control particle groupings to troubleshoot and optimize performance.">
+                        <Collapse label="Ferramentas Avancadas" icon="i-tabler-bug text-rose-500" mt-2
+                                  tooltip="Ferramentas para visualizar e refinar a simulacao. <br> Gerencie limites de celulas, ajuste tamanhos e controle agrupamentos.">
                             <div flex items-center justify-between>
                                 <div flex>
-                                    <ToggleSwitch label="Show Cells" v-model="particleLife.hasCells" mr-4
-                                                  tooltip="Toggle the visibility of cells in the spatial partitioning system. <br> When enabled, cells will be displayed to help visualize particle grouping.">
+                                    <ToggleSwitch label="Mostrar Grupos" v-model="particleLife.hasCells" mr-4
+                                                  tooltip="Alterne a visibilidade dos grupos no sistema de particionamento espacial.">
                                     </ToggleSwitch>
-                                    <ToggleSwitch label="Follow" v-model="particleLife.isCellFollow" :disabled="!particleLife.hasCells"
-                                                  tooltip="Toggle to display cells based on their center relative to all particles within the cell. <br> This helps track groups of particles as you adjust the cell group size.">
+                                    <ToggleSwitch label="Seguir" v-model="particleLife.isCellFollow" :disabled="!particleLife.hasCells"
+                                                  tooltip="Exibe grupos com base no centro relativo a todos os eleitores dentro do grupo.">
                                     </ToggleSwitch>
                                 </div>
                                 <div flex>
@@ -167,26 +167,30 @@
                                 </div>
                             </div>
 
-                            <RangeInput input label="Cell Group Size"
-                                        tooltip="Set the minimum number of particles required for a cell to be displayed. <br> At 0, all cells are shown; higher values filter out smaller groups."
+                            <RangeInput input label="Tamanho Min. Grupo"
+                                        tooltip="Defina o numero minimo de eleitores para exibir um grupo. <br> Em 0, todos sao mostrados."
                                         :min="0" :max="100" :step="1" v-model="particleLife.cellGroupSize" mt-2>
                             </RangeInput>
-                            <RangeInput input label="Cell Size Factor"
-                                        tooltip="Adjust the size of the cells used in the algorithm. <br> At 1, cells match the current max radius; higher values increase cell size. Values below 1 may prevent interactions between neighboring particles."
+                            <RangeInput input label="Fator de Tamanho"
+                                        tooltip="Ajuste o tamanho das celulas do algoritmo. <br> Em 1, correspondem ao raio maximo atual."
                                         :min="1" :max="2" :step="0.01" v-model="particleLife.cellSizeFactor" mt-2>
                             </RangeInput>
                         </Collapse>
 
-                        <Collapse label="Save and Share" icon="i-carbon-save text-yellow-500" mt-2>
+                        <Collapse label="Salvar e Compartilhar" icon="i-carbon-save text-yellow-500" mt-2>
                             <div flex>
                                 <button type="button" btn rounded-full p2 flex items-center text-sm bg="zinc-900 hover:#212121" @click="toggleCaptureMode('screenshot')">
                                     <span class="i-tabler-photo" mr-1></span>
-                                    Screenshot
+                                    Captura de Tela
                                 </button>
                                 <button type="button" btn rounded-full p2 flex items-center bg="zinc-900 hover:#212121" @click="toggleCaptureMode('GIF')">
                                     <span class="i-tabler-gif" text-sm></span>
                                 </button>
                             </div>
+                        </Collapse>
+                        <Collapse label="Helena IA" icon="i-tabler-brain text-amber-500" mt-2
+                                  tooltip="IA estrategista que configura a simulacao a partir de linguagem natural. Descreva o cenario e Helena gera a configuracao completa.">
+                            <HelenaPanel :store="particleLife" @applyConfig="applyHelenaConfig" />
                         </Collapse>
                     </div>
                     <div absolute bottom-2 right-0 z-100 class="-mr-px">
@@ -199,24 +203,48 @@
         </SidebarLeft>
 
         <canvas id="lifeCanvas" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
+
+        <!-- Segment Legend Overlay -->
+        <div v-if="segmentLegend.length > 0" class="absolute bottom-12 left-3 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 pointer-events-none" style="z-index: 10; min-width: 140px;">
+            <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-semibold">Segmentos</div>
+            <div v-for="seg in segmentLegend" :key="seg.id" class="flex items-center gap-2 py-0.5">
+                <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: seg.color }"></span>
+                <span class="text-[11px] text-gray-200 flex-1">{{ seg.name }}</span>
+                <span class="text-[10px] text-gray-400 tabular-nums">{{ seg.count }}</span>
+            </div>
+        </div>
+
+        <!-- Social Metrics Overlay -->
+        <div v-if="socialMetrics" class="absolute top-2 left-3 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 pointer-events-none" style="z-index: 10; min-width: 160px;">
+            <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-semibold">Metricas Sociais</div>
+            <div class="text-[11px] text-gray-200">Volatilidade: <span class="tabular-nums" :class="socialMetrics.volatilidade > 5 ? 'text-red-400' : socialMetrics.volatilidade > 2 ? 'text-amber-400' : 'text-green-400'">{{ socialMetrics.volatilidadeLabel }}</span></div>
+            <div class="text-[11px] text-gray-200">Grupo dominante: <span class="font-semibold">{{ socialMetrics.dominante }}</span></div>
+            <div class="mt-1">
+                <div v-for="bar in socialMetrics.distribuicao" :key="bar.name" class="flex items-center gap-1.5 py-0.5">
+                    <div class="h-1.5 rounded-full" :style="{ width: bar.pct + '%', backgroundColor: bar.color, maxWidth: '80px', minWidth: '2px' }"></div>
+                    <span class="text-[9px] text-gray-400 tabular-nums">{{ bar.pct }}%</span>
+                </div>
+            </div>
+        </div>
+
         <SaveModal :store="particleLife"></SaveModal>
         <ParticleLifeShareOptions v-if="particleLife.isShareOptionsOpen" ref="shareOptions" :getSelectedAreaImageData="getSelectedAreaImageData" />
 
         <div absolute top-0 right-0 flex flex-col items-end text-right pointer-events-none>
             <div flex items-center text-start text-xs pl-4 pr-1 bg-gray-800 rounded-bl-xl style="padding-bottom: 1px; opacity: 75%">
                 <div flex>Fps: <div ml-1 min-w-8>{{ fps }}</div></div>
-                <div flex ml-3>Cells: <div ml-1 min-w-8>{{ cellCount }}</div></div>
-                <div flex ml-3>Process: <div ml-1 min-w-7>{{ Math.round(executionTime) }}</div></div>
+                <div flex ml-3>Grupos: <div ml-1 min-w-8>{{ cellCount }}</div></div>
+                <div flex ml-3>Proc: <div ml-1 min-w-7>{{ Math.round(executionTime) }}</div></div>
             </div>
 <!--            <Memory mr-1 />-->
             <BrushSettings :store="particleLife" pointer-events-auto mt-2 mr-1 />
 
             <div class="faded-hover-effect" pointer-events-auto mr-1>
-                <button type="button" title="Debugger" aria-label="Debugger" btn w-8 aspect-square rounded-full p1 flex items-center justify-center bg="#D62839 hover:#DC4151" mt-2
+                <button type="button" title="Depurador" aria-label="Depurador" btn w-8 aspect-square rounded-full p1 flex items-center justify-center bg="#D62839 hover:#DC4151" mt-2
                         @click="particleLife.hasCells = !particleLife.hasCells">
                     <span text-sm :class="particleLife.hasCells ? 'i-tabler-bug-filled' : 'i-tabler-bug'"></span>
                 </button>
-                <button type="button" title="Grid" aria-label="Grid" btn w-8 aspect-square rounded-full p1 flex items-center justify-center bg="#212121 hover:#333333" mt-2
+                <button type="button" title="Grade" aria-label="Grade" btn w-8 aspect-square rounded-full p1 flex items-center justify-center bg="#212121 hover:#333333" mt-2
                         @click="particleLife.hasGrid = !particleLife.hasGrid" :disabled="!particleLife.isWallRepel && !particleLife.isWallWrap" class="disabled:cursor-not-allowed">
                     <span text-sm :class="particleLife.hasGrid ? 'i-tabler-bread' : 'i-tabler-bread-off'"></span>
                 </button>
@@ -224,34 +252,33 @@
 
         </div>
         <div fixed z-10 bottom-2 flex justify-center items-end class="faded-hover-effect left-1/2 transform -translate-x-1/2">
-            <button type="button" name="Randomize" aria-label="Randomize" btn p2 rounded-full mx-1 flex items-center bg="#094F5D hover:#0B5F6F" @click="regenerateLife">
+            <button type="button" name="Aleatorizar" aria-label="Aleatorizar" btn p2 rounded-full mx-1 flex items-center bg="#094F5D hover:#0B5F6F" @click="regenerateLife">
                 <span i-game-icons-perspective-dice-six-faces-random></span>
             </button>
-            <button type="button" name="Toggle 3D" aria-label="Toggle 3D" btn p2 rounded-full mx-1 flex items-center bg="#E45C3A hover:#E76F51" @click="particleLife.is3D = !particleLife.is3D">
+            <button type="button" name="Alternar 3D" aria-label="Alternar 3D" btn p2 rounded-full mx-1 flex items-center bg="#E45C3A hover:#E76F51" @click="particleLife.is3D = !particleLife.is3D">
                 <span text-sm font-700 style="line-height: normal">{{ particleLife.is3D ? '2D' : '3D' }}</span>
             </button>
-            <button type="button" name="Zoom Out" aria-label="Zoom Out" btn p2 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" @click="handleZoom(-1, lifeCanvas!.clientWidth / 2, lifeCanvas!.clientHeight / 2)">
+            <button type="button" name="Diminuir Zoom" aria-label="Diminuir Zoom" btn p2 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" @click="handleZoom(-1, lifeCanvas!.clientWidth / 2, lifeCanvas!.clientHeight / 2)">
                 <span i-tabler-zoom-out></span>
             </button>
-            <button type="button" name="Play/Pause" aria-label="Play/Pause" btn p3 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" @click="particleLife.isRunning = !particleLife.isRunning">
+            <button type="button" name="Pausar" aria-label="Pausar" btn p3 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" @click="particleLife.isRunning = !particleLife.isRunning">
                 <span text-xl :class="particleLife.isRunning ? 'i-tabler-player-pause-filled' : 'i-tabler-player-play-filled'"></span>
             </button>
-            <button type="button" name="Step" aria-label="Step" btn p2 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" :disabled="particleLife.isRunning" @click="step">
+            <button type="button" name="Passo" aria-label="Passo" btn p2 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" :disabled="particleLife.isRunning" @click="step">
                 <span i-tabler-player-skip-forward-filled></span>
             </button>
-            <button type="button" name="Zoom In" aria-label="Zoom In" btn p2 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" @click="handleZoom(1, lifeCanvas!.clientWidth / 2, lifeCanvas!.clientHeight / 2)">
+            <button type="button" name="Aumentar Zoom" aria-label="Aumentar Zoom" btn p2 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" @click="handleZoom(1, lifeCanvas!.clientWidth / 2, lifeCanvas!.clientHeight / 2)">
                 <span i-tabler-zoom-in></span>
             </button>
-            <button type="button" name="Toggle Fullscreen" aria-label="Toggle Fullscreen" btn p2 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" @click="toggleFullscreen">
+            <button type="button" name="Tela Cheia" aria-label="Tela Cheia" btn p2 rounded-full mx-1 flex items-center bg="#212121 hover:#333333" @click="toggleFullscreen">
                 <span :class="isFullscreen ? 'i-tabler-maximize-off' : 'i-tabler-maximize'"></span>
             </button>
         </div>
         <section fixed z-10 bottom-2 right-2 flex items-end>
-            <button type="button" name="Donate" aria-label="Donate" title="Donate" @click="openDonationModal()"
-                    class="donation-glow group relative flex items-center mr-2 p-1.2 rounded-full backdrop-blur-sm transition-all duration-300 bg-rose-600/80 hover:bg-rose-500/90 border border-rose-400/50 hover:border-rose-300/70 text-white">
-                <span i-tabler-heart-filled class="animate-heartbeat"></span>
-            </button>
-            <NuxtLink to="https://github.com/DicSo92/SandboxScience" title="Github" aria-label="Github" target="_blank" flex items-center py-0 mr-2>
+            <NuxtLink to="https://inteia.com.br" title="INTEIA" aria-label="INTEIA" target="_blank" class="flex items-center mr-2 px-2 py-1 rounded-full backdrop-blur-sm transition-all duration-300 bg-amber-600/80 hover:bg-amber-500/90 border border-amber-400/50 text-white text-xs font-medium">
+                <span i-tabler-brain mr-1></span>INTEIA
+            </NuxtLink>
+            <NuxtLink to="https://github.com/igormorais123/SandboxScience" title="Github" aria-label="Github" target="_blank" flex items-center py-0 mr-2>
                 <button type="button" name="Github" aria-label="Github" class="bg-slate-900/80 ring-1 ring-zinc-4/50 rounded-lg p-1 backdrop-blur-sm" text="zinc-2 hover:zinc-4" flex>
                     <span i-carbon-logo-github text-xl></span>
                 </button>
@@ -266,7 +293,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, nextTick } from "vue";
 import MatrixSettings from "~/components/particle-life/MatrixSettings.vue";
 import RulesMatrix from "~/components/particle-life/RulesMatrix.vue";
 import Memory from "~/components/particle-life/Memory.vue";
@@ -275,11 +302,12 @@ import WallStateSelection from "~/components/particle-life/WallStateSelection.vu
 import SidebarLeft from "~/components/SidebarLeft.vue";
 import PresetPanel from "~/components/particle-life/PresetPanel.vue";
 import SaveModal from "~/components/particle-life/SaveModal.vue";
+import HelenaPanel from "~/components/particle-life/HelenaPanel.vue";
 import { RULES_OPTIONS, generateRules } from '~/helpers/utils/rulesGenerator';
 import { PALETTE_OPTIONS, generateHSLColors } from "~/helpers/utils/colorsGenerator";
 
 export default defineComponent({
-    components: { SaveModal, PresetPanel, MatrixSettings, RulesMatrix, Memory, BrushSettings, WallStateSelection, SidebarLeft },
+    components: { SaveModal, PresetPanel, MatrixSettings, RulesMatrix, Memory, BrushSettings, WallStateSelection, SidebarLeft, HelenaPanel },
     setup() {
         const particleLife = useParticleLifeStore()
         const rulesOptions = RULES_OPTIONS
@@ -388,6 +416,77 @@ export default defineComponent({
         let velocityX = new Float32Array(numParticles).fill(0) // X velocity of each particle
         let velocityY = new Float32Array(numParticles).fill(0) // Y velocity of each particle
         let velocityZ = new Float32Array(numParticles).fill(0) // Z velocity of each particle
+
+        // Overlay data for segment legend and social metrics
+        const segmentLegend = ref<{ id: number, name: string, color: string, count: number }[]>([])
+        const socialMetrics = ref<{ volatilidade: number, volatilidadeLabel: string, dominante: string, distribuicao: { name: string, color: string, pct: number }[] } | null>(null)
+        let overlayFrameCounter = 0
+
+        function computeOverlays() {
+            const segments = particleLife.segmentData
+            if (!segments || segments.length === 0) {
+                segmentLegend.value = []
+                socialMetrics.value = null
+                return
+            }
+
+            // Count particles per type
+            const counts = new Int32Array(numColors)
+            for (let i = 0; i < numParticles; i++) {
+                if (colors[i] >= 0 && colors[i] < numColors) {
+                    counts[colors[i]]++
+                }
+            }
+
+            // Build segment legend
+            const legend: { id: number, name: string, color: string, count: number }[] = []
+            for (let t = 0; t < Math.min(segments.length, numColors); t++) {
+                legend.push({
+                    id: segments[t].id,
+                    name: segments[t].name,
+                    color: segments[t].color,
+                    count: counts[t]
+                })
+            }
+            segmentLegend.value = legend
+
+            // Compute average velocity (volatility)
+            let totalVel = 0
+            for (let i = 0; i < numParticles; i++) {
+                totalVel += Math.sqrt(velocityX[i] * velocityX[i] + velocityY[i] * velocityY[i])
+            }
+            const avgVel = numParticles > 0 ? totalVel / numParticles : 0
+            let volLabel = 'Baixa'
+            if (avgVel > 5) volLabel = 'Alta'
+            else if (avgVel > 2) volLabel = 'Media'
+
+            // Find dominant group and distribution
+            let maxCount = 0
+            let dominantIdx = 0
+            for (let t = 0; t < Math.min(segments.length, numColors); t++) {
+                if (counts[t] > maxCount) {
+                    maxCount = counts[t]
+                    dominantIdx = t
+                }
+            }
+
+            const dist: { name: string, color: string, pct: number }[] = []
+            for (let t = 0; t < Math.min(segments.length, numColors); t++) {
+                const pct = numParticles > 0 ? Math.round((counts[t] / numParticles) * 100) : 0
+                dist.push({
+                    name: segments[t].shortName,
+                    color: segments[t].color,
+                    pct
+                })
+            }
+
+            socialMetrics.value = {
+                volatilidade: avgVel,
+                volatilidadeLabel: volLabel,
+                dominante: segments[dominantIdx] ? segments[dominantIdx].name : '-',
+                distribuicao: dist
+            }
+        }
 
         onMounted(() => {
             lifeCanvas = document.getElementById('lifeCanvas') as HTMLCanvasElement
@@ -538,6 +637,8 @@ export default defineComponent({
         function regenerateLife() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId)
 
+            particleLife.segmentNames = []
+            particleLife.segmentData = []
             initColors()
             initParticles()
             setRulesMatrix(generateRules(0, numColors))
@@ -643,6 +744,13 @@ export default defineComponent({
                 if (isDragging || isBrushActive) simpleDrawParticles()
             }
             if (isBrushActive) drawBrush()
+
+            // Update overlay data every 30 frames
+            overlayFrameCounter++
+            if (overlayFrameCounter >= 30) {
+                overlayFrameCounter = 0
+                computeOverlays()
+            }
 
             executionTime.value = performance.now() - startExecutionTime
             animationFrameId = requestAnimationFrame(update)
@@ -1671,8 +1779,47 @@ export default defineComponent({
             } finally {
                 isUpdatingParticles = false
                 if (!isRunning) simpleDrawParticles() // Redraw the particles if the game is not running
-                success("Preset loaded.")
+                success("Cenario carregado.")
             }
+        }
+        const applyHelenaConfig = (config: any) => {
+            if (!config?.segments?.length || !config?.matrices?.forces) return
+
+            const hexColors = config.segments.map((s: any) => s.color)
+            const hslColors = hexColors.map((hex: string) => {
+                const r = parseInt(hex.slice(1, 3), 16) / 255
+                const g = parseInt(hex.slice(3, 5), 16) / 255
+                const b = parseInt(hex.slice(5, 7), 16) / 255
+                const max = Math.max(r, g, b), min = Math.min(r, g, b)
+                const l = (max + min) / 2
+                if (max === min) return [0, 0, l * 100]
+                const d = max - min
+                const s2 = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+                let h = 0
+                if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6
+                else if (max === g) h = ((b - r) / d + 2) / 6
+                else h = ((r - g) / d + 4) / 6
+                return [h * 360, s2 * 100, l * 100]
+            })
+
+            const speciesCount = config.settings?.species || config.segments.length
+
+            loadPreset({
+                presetRules: config.matrices.forces,
+                presetMinRadius: config.matrices.minRadius,
+                presetMaxRadius: config.matrices.maxRadius,
+                presetColors: hslColors,
+            }, speciesCount, true)
+
+            nextTick(() => {
+                if (config.settings?.numParticles) particleLife.numParticles = config.settings.numParticles
+                if (config.settings?.frictionFactor != null) particleLife.frictionFactor = config.settings.frictionFactor
+                if (config.settings?.forceFactor != null) particleLife.forceFactor = config.settings.forceFactor
+                particleLife.segmentNames = config.segments.map((s: any) => s.shortName)
+                particleLife.segmentData = config.segments.map((s: any) => ({
+                    id: s.id, name: s.name, shortName: s.shortName, color: s.color, proportion: s.proportion
+                }))
+            })
         }
         const adjustColors = async (oldColors: number[][], oldNumTypes: number, newNumTypes: number, keepExtraColors: boolean = false,) => {
             let newColors: number[][] = new Array(keepExtraColors ? oldNumTypes : newNumTypes)
@@ -1898,8 +2045,9 @@ export default defineComponent({
             fps, cellCount, executionTime, step, newRandomRulesMatrix, handleZoom, updateGridWidth, updateGridHeight,
             updateRulesMatrixValue, updateMinMatrixValue, updateMaxMatrixValue, regenerateLife,
             shareOptions, rulesOptions, paletteOptions,
-            updateColors, updateRulesMatrix, loadPreset, setNewNumTypes,
-            openDonationModal
+            updateColors, updateRulesMatrix, loadPreset, setNewNumTypes, applyHelenaConfig,
+            openDonationModal,
+            segmentLegend, socialMetrics
         }
     }
 })

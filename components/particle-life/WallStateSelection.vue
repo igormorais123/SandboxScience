@@ -4,19 +4,19 @@
             <div>
                 <input type="radio" name="option" id="1" value="none" class="peer hidden" v-model="currentValue" />
                 <label for="1" class="block cursor-pointer select-none rounded-xl px-2 text-center hover:bg-slate-800/80 peer-checked:bg-slate-900/80 peer-checked:font-bold peer-checked:text-white">
-                    None
+                    Nenhum
                 </label>
             </div>
             <div>
                 <input type="radio" name="option" id="2" value="repel" class="peer hidden" v-model="currentValue" />
                 <label for="2" class="block cursor-pointer select-none rounded-xl px-2 text-center hover:bg-slate-800/80 peer-checked:bg-slate-900/80 peer-checked:font-bold peer-checked:text-white">
-                    Repel
+                    Repelir
                 </label>
             </div>
             <div>
                 <input type="radio" name="option" id="3" value="wrap" class="peer hidden" v-model="currentValue" />
                 <label for="3" class="block cursor-pointer select-none rounded-xl px-2 text-center hover:bg-slate-800/80 peer-checked:bg-slate-900/80 peer-checked:font-bold peer-checked:text-white">
-                    Wrap
+                    Contornar
                 </label>
             </div>
         </div>

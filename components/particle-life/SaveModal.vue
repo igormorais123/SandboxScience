@@ -4,7 +4,7 @@
             <header class="-mt-2 sm:-mt-4" mb-3>
                 <div flex items-center mb-3 class="text-2xl sm:text-[1.75rem] font-bold">
                     <span i-tabler-sparkles text-amber-600 mr-3></span>
-                    <h1 flex items-center>Preset Manager</h1>
+                    <h1 flex items-center>Gerenciador de Cenarios</h1>
                 </div>
             </header>
 
@@ -14,56 +14,56 @@
                 <div class="md:w-6/12 pr-0 md:pr-3">
                     <div flex items-center mb-3>
                         <span i-carbon-save text-2xl mr-2 class="text-gray-400/80"></span>
-                        <h2 text-xl pt-px>Save New Preset</h2>
+                        <h2 text-xl pt-px>Salvar Novo Cenario</h2>
                     </div>
                     <div mb-2>
-                        <p class="text-2sm text-gray-200 mb-1">Preset Name</p>
-                        <input type="text" maxlength="32" placeholder="Enter a name for this preset..." v-model="name"
+                        <p class="text-2sm text-gray-200 mb-1">Nome do Cenario</p>
+                        <input type="text" maxlength="32" placeholder="Digite um nome para este cenario..." v-model="name"
                                class="w-full border bg-slate-900/70 border-gray-600 rounded px-3 py-2 text-sm text-slate-200 font-500">
                     </div>
                     <div>
-                        <p class="text-2sm text-gray-200 mb-1">Description (Optional)</p>
-                        <textarea maxlength="180" placeholder="Describe what this preset does..." v-model="description" min-h-9 h-15 max-h-30
+                        <p class="text-2sm text-gray-200 mb-1">Descricao (Opcional)</p>
+                        <textarea maxlength="180" placeholder="Descreva o que este cenario faz..." v-model="description" min-h-9 h-15 max-h-30
                                   class="w-full border bg-slate-900/70 border-gray-600 rounded px-3 py-2 text-sm text-slate-200 font-500 leading-5 resize-y overflow-auto">
                         </textarea>
                     </div>
                     <hr border-gray-500 my-2>
                     <p text-gray-200 class="-mt-0.5" mb-2>
-                        Components to include
+                        Componentes a incluir
                         <TooltipInfo container="#mainContainer" tag="div"
-                                     tooltip="Choose what to include in this preset. <br>
-                                            Forces: interaction matrix between color pairs. <br>
-                                            Radii: min/max radius matrices between color pairs. <br>
-                                            Colors: particle colors. <br>
-                                            Settings: global simulation parameters.">
+                                     tooltip="Escolha o que incluir neste cenario. <br>
+                                            Afinidades: matriz de interacao entre segmentos. <br>
+                                            Raios: matrizes de raio min/max entre segmentos. <br>
+                                            Cores: cores dos segmentos. <br>
+                                            Config: parametros globais da simulacao.">
                         </TooltipInfo>
                         :
                     </p>
                     <div flex gap-2 flex-wrap>
                         <ToggleChip
                             v-model="forceMatrix"
-                            label="Forces"
+                            label="Afinidades"
                             icon="i-tabler-arrows-random text-sky-600/80"
                             activeClass="border-sky-600/80 bg-sky-600/20 hover:bg-sky-600/30 text-sky-100"
                             inactiveClass="border-slate-600 bg-slate-800/80 hover:bg-slate-900/50 text-slate-300"
                         />
                         <ToggleChip
                             v-model="radiusMatrices"
-                            label="Radii"
+                            label="Raios"
                             icon="i-tabler-circles text-purple-600/80"
                             activeClass="border-purple-600/80 bg-purple-700/20 hover:bg-purple-700/30 text-purple-100"
                             inactiveClass="border-slate-600 bg-slate-800/80 hover:bg-slate-900/50 text-slate-300"
                         />
                         <ToggleChip
                             v-model="colors"
-                            label="Colors"
+                            label="Cores"
                             icon="i-tabler-palette text-amber-600/80"
                             activeClass="border-amber-600/80 bg-amber-700/20 hover:bg-amber-700/30 text-amber-100"
                             inactiveClass="border-slate-600 bg-slate-800/80 hover:bg-slate-900/50 text-slate-300"
                         />
                         <ToggleChip
                             v-model="generalSettings"
-                            label="Settings"
+                            label="Config"
                             icon="i-tabler-settings text-emerald-600/80"
                             activeClass="border-emerald-600/80 bg-emerald-700/20 hover:bg-emerald-700/30 text-emerald-100"
                             inactiveClass="border-slate-600 bg-slate-800/80 hover:bg-slate-900/50 text-slate-300"
@@ -74,12 +74,12 @@
                         <div flex-1 flex justify-around items-center>
                             <button type="button" @click="copyToClipboard(buildPresetData())" :disabled="!canSave" px-2 flex items-center text-sm text="slate-300 hover:slate-300/80 disabled:slate-300/40" class="disabled:cursor-not-allowed">
                                 <span i-tabler-copy mr-1></span>
-                                Copy
+                                Copiar
                             </button>
                             <div w-px bg-gray-600 h-6></div>
                             <button type="button" @click="download(buildPresetData())" :disabled="!canSave" px-2 flex items-center text-sm text="slate-300 hover:slate-300/80 disabled:slate-300/40" class="disabled:cursor-not-allowed">
                                 <span i-tabler-download mr-1></span>
-                                Download
+                                Baixar
                             </button>
                         </div>
 
@@ -87,7 +87,7 @@
                                 class="border border-cyan-600/80 hover:border-cyan-500/80 disabled:hover:border-cyan-600/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500 disabled:cursor-not-allowed"
                                 bg="cyan-800/80 hover:cyan-600/60 disabled:cyan-800/80">
                             <span mr-1.5 i-carbon-save text-base></span>
-                            Save Preset
+                            Salvar Cenario
                         </button>
                     </div>
                 </div>
@@ -97,15 +97,15 @@
                 <div class="md:w-6/12 md:pl-3">
                     <div flex items-center mb-3>
                         <span i-tabler-file-upload text-2xl mr-2 class="text-gray-400/80"></span>
-                        <h2 text-xl pt-px>Load From JSON</h2>
+                        <h2 text-xl pt-px>Carregar de JSON</h2>
                     </div>
                     <div flex flex-col gap-2>
-                        <h3 text-slate-400 text-base>Upload a .json file exported from Particle Life or paste JSON data directly.</h3>
+                        <h3 text-slate-400 text-base>Envie um arquivo .json exportado do simulador ou cole dados JSON diretamente.</h3>
                         <div flex flex-col gap-1>
                             <div class="flex items-center w-full">
                                 <button type="button" @click="fileInput?.click()" w-full btn px-3 rounded-lg flex justify-center items-center border class="border-slate-600/80 bg-slate-800/80 hover:bg-slate-700/60 text-slate-100">
                                     <span i-tabler-file text-base mr-1></span>
-                                    Upload JSON File
+                                    Enviar Arquivo JSON
                                 </button>
                                 <input ref="fileInput" type="file" accept="application/json,.json" class="hidden" @change="onJsonFileSelected"/>
                             </div>
@@ -125,7 +125,7 @@
                                 <div flex items-center gap-2 px-3 py-1.5 border-b class="border-red-800/50">
                                     <span i-tabler-alert-triangle-filled text-red-400 text-sm></span>
                                     <span font-semibold tracking-wide uppercase text-red-200 text-xs>
-                                        {{ jsonErrors.length }} error{{ jsonErrors.length > 1 ? 's' : '' }} detected
+                                        {{ jsonErrors.length }} erro{{ jsonErrors.length > 1 ? 's' : '' }} detectado{{ jsonErrors.length > 1 ? 's' : '' }}
                                     </span>
                                 </div>
 
@@ -156,7 +156,7 @@
                         <div flex items-center justify-between>
                             <span v-if="!hasJsonErrors && !isJsonEmpty" class="inline-flex items-center px-1.5 py-0.5 rounded-full border border-emerald-700/70 bg-emerald-900/40 text-[0.70rem] text-emerald-200 tracking-wide">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>
-                                Ready to load
+                                Pronto para carregar
                             </span>
                             <span v-else></span>
 
@@ -164,7 +164,7 @@
                                     class="border border-cyan-600/80 disabled:hover:border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500 disabled:cursor-not-allowed"
                                     bg="cyan-800/80 hover:cyan-600/60 disabled:cyan-800/80" >
                                 <span mr-1.5 i-tabler-file-upload text-base></span>
-                                Load Preset
+                                Carregar Cenario
                             </button>
                         </div>
                     </div>
@@ -211,7 +211,7 @@ export default defineComponent({
             const presetData: Preset = {
                 v: 1,
                 meta: {
-                    name: name.value.trim() || "Untitled Preset",
+                    name: name.value.trim() || "Cenario Sem Titulo",
                     description: description.value.trim() || null
                 },
                 types: [] as string[] // "settings", "forces", "radii", "colors"
@@ -315,14 +315,14 @@ export default defineComponent({
             fileWarning.value = null
 
             if (file.size > MAX_FILE_SIZE) {
-                fileError.value = "The file is too large (max 1 MB)."
+                fileError.value = "O arquivo e muito grande (max 1 MB)."
                 target.value = ""
                 return
             }
             const hasJsonExtension = /\.json$/i.test(file.name)
             const hasJsonMime = file.type && JSON_MIME_TYPES.includes(file.type)
             if (!hasJsonExtension && !hasJsonMime) {
-                fileError.value = "Only .json files are accepted."
+                fileError.value = "Somente arquivos .json sao aceitos."
                 target.value = ""
                 return
             }
@@ -338,7 +338,7 @@ export default defineComponent({
                     const result = validatePreset(parsed) as PresetValidationResult
                     if (!result.valid) {
                         jsonValidationErrors.value = result.errors
-                        fileWarning.value = "The JSON file is invalid for a Particle Life preset."
+                        fileWarning.value = "O arquivo JSON e invalido para este simulador."
                     } else {
                         jsonValidationErrors.value = null
                         fileWarning.value = null
@@ -348,7 +348,7 @@ export default defineComponent({
                     fileError.value = null
                 } catch (e: any) {
                     // fileError.value = e?.message ?? "Error parsing JSON file"
-                    fileWarning.value = "The JSON file contains errors. Please review and correct them."
+                    fileWarning.value = "O arquivo JSON contem erros. Revise e corrija."
                     jsonText.value = String(reader.result || "")
                 } finally {
                     target.value = ""
@@ -356,7 +356,7 @@ export default defineComponent({
             }
             reader.onerror = () => {
                 console.log("Error reading JSON file:", reader.error)
-                fileError.value = "Unable to read the JSON file."
+                fileError.value = "Nao foi possivel ler o arquivo JSON."
                 target.value = ""
             }
             reader.readAsText(file, "utf-8")
@@ -384,7 +384,7 @@ export default defineComponent({
                 const result = validatePreset(parsed) as PresetValidationResult
                 jsonValidationErrors.value = !result.valid ? result.errors : null
             } catch (e: any) {
-                jsonSyntaxError.value = e?.message ?? "Invalid JSON."
+                jsonSyntaxError.value = e?.message ?? "JSON invalido."
                 jsonValidationErrors.value = null
             }
         })

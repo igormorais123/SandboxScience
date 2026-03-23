@@ -1,6 +1,6 @@
-const appURL = 'https://sandbox-science.com'
-const appName = 'Sandbox Science'
-const appDescription = 'Sandbox Science is an interactive platform offering educational scientific simulations like Game of Life and Particle Life. Explore cellular automata, particle behavior, and more through hands-on, visual experiences that make complex concepts fun and accessible. Ideal for learners and science enthusiasts.'
+const appURL = 'https://inteia.com.br'
+const appName = 'INTEIA Simulador Eleitoral'
+const appDescription = 'Simulador de dinamica eleitoral por particulas. Visualize afinidades entre segmentos, teste cenarios de campanha e analise comportamento coletivo em tempo real. Baseado em dados do TSE e pesquisa de campo em Roraima. INTEIA — Inteligencia Artificial Estrategica.'
 
 export {
     appURL,

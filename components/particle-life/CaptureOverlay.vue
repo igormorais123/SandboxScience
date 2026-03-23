@@ -6,7 +6,7 @@
             <div absolute left-0 h-4 class="px-[2px]" :style="{ width: `${GIFCaptureProgress}%` }">
                 <div rounded-full w-full h-full class="bg-[#E45C3A]"></div>
             </div>
-            <span text-gray-300 absolute font-semibold class="drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Capturing GIF... {{ GIFCaptureProgress }}%</span>
+            <span text-gray-300 absolute font-semibold class="drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Capturando GIF... {{ GIFCaptureProgress }}%</span>
         </div>
     </div>
 </template>

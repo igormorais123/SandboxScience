@@ -25,12 +25,12 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
     const gridHeight = ref<number>(0) // Grid height
     const linkProportions = ref<boolean>(false) // Constraint x y grid proportions
 
-    const numParticles = ref<number>(6000) // Number of particles
+    const numParticles = ref<number>(1000) // Number of particles
     const particleSize = ref<number>(8) // Size of the particles at zoomFactor = 1
-    const numColors = ref<number>(7) // Number of colors to be used
+    const numColors = ref<number>(4) // Number of colors to be used
     const depthLimit = ref<number>(420) // Maximum Z axis depth (0 means almost 2D because there is friction with the walls && can be negative)
 
-    const is3D = ref<boolean>(true) // Enable 3D Algorithm
+    const is3D = ref<boolean>(false) // Enable 3D Algorithm
     const isCircle = ref<boolean>(true) // Enable circular shape for the particles
     const hasGrid = ref<boolean>(true) // Enable grid
     const hasCells = ref<boolean>(false) // Enable cells
@@ -51,7 +51,7 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
     // Define force properties
     const repel = ref<number>(1) // repel force for particles that are too close to each other
     const forceFactor = ref<number>(1.0) // Adjust the overall force applied between particles (can't be 0)
-    const frictionFactor = ref<number>(0.3) // Slow down the particles (0 to 1, where 0 is no friction)
+    const frictionFactor = ref<number>(0.15) // Slow down the particles (0 to 1, where 0 is no friction)
 
     // Define properties for randomizing radius matrix
     const minRadiusRange = ref<number[]>([30, 60]) // Range for the random minRadius of each color
@@ -70,6 +70,9 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
     const savedPresets = ref<Record<string, Preset>>({}) // Saved presets from localStorage
     const isSaveModalOpen = ref<boolean>(false) // Is the save preset modal open
 
+    const segmentNames = ref<string[]>([]) // Segment names for electoral scenarios (shown in matrix headers)
+    const segmentData = ref<{ id: number, name: string, shortName: string, color: string, proportion: number }[]>([]) // Full segment data for overlays
+
     function $reset() {
         sidebarLeftOpen.value = false
         currentMaxRadius.value = 0 // Prevent watcher from not triggering when page is reloaded (!important)
@@ -86,6 +89,7 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
         repel, forceFactor, frictionFactor,
         cellGroupSize, cellSizeFactor,
         captureType, isCapturingGIF, isShareOptionsOpen, selectedRulesOption, selectedColorPaletteOption, savedPresets, isSaveModalOpen,
+        segmentNames, segmentData,
         $reset
     }
 })

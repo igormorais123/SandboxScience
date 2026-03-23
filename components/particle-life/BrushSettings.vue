@@ -1,65 +1,65 @@
 <template>
     <div> <!-- faded-hover-effect -->
-        <button type="button" title="Brush" aria-label="Brush" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm
+        <button type="button" title="Pincel" aria-label="Pincel" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm
                 :class="particleLife.isBrushActive && particleLife.brushType === 1 ? 'bg-blue-900 hover:bg-blue-950' : 'bg-slate-800/80 hover:bg-slate-700/80'"
                 @click="toggleBrushType(1)">
             <span i-tabler-brush text-sm></span>
         </button>
-        <button type="button" title="Eraser" aria-label="Eraser" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm
+        <button type="button" title="Borracha" aria-label="Borracha" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm
                 :class="particleLife.isBrushActive && particleLife.brushType === 0 ? 'bg-blue-900 hover:bg-blue-950' : 'bg-slate-800/80 hover:bg-slate-700/80'"
                 @click="toggleBrushType(0)">
             <span i-tabler-eraser text-sm></span>
         </button>
-        <button type="button" title="Attractor" aria-label="Attractor" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm
+        <button type="button" title="Atrator" aria-label="Atrator" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm
                 :class="particleLife.isBrushActive && particleLife.brushType === 3 ? 'bg-blue-900 hover:bg-blue-950' : 'bg-slate-800/80 hover:bg-slate-700/80'"
                 @click="toggleBrushType(3)">
             <span i-tabler-magnetic text-sm></span>
         </button>
-        <button type="button" title="Repeller" aria-label="Repeller" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm
+        <button type="button" title="Repulsor" aria-label="Repulsor" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm
                 :class="particleLife.isBrushActive && particleLife.brushType === 2 ? 'bg-blue-900 hover:bg-blue-950' : 'bg-slate-800/80 hover:bg-slate-700/80'"
                 @click="toggleBrushType(2)">
             <span i-tabler-magnet text-sm></span>
         </button>
         <div class="settings-btn group">
-            <button type="button" title="Brush Settings" aria-label="Brush Settings" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80">
+            <button type="button" title="Config. Pincel" aria-label="Config. Pincel" btn w-8 aspect-square rounded-full p1 flex items-center justify-center backdrop-blur-sm bg="slate-800/80 hover:slate-700/80">
                 <span i-tabler-settings text-sm></span>
             </button>
             <div class="settings-panel absolute pr-1 right-full top-0 transition-all duration-200 ease-in-out delay-300 invisible group-hover:visible group-hover:transition-delay-0">
                 <div p-3 pl-4 w-64 rounded-lg text-left backdrop-blur-sm class="bg-slate-800/80">
-                    <p underline mb-2>Brush Settings :</p>
+                    <p underline mb-2>Config. do Pincel :</p>
                     <div text-gray-300>
                         <div flex items-center mb-2>
-                            <p mr-2 class="w-1/4">Radius</p>
+                            <p mr-2 class="w-1/4">Raio</p>
                             <div flex-1>
                                 <RangeInput input :min="10" :max="1000" :step="1" v-model="particleLife.brushRadius" />
                             </div>
                         </div>
                         <div flex items-center mb-2>
-                            <p mr-2 class="w-1/4">Intensity</p>
+                            <p mr-2 class="w-1/4">Intensidade</p>
                             <div flex-1>
                                 <RangeInput input :min="1" :max="100" :step="1" v-model="particleLife.brushIntensity" />
                             </div>
                         </div>
                         <div flex items-center mb-2>
-                            <p mr-2 class="w-1/4">Attract</p>
+                            <p mr-2 class="w-1/4">Atrair</p>
                             <div flex-1>
                                 <RangeInput input :min="0" :max="100" :step="1" v-model="particleLife.attractForce" />
                             </div>
                         </div>
                         <div flex items-center>
-                            <p mr-2 class="w-1/4">Repulse</p>
+                            <p mr-2 class="w-1/4">Repelir</p>
                             <div flex-1>
                                 <RangeInput input :min="0" :max="100" :step="1" v-model="particleLife.repulseForce" />
                             </div>
                         </div>
                         <div v-if="particleLife.$id === 'particleLifeGPU'">
                             <div flex items-center mt-2>
-                                <p mr-2 class="w-1/4">Velocity</p>
+                                <p mr-2 class="w-1/4">Velocidade</p>
                                 <div flex-1>
                                     <RangeInput input :min="0" :max="100" :step="1" v-model="particleLife.brushDirectionalForce" />
                                 </div>
                             </div>
-                            <ToggleSwitch label="Show Brush Circle" colorful-label v-model="particleLife.showBrushCircle" mt-2 />
+                            <ToggleSwitch label="Mostrar Circulo" colorful-label v-model="particleLife.showBrushCircle" mt-2 />
                         </div>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
         </div>
 
         <div flex flex-col p1 rounded-full backdrop-blur-sm class="bg-slate-800/80">
-            <button type="button" name="All Colors" aria-label="All Colors"
+            <button type="button" name="Todos Segmentos" aria-label="Todos Segmentos"
                     w-6 aspect-square rounded-full class="rainbow"
                     :class="!particleLife.brushes.length && 'border-3 border-gray-400 shadow-inner'"
                     @click="toggleBrushColor(null)">

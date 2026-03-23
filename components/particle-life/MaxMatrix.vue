@@ -7,11 +7,13 @@
                         <div v-if="j === 0 && i === 0" h-full w-full class="pp-12">
                             <div bg-black w-full h-full rounded-full></div>
                         </div>
-                        <div v-else-if="i === 0 && j > 0" h-full w-full class="pp-6">
-                            <div rounded-full w-full h-full :style="`background-color: ${getColorStyleById(j-1)}`"></div>
+                        <div v-else-if="i === 0 && j > 0" h-full w-full flex flex-col items-center justify-center class="pp-header">
+                            <div rounded-full class="header-circle" :style="`background-color: ${getColorStyleById(j-1)}`"></div>
+                            <div v-if="particleLife.segmentNames && particleLife.segmentNames[j-1]" class="segment-label">{{ particleLife.segmentNames[j-1].slice(0, 5) }}</div>
                         </div>
-                        <div v-else-if="j === 0 && i > 0" h-full w-full class="pp-6">
-                            <div rounded-full w-full h-full :style="`background-color: ${getColorStyleById(i-1)}`"></div>
+                        <div v-else-if="j === 0 && i > 0" h-full w-full flex flex-col items-center justify-center class="pp-header">
+                            <div rounded-full class="header-circle" :style="`background-color: ${getColorStyleById(i-1)}`"></div>
+                            <div v-if="particleLife.segmentNames && particleLife.segmentNames[i-1]" class="segment-label">{{ particleLife.segmentNames[i-1].slice(0, 5) }}</div>
                         </div>
                         <div v-else h-full w-full relative cursor-ew-resize select-none
                              :class="(isHoveredCell(i-1, j-1) || isCellSelected(i-1, j-1)) && 'hovered-cell'"
@@ -32,7 +34,7 @@
         <RangeInput input :min="selectedCell && selectedCells?.length === 1 ? particleLife.minRadiusMatrix[selectedCell[0]][selectedCell[1]] : 1" :max="600" :step="1" v-model="selectedValue" mt-2 >
             <template #customLabel>
                 <div class="w-2/3 px-2 py-0.5 bg-slate-900/80 border-2 border-slate-500/80" rounded-lg>
-                    <div v-if="!selectedCells" font-bold text-center text-gray-300>All Types</div>
+                    <div v-if="!selectedCells" font-bold text-center text-gray-300>Todos os Tipos</div>
                     <div v-else-if="selectedCells?.length === 1" flex items-center justify-between>
                         <div flex-1 flex justify-center>
                             <div class="rounded-full w-5 h-5" :style="`background-color: ${getColorStyleById(selectedCells[0][0])}`"></div>
@@ -42,7 +44,7 @@
                             <div class="rounded-full w-5 h-5" :style="`background-color: ${getColorStyleById(selectedCells[0][1])}`"></div>
                         </div>
                     </div>
-                    <div v-else font-bold text-center text-gray-300>Selection</div>
+                    <div v-else font-bold text-center text-gray-300>Selecao</div>
                 </div>
             </template>
         </RangeInput>
@@ -289,6 +291,27 @@ export default defineComponent({
 }
 .pp-12 {
     padding: 12%;
+}
+.pp-header {
+    padding: 4%;
+    gap: 1px;
+}
+.header-circle {
+    width: 60%;
+    height: 0;
+    padding-bottom: 60%;
+    border-radius: 9999px;
+    flex-shrink: 0;
+}
+.segment-label {
+    font-size: 8px;
+    line-height: 1;
+    color: #9ca3af;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .hovered-cell {

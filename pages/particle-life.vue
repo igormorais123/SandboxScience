@@ -4,7 +4,7 @@
             <div class="absolute inset-0 flex items-center justify-center">
                 <div class="flex flex-col items-center gap-3">
                     <div class="h-10 w-10 rounded-full border-4 border-white/30 border-t-white animate-spin"></div>
-                    <p class="text-white/80 text-sm">Loading simulation...</p>
+                    <p class="text-white/80 text-sm">Carregando simulacao...</p>
                 </div>
             </div>
         </div>
@@ -17,42 +17,42 @@
         <section class="space-y-4">
             <header>
                 <div flex items-center mb-3 class="text-2xl sm:text-[1.75rem] font-bold">
-                    <h1 flex items-center>Particle Life</h1>
+                    <h1 flex items-center>Simulador Eleitoral</h1>
                     <p class="ml-2 px-2 py-1 rounded-lg ring-1 uppercase justify-center font-mono" :class="currentRenderer === 'gpu' ? 'bg-fuchsia-600/20 text-fuchsia-400 ring-fuchsia-500/30' : 'bg-sky-600/20 text-sky-400 ring-sky-500/30'">
                         {{ currentRenderer }}
                     </p>
                 </div>
                 <h2 class="text-gray-300 mb-2">
-                    <strong>Particle Life</strong> is a <strong>particle simulator</strong> where <em>simple interaction rules</em> produce <strong>complex, emergent behaviors</strong>.
-                    Tweak <strong>forces</strong> and <strong>starting conditions</strong> to reveal <em>stable clusters</em>, <em>flowing patterns</em>, and <em>chaotic transitions</em> in <strong>real time</strong>.
+                    <strong>Simulador Eleitoral</strong> e um <strong>simulador de particulas</strong> onde <em>regras simples de interacao</em> produzem <strong>comportamentos complexos e emergentes</strong>.
+                    Ajuste <strong>forcas</strong> e <strong>condicoes iniciais</strong> para revelar <em>aglomerados estaveis</em>, <em>padroes fluidos</em> e <em>transicoes caoticas</em> em <strong>tempo real</strong>.
                 </h2>
                 <p class="text-sm text-gray-300">
-                    <span class="font-bold text-fuchsia-500">WebGPU</span> provides <strong>higher FPS</strong>, <strong>smoother motion</strong>, and <strong>bigger particle counts</strong> when supported, while the <span class="font-bold text-sky-500">CPU renderer</span> stays <em>compatible</em> on every device.
+                    <span class="font-bold text-fuchsia-500">WebGPU</span> oferece <strong>FPS mais alto</strong>, <strong>movimento mais suave</strong> e <strong>mais particulas</strong> quando suportado, enquanto o <span class="font-bold text-sky-500">renderizador CPU</span> permanece <em>compativel</em> em todos os dispositivos.
                 </p>
             </header>
 
             <div v-if="isWebGPUSupported && currentRenderer === 'cpu'" class="rounded-lg ring-1 ring-gray-500/30 bg-slate-700/20 text-gray-50 text-sm p-4">
                 <div class="flex items-center rounded-full bg-amber-700/60 ring-1 ring-amber-400/30 w-fit pl-2 pr-3 py-0.5 mb-3">
                     <div i-tabler-alert-hexagon text-lg mr-1></div>
-                    <h3 class="font-semibold">WebGPU is available</h3>
+                    <h3 class="font-semibold">WebGPU esta disponivel</h3>
                 </div>
 
                 <div flex flex-col gap-2>
                     <p>
-                        This device supports <strong>WebGPU</strong>. You’re currently on the <strong>CPU renderer</strong>.
+                        Este dispositivo suporta <strong>WebGPU</strong>. Voce esta usando o <strong>renderizador CPU</strong>.
                     </p>
                     <div rounded-lg py-2 px-3 mb-1 class="bg-sky-600/10 ring-1 ring-sky-400/20">
-                        <div class="text-sky-100 text-sm font-semibold">CPU mode — Fully compatible</div>
+                        <div class="text-sky-100 text-sm font-semibold">Modo CPU — Totalmente compativel</div>
                         <p class="text-indigo-50/90 text-sm mt-1">
-                            Runs on every device and supports the full <strong>3D simulation</strong>. Switch to <strong>WebGPU</strong> for higher FPS and more particles. You can switch back anytime.
+                            Funciona em todos os dispositivos e suporta a <strong>simulacao 3D</strong> completa. Mude para <strong>WebGPU</strong> para FPS mais alto e mais particulas. Voce pode voltar a qualquer momento.
                         </p>
                     </div>
                     <div class="flex items-center gap-3 mt-1">
                         <button class="px-4 sm:px-8 py-2 rounded-xl bg-gray-50 hover:bg-gray-200 transition-all ring-1 ring-black text-black text-base font-semibold" @click.prevent="selectRenderer('gpu', true)">
-                            Switch to WebGPU <em>(Recommended)</em>
+                            Mudar para WebGPU <em>(Recomendado)</em>
                         </button>
                         <button class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700/75 transition-all text-white text-base font-semibold" @click.prevent="closeIntroModal">
-                            Keep CPU for now
+                            Manter CPU
                         </button>
                     </div>
                 </div>
@@ -60,31 +60,31 @@
             <div v-else-if="isWebGPUSupported && currentRenderer === 'gpu'" class="rounded-lg border border-green-800 bg-green-900/20 ring-1 ring-green-400/30 text-green-100 text-sm p-4">
                 <div class="flex items-center rounded-full bg-green-700/60 ring-1 ring-green-400/30 w-fit pl-2 pr-3 py-0.5 mb-3">
                     <div i-tabler-check text-lg mr-1></div>
-                    <h3 class="font-semibold">WebGPU is available</h3>
+                    <h3 class="font-semibold">WebGPU esta disponivel</h3>
                 </div>
 
                 <div flex flex-col gap-2>
                     <p>
-                        You’re on the <strong>GPU renderer</strong> for maximum performance.
+                        Voce esta usando o <strong>renderizador GPU</strong> para desempenho maximo.
                     </p>
                     <div rounded-lg py-2 px-3 class="bg-emerald-500/10 ring-1 ring-emerald-400/20">
-                        <div class="text-emerald-100 text-sm font-semibold">WebGPU mode — High performance</div>
+                        <div class="text-emerald-100 text-sm font-semibold">Modo WebGPU — Alto desempenho</div>
                         <p class="text-emerald-50/90 text-sm mt-1">
-                            <strong>WebGPU</strong> runs the simulation on your graphics card for <strong>higher FPS</strong>, <strong>more particles</strong>, and <em>richer visuals</em>. It also reduces <strong>CPU</strong> load to keep the <em>UI</em> responsive as scenes grow.
+                            <strong>WebGPU</strong> executa a simulacao na sua placa de video para <strong>FPS mais alto</strong>, <strong>mais particulas</strong> e <em>visuais mais ricos</em>. Tambem reduz a carga da <strong>CPU</strong> para manter a <em>interface</em> responsiva conforme a cena cresce.
                         </p>
                     </div>
                     <p class="text-slate-300/90">
-                        Need compatibility or lower power usage ?
+                        Precisa de compatibilidade ou menor consumo de energia?
                         <a href="#" class="underline hover:no-underline" @click.prevent="selectRenderer('cpu', true)">
-                            Switch to CPU
+                            Mudar para CPU
                         </a>
                     </p>
                     <div class="flex items-center gap-3 mt-1">
                         <button class="px-4 sm:px-8 py-2 w-fit rounded-xl bg-gray-50 hover:bg-gray-200 transition-all ring-1 ring-black text-black text-base font-semibold" @click.prevent="closeIntroModal">
-                            Start Simulation
+                            Iniciar Simulacao
                         </button>
                         <button class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700/75 ring-1 ring-gray-500/20 transition-all text-white text-base font-semibold" @click.prevent="selectRenderer('cpu', true)">
-                            Switch to CPU
+                            Mudar para CPU
                         </button>
                     </div>
                 </div>
@@ -93,23 +93,23 @@
             <div v-else class="rounded-lg bg-amber-900/20 ring-1 ring-amber-400/30 text-amber-100 text-sm p-4">
                 <div class="flex items-center rounded-full bg-amber-700/60 ring-1 ring-amber-400/30 w-fit pl-2 pr-3 py-0.5 mb-3">
                     <div i-tabler-alert-triangle text-lg mr-1></div>
-                    <h3 class="font-semibold">WebGPU is not available</h3>
+                    <h3 class="font-semibold">WebGPU nao esta disponivel</h3>
                 </div>
                 <div flex flex-col gap-2>
                     <p>
-                        <strong>WebGPU</strong> is <strong>not supported</strong> on this <em>device or browser</em>. You’re currently on the <strong>CPU renderer</strong>.
+                        <strong>WebGPU</strong> <strong>nao e suportado</strong> neste <em>dispositivo ou navegador</em>. Voce esta usando o <strong>renderizador CPU</strong>.
                     </p>
                     <div rounded-lg py-2 px-3 class="bg-amber-500/10 ring-1 ring-amber-400/20">
-                        <div class="text-amber-100 text-sm font-semibold">CPU mode — Fully compatible</div>
+                        <div class="text-amber-100 text-sm font-semibold">Modo CPU — Totalmente compativel</div>
                         <p class="text-amber-50/90 text-sm mt-1">
-                            Runs on <strong>every device</strong> and supports the full <strong>3D simulation</strong>. Enable <strong>WebGPU</strong> for higher FPS and more particles when your setup supports it.
+                            Funciona em <strong>todos os dispositivos</strong> e suporta a <strong>simulacao 3D</strong> completa. Ative <strong>WebGPU</strong> para FPS mais alto e mais particulas quando seu dispositivo suportar.
                         </p>
                     </div>
                     <p class="text-stone-300/90">
-                        Follow the <em>Enable WebGPU</em> guide below to set up your browser for higher FPS and more particles.
+                        Siga o guia <em>Ativar WebGPU</em> abaixo para configurar seu navegador com FPS mais alto e mais particulas.
                     </p>
                     <button class="mt-1 px-4 sm:px-8 py-2 w-fit rounded-xl bg-gray-50 hover:bg-gray-200 transition-all ring-1 ring-black text-black text-base font-semibold" @click.prevent="closeIntroModal">
-                        Start Simulation
+                        Iniciar Simulacao
                     </button>
                 </div>
             </div>
@@ -118,18 +118,18 @@
             <div v-if="isWebGPUSupported && currentRenderer === 'gpu'" class="mt-3 rounded-lg border border-yellow-700 bg-yellow-900/30 text-yellow-100 p-4">
                 <div class="flex items-center gap-2 font-medium text-white/90 mb-2">
                     <div i-tabler-alert-triangle text-lg mr-1></div>
-                    <h3>Performance warning</h3>
+                    <h3>Aviso de desempenho</h3>
                 </div>
                 <p class="mt-1 text-sm">
-                    If performance is lower than expected, your system might be using the integrated GPU or the wrong graphics profile.
+                    Se o desempenho estiver abaixo do esperado, seu sistema pode estar usando a GPU integrada ou o perfil grafico errado.
                 </p>
                 <p class="mt-1 text-sm">
-                    On Windows, open <em>Settings → System → Display → Graphics → Graphics settings</em>, add Chrome or Edge, and set it to <strong>High performance GPU</strong>.
+                    No Windows, abra <em>Configuracoes → Sistema → Tela → Graficos</em>, adicione o Chrome ou Edge e defina como <strong>GPU de alto desempenho</strong>.
                     <br>
-                    Also make sure <strong>Hardware Acceleration</strong> is enabled in your browser settings, then restart the browser.
+                    Certifique-se tambem de que a <strong>Aceleracao por Hardware</strong> esta ativada nas configuracoes do navegador, e reinicie-o.
                 </p>
                 <p class="mt-2 text-xs opacity-90">
-                    💡 Tip: Open <code>chrome://gpu</code> or <code>edge://gpu</code> and check that WebGPU shows <em>“Hardware accelerated”</em>.
+                    Dica: Abra <code>chrome://gpu</code> ou <code>edge://gpu</code> e verifique se WebGPU mostra <em>"Hardware accelerated"</em>.
                 </p>
             </div>
 
@@ -139,26 +139,26 @@
                     <div class="rounded-2xl p-4 bg-gradient-to-br from-amber-500/15 to-rose-500/10 ring-1 ring-amber-400/30 sm:w-1/2 md:w-auto">
                         <div class="flex items-center gap-2 text-sm font-semibold text-white/90 mb-1">
                             <div i-tabler-alert-triangle text-lg mr-1></div>
-                            <h3 class="font-semibold">Performance not great ?</h3>
+                            <h3 class="font-semibold">Desempenho ruim?</h3>
                         </div>
-                        <p text-sm>Try the tips in the left guide for your OS, then restart the browser — small changes often make a big difference.</p>
+                        <p text-sm>Siga as dicas no guia ao lado para seu sistema operacional e reinicie o navegador — pequenas mudancas fazem grande diferenca.</p>
                     </div>
                     <div class="rounded-2xl p-4 bg-gradient-to-br from-sky-500/15 to-indigo-500/10 ring-1 ring-sky-400/30 sm:w-1/2 md:w-auto">
                         <div class="flex items-center gap-2 text-sm font-semibold text-white/90 mb-1">
                             <div i-tabler-info-circle text-lg mr-1></div>
-                            <h3 class="font-semibold">Helpfull reminders</h3>
+                            <h3 class="font-semibold">Lembretes uteis</h3>
                         </div>
                         <ul class="list-disc list-outside pl-5 text-sm">
-                            <li>Keep your browser and GPU drivers up to date.</li>
-                            <li>Plug in laptops and avoid power-saving modes.</li>
-                            <li>Close heavy tabs/apps if you notice stutter.</li>
+                            <li>Mantenha navegador e drivers da GPU atualizados.</li>
+                            <li>Conecte notebooks na tomada e evite economia de energia.</li>
+                            <li>Feche abas pesadas se notar travamentos.</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
 <!--            <div flex justify-end>-->
-<!--                <ToggleSwitch label="Don’t show this again" colorful-label v-model="modalDismissed" @update:modelValue="toggleModalDismiss" />-->
+<!--                <ToggleSwitch label="Don't show this again" colorful-label v-model="modalDismissed" @update:modelValue="toggleModalDismiss" />-->
 <!--            </div>-->
         </section>
     </Modal>
@@ -179,12 +179,12 @@ export default defineComponent({
             hideNavBar: true
         })
         useSeoMeta({
-            title: 'Particle Life',
-            ogTitle: 'Particle Life',
-            twitterTitle: 'Particle Life',
-            description: 'Discover Particle Life, an interactive and educational particle simulator to understand physical phenomena and particle system dynamics.',
-            ogDescription: 'Discover Particle Life, an interactive and educational particle simulator to understand physical phenomena and particle system dynamics.',
-            twitterDescription: 'Discover Particle Life, an interactive and educational particle simulator to understand physical phenomena and particle system dynamics.',
+            title: 'Simulador Eleitoral',
+            ogTitle: 'Simulador Eleitoral — INTEIA',
+            twitterTitle: 'Simulador Eleitoral — INTEIA',
+            description: 'Simulador de dinamica social com particulas. Regras simples de interacao produzem comportamentos complexos e emergentes em tempo real.',
+            ogDescription: 'Simulador de dinamica social com particulas. Regras simples de interacao produzem comportamentos complexos e emergentes em tempo real.',
+            twitterDescription: 'Simulador de dinamica social com particulas. Regras simples de interacao produzem comportamentos complexos e emergentes em tempo real.',
         })
 
         const GpuComp = defineAsyncComponent({

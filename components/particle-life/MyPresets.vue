@@ -4,14 +4,14 @@
             <button type="button" aria-label="+New Preset" @click="particleLife.isSaveModalOpen = true" btn py-1 pl-2.5 pr-3.5 rounded-lg flex justify-center items-center transition transition-duration-75
                     bg="cyan-800/80 hover:cyan-600/60" class="border border-cyan-600/80 hover:border-cyan-500/80 shadow-sm hover:shadow-cyan-900/40 text-sm font-500">
                 <span mr-1.5 i-tabler-plus text-base></span>
-                New Preset
+                Novo Cenario
             </button>
 
             <div flex items-center>
                 <TooltipInfo container="#mainContainer" tag="div" mr-0.5
-                             tooltip="Choose how presets affect the species count:<br><small>
-                             <u>Keep:</u> Keeps your current number of species.<br>
-                             <u>Align:</u> Match the number of species defined by the preset.</small>">
+                             tooltip="Escolha como cenarios afetam a contagem de segmentos:<br><small>
+                             <u>Manter:</u> Mantem seu numero atual de segmentos.<br>
+                             <u>Alinhar:</u> Iguala o numero de segmentos definido pelo cenario.</small>">
                 </TooltipInfo>
 
 <!--                <button type="button" @click="matchPresetCount = !matchPresetCount" text-xs btn px-2 rounded-full flex justify-center items-center-->
@@ -20,24 +20,24 @@
 <!--                    {{ !matchPresetCount ? 'Keep' : 'Align' }} Species-->
 <!--                </button>-->
                 <div class="inline-flex items-center rounded-full bg-slate-900/70 p-0.5 text-xs border border-slate-700/80" :class="!hasPresets && 'opacity-60 cursor-not-allowed'">
-                    <button type="button" title="Keep Species" aria-label="Keep Species" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = false)"
+                    <button type="button" title="Manter Segmentos" aria-label="Manter Segmentos" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = false)"
                             class="px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors transition-duration-75 disabled:pointer-events-none"
                             :class="[!matchPresetCount ? 'bg-slate-700/70 text-slate-50' : 'bg-transparent text-slate-300 hover:text-slate-100']">
                         <span i-tabler-lock text-xs :class="!matchPresetCount ? 'text-emerald-300/90' : 'text-emerald-300/70'"></span>
-                        Keep
+                        Manter
                     </button>
-                    <button type="button" title="Align Species" aria-label="Align Species" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = true)"
+                    <button type="button" title="Alinhar Segmentos" aria-label="Alinhar Segmentos" :disabled="!hasPresets" @click="hasPresets && (matchPresetCount = true)"
                             class="px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors transition-duration-75 disabled:pointer-events-none"
                             :class="[matchPresetCount ? 'bg-slate-700/70 text-slate-50' : 'bg-transparent text-slate-300 hover:text-slate-100']">
                         <span i-tabler-lock-open text-xs :class="matchPresetCount ? 'text-violet-300/90' : 'text-violet-300/70'"></span>
-                        Align
+                        Alinhar
                     </button>
                 </div>
             </div>
         </div>
 
         <div v-if="hasPresets" flex justify-between items-end>
-            <span text-sm text-gray-400 underline>Filters:</span>
+            <span text-sm text-gray-400 underline>Filtros:</span>
 
             <div flex items-center gap-1 text-xs>
                 <button type="button" v-for="meta in PRESET_TYPE_META" :key="meta.id" :aria-label="meta.label + ' Filter'"
@@ -54,20 +54,20 @@
 
         <div v-if="!hasPresets" class="text-sm text-slate-300/80 text-center py-3 px-3 rounded-md border border-slate-600/60 bg-slate-800/40">
             <p class="font-medium text-slate-200/90">
-                No presets saved
+                Nenhum cenario salvo
             </p>
             <p class="text-xs text-slate-400 mt-0.5">
-                Click on <span class="text-cyan-300 font-medium">+New Preset</span> to save your current setup
+                Clique em <span class="text-cyan-300 font-medium">+Novo Cenario</span> para salvar sua configuracao
             </p>
         </div>
 
         <div v-else-if="Object.keys(filteredPresets).length === 0 && activeTypeFilters.length > 0"
              class="text-sm text-slate-300/80 text-center py-3 px-3 rounded-md border border-slate-600/60 bg-slate-800/40">
             <p class="font-medium text-slate-200/90">
-                No presets match your filters
+                Nenhum cenario corresponde aos filtros
             </p>
             <p class="text-xs text-slate-400 mt-0.5">
-                Try removing one or more filters to see more presets
+                Remova filtros para ver mais cenarios
             </p>
         </div>
 
@@ -75,7 +75,7 @@
             <div v-for="(preset, id) in filteredPresets" :key="id" @click="loadPreset(id)" py-2 pl-3 rounded-lg flex justify-between items-center cursor-pointer class="bg-slate-700/30 hover:bg-slate-600/30 border border-slate-700/60">
                 <div flex-1 min-w-0 pr-2>
                     <p font-bold text-slate-200 text-sm truncate capitalize>{{ preset.meta.name }}</p>
-                    <p text-xs text-slate-400>{{ getPresetSpeciesCount(preset) }} species</p>
+                    <p text-xs text-slate-400>{{ getPresetSpeciesCount(preset) }} segmentos</p>
                 </div>
                 <div flex items-center flex-shrink-0 self-stretch>
                     <div flex gap-1>
@@ -90,7 +90,7 @@
 
                     <VDropdown placement="right-start" popperClass="dropdownPresetOptions" :arrowPadding="10" instant-move @click.stop self-stretch>
                         <div flex items-center pl-2 pr-2.5 h-full text-slate-300 class="hover:text-slate-100">
-                            <button type="button" title="Preset Options" aria-label="Preset Options" i-tabler-dots-vertical text-center text-lg></button>
+                            <button type="button" title="Opcoes" aria-label="Opcoes" i-tabler-dots-vertical text-center text-lg></button>
                         </div>
 
                         <template #popper>
@@ -98,18 +98,18 @@
                                 <button type="button" aria-label="Copy preset JSON"
                                         @click="copyToClipboard(getPresetByID(id))"
                                         class="rounded-t hover:bg-slate-500/50 px-4 py-2" text-sm text-slate-100>
-                                    Copy JSON
+                                    Copiar JSON
                                 </button>
                                 <button type="button" aria-label="Download preset JSON"
                                         @click="download(getPresetByID(id))"
                                         class="hover:bg-slate-500/50 px-4 py-2" text-sm text-slate-100 >
-                                    Download JSON
+                                    Baixar JSON
                                 </button>
                                 <hr>
                                 <button type="button" aria-label="Delete preset"
                                         @click="removePreset(id)"
                                         class="rounded-b bg-red-700/30 hover:bg-red-700/60 px-4 py-2" text-sm text-slate-100>
-                                    Delete
+                                    Excluir
                                 </button>
                             </div>
                         </template>
@@ -147,10 +147,10 @@ export default defineComponent({
         const matchPresetCount = ref<boolean>(false)
 
         const PRESET_TYPE_META: { id: string; label: string; color: string; icon?: string }[] = [
-            {id: "forces", label: "Forces", color: "bg-sky-700/60 hover:bg-sky-700/75", icon: "i-tabler-arrows-random"},
-            {id: "radii", label: "Radii", color: "bg-purple-700/60 hover:bg-purple-700/75", icon: "i-tabler-circles"},
-            {id: "colors", label: "Colors", color: "bg-amber-700/60 hover:bg-amber-700/75", icon: "i-tabler-palette"},
-            {id: "settings", label: "Settings", color: "bg-emerald-700/60 hover:bg-emerald-700/75", icon: "i-tabler-adjustments"},
+            {id: "forces", label: "Afinidades", color: "bg-sky-700/60 hover:bg-sky-700/75", icon: "i-tabler-arrows-random"},
+            {id: "radii", label: "Raios", color: "bg-purple-700/60 hover:bg-purple-700/75", icon: "i-tabler-circles"},
+            {id: "colors", label: "Cores", color: "bg-amber-700/60 hover:bg-amber-700/75", icon: "i-tabler-palette"},
+            {id: "settings", label: "Config", color: "bg-emerald-700/60 hover:bg-emerald-700/75", icon: "i-tabler-adjustments"},
         ]
 
         onMounted(() => {

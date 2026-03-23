@@ -6,13 +6,13 @@
                     <div class="i-custom:icon text-7xl sm:text-9xl md:text-[9.5rem]"></div>
                 </div>
                 <div class="text-center sm:text-start">
-                    <h1 class="text-4xl sm:text-5xl" font-bold text="#2A9D8F">
-                        Sandbox Science
+                    <h1 class="text-4xl sm:text-5xl" font-bold text="#c89520">
+                        INTE<span class="text-white">IA</span>
                     </h1>
-                    <h2 class="text-lg sm:text-2xl" font-bold mt-3>Unlock the mysteries of science through immersive and interactive simulations.</h2>
+                    <h2 class="text-lg sm:text-2xl" font-bold mt-3>Motor visual de dinamica social com inteligencia artificial.</h2>
                     <p mt-4 class="text-sm sm:text-base">
-                        Explore Game of Life, Particle Life, and other captivating scientific simulations. Dive into hands-on
-                        learning and discover complex concepts with interactive visual experiences.
+                        Simule eleicoes, conflitos corporativos, dinamicas de grupo e qualquer cenario social.
+                        Descreva seu caso — a IA configura. O motor simula. Voce decide.
                     </p>
                 </div>
             </div>
@@ -23,12 +23,12 @@
                           class="relative overflow-hidden rounded-lg border border-gray-800 shadow-lg p-6 sm:p-5 md:p-6 pt-3 sm:pt-4 md:pt-4">
                     <div flex items-center mb-2>
                         <span class="text-2xl md:text-3xl" font-bold mr-2>⚛</span>
-                        <h3 class="text-lg md:text-xl font-semibold">Particle Life</h3>
+                        <h3 class="text-lg md:text-xl font-semibold">Simulador Eleitoral</h3>
                     </div>
-                    <p class="text-sm md:text-base">Observe the fascinating interactions and emergent behaviors of particles in a dynamic and interactive environment.</p>
+                    <p class="text-sm md:text-base">Observe as dinamicas entre segmentos eleitorais, teste cenarios de campanha e analise comportamento coletivo em tempo real.</p>
                     <div class="absolute right-0 top-0 h-16 w-16">
-                        <div class="shadow-lg absolute transform rotate-45 bg-[#00b84d] bg-opacity-70 text-center text-sm text-white font-semibold py-1 right-[-38px] top-[13px] w-[128px]">
-                            BETA
+                        <div class="shadow-lg absolute transform rotate-45 bg-[#c89520] bg-opacity-70 text-center text-sm text-white font-semibold py-1 right-[-38px] top-[13px] w-[128px]">
+                            INTEIA
                         </div>
                     </div>
                 </NuxtLink>
@@ -36,12 +36,12 @@
                           class="relative overflow-hidden rounded-lg border border-gray-800 shadow-lg p-6 sm:p-5 md:p-6 pt-3 sm:pt-4 md:pt-4">
                     <div flex items-center mb-2>
                         <span class="text-2xl md:text-3xl" font-bold mr-1>🧬</span>
-                        <h3 class="text-lg md:text-xl font-semibold">Game Of Life</h3>
+                        <h3 class="text-lg md:text-xl font-semibold">Jogo da Vida</h3>
                     </div>
-                    <p class="text-sm md:text-base">Explore the intriguing patterns and behaviors of cellular automata in this classic simulation by John Conway.</p>
+                    <p class="text-sm md:text-base">Explore os padroes intrigantes de automatos celulares na simulacao classica de John Conway.</p>
                     <div class="absolute right-0 top-0 h-16 w-16">
                         <div class="shadow-lg absolute transform rotate-45 bg-[#e76f51] bg-opacity-70 text-center text-sm text-white font-semibold py-1 right-[-38px] top-[13px] w-[128px]">
-                            ALPHA
+                            ALFA
                         </div>
                     </div>
                 </NuxtLink>
@@ -51,10 +51,10 @@
                         <span class="text-2xl md:text-3xl" font-bold mr-2>🚀</span>
                         <h3 class="text-lg md:text-xl font-semibold">Hash Life</h3>
                     </div>
-                    <p class="text-sm md:text-base">Experience the optimized version of the Game of Life, enabling faster and more efficient simulation of complex patterns.</p>
+                    <p class="text-sm md:text-base">Versao otimizada do Jogo da Vida, com simulacao mais rapida e eficiente de padroes complexos.</p>
                     <div class="absolute right-0 top-0 h-16 w-16">
                         <div class="shadow-lg absolute transform rotate-45 bg-[#5b2e48] bg-opacity-70 text-center text-sm text-white font-semibold py-1 right-[-38px] top-[13px] w-[128px]">
-                            WIP
+                            DEV
                         </div>
                     </div>
                 </NuxtLink>
@@ -62,12 +62,12 @@
         </section>
         <section my-12 flex-1 flex flex-col justify-end>
             <div w-full flex>
-                <NuxtLink to="https://discord.com/invite/z5yuzkFpCA" title="Discord" aria-label="Discord" target="_blank" flex items-center py-0 mx-2>
-                    <button type="button" name="Discord" aria-label="Discord" text="zinc-3 hover:zinc-1" flex>
-                        <span i-carbon-logo-discord text-5xl></span>
+                <NuxtLink to="https://inteia.com.br" title="INTEIA" aria-label="INTEIA" target="_blank" flex items-center py-0 mx-2>
+                    <button type="button" name="INTEIA" aria-label="INTEIA" text="zinc-3 hover:zinc-1" flex>
+                        <span i-tabler-brain text-5xl></span>
                     </button>
                 </NuxtLink>
-                <NuxtLink to="https://github.com/DicSo92/SandboxScience" title="Github" aria-label="Github" target="_blank" flex items-center py-0 mx-2>
+                <NuxtLink to="https://github.com/igormorais123/SandboxScience" title="Github" aria-label="Github" target="_blank" flex items-center py-0 mx-2>
                     <button type="button" name="Github" aria-label="Github" text="zinc-3 hover:zinc-1" flex>
                         <span i-carbon-logo-github text-5xl></span>
                     </button>

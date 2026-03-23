@@ -1,8 +1,8 @@
 <template>
     <main class="flex">
         <SelectButton id="normal" label="Normal" v-model="currentValue" mr-2 />
-        <SelectButton id="edges" label="Edges" v-model="currentValue" mr-2 />
-        <SelectButton id="infinite" label="Infinite" v-model="currentValue" />
+        <SelectButton id="edges" label="Bordas" v-model="currentValue" mr-2 />
+        <SelectButton id="infinite" label="Infinito" v-model="currentValue" />
     </main>
 </template>
 

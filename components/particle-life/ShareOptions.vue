@@ -12,19 +12,19 @@
             <div class="modal-content">
                 <div flex items-center>
                     <span i-tabler-screenshot text-2xl mr-2></span>
-                    <h1 text-xl>Choose Capture Mode</h1>
+                    <h1 text-xl>Escolher Modo de Captura</h1>
                 </div>
                 <hr mb-4>
                 <section flex>
                     <div v-if="imageURL" class="w-2/3" relative bg-zinc-900 flex justify-center items-center rounded-lg p-1.5 border-2 border-gray-500 border-dashed>
                         <img :src="imageURL" alt="" w-full aspect-video object-scale-down object-center rounded>
                         <div absolute top-2 right-2>
-                            <button type="button" title="Delete Capture" aria-label="Delete Capture" @click="imageURL = null"
+                            <button type="button" title="Excluir Captura" aria-label="Excluir Captura" @click="imageURL = null"
                                     aspect-square rounded-full p-1 flex justify-center items-center
                                     class="bg-red-800 hover:bg-red-700">
                                 <span i-tabler-trash text-lg></span>
                             </button>
-                            <button type="button" title="Download" aria-label="Download" @click="downloadCapture"
+                            <button type="button" title="Baixar" aria-label="Baixar" @click="downloadCapture"
                                     aspect-square rounded-full p-1 flex justify-center items-center mt-1
                                     class="bg-blue-950 hover:bg-blue-900">
                                 <span i-tabler-download text-lg></span>
@@ -32,24 +32,24 @@
                         </div>
                     </div>
                     <div v-else flex items-center h-42 class="w-2/3">
-                        <button type="button" title="Screenshot" aria-label="Screenshot"
+                        <button type="button" title="Captura de Tela" aria-label="Captura de Tela"
                                 flex-1 h-full rounded-xl px-4 py-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-500 text-gray-300
                                 class="bg-zinc-800 hover:bg-zinc-700" @click="onChooseCaptureMode('screenshot')">
                             <span i-tabler-camera text-2xl></span>
-                            Screenshot
+                            Captura de Tela
                         </button>
                         <hr class="h-5/6" border-l-1 border-gray-500 border-dashed mx-3 py-8>
-                        <button type="button" title="GIF Capture" aria-label="GIF Capture"
+                        <button type="button" title="Captura GIF" aria-label="Captura GIF"
                                 flex-1 h-full rounded-xl px-4 py-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-500 text-gray-300
                                 class="bg-zinc-800 hover:bg-zinc-700" @click="onChooseCaptureMode('GIF')">
                             <span i-tabler-movie text-2xl></span>
-                            GIF Capture
+                            Captura GIF
                         </button>
                     </div>
                     <div class="w-1/3" pl-4>
                         <div rounded-xl bg-zinc-700 w-full px-3 py-2>
                             <h2 underline text-gray-300 mb-2>
-                                GIF Options :
+                                Opcoes de GIF :
                             </h2>
                             <Input v-model="captureFPS" :debounce="0" mb-1>
                                 <template #customLabel>
@@ -58,7 +58,7 @@
                             </Input>
                             <Input v-model="captureDuration" :debounce="0">
                                 <template #customLabel>
-                                    <div text-sm flex-1>Time (s)</div>
+                                    <div text-sm flex-1>Tempo (s)</div>
                                 </template>
                             </Input>
                         </div>

@@ -67,11 +67,11 @@ const copyToClipboard = (presetData: Preset | undefined) => {
     // Write the formatted text to clipboard
     navigator.clipboard.writeText(formattedJson).then(() => {
         console.log('Preset copied to clipboard')
-        success('Preset copied to clipboard.')
+        success('Cenario copiado.')
         safeHideAllPoppers()
     }).catch(err => {
         console.error('Could not copy preset: ', err)
-        error('Error copying preset to clipboard.')
+        error('Erro ao copiar cenario.')
         safeHideAllPoppers()
     })
 }
@@ -102,7 +102,7 @@ const download = (presetData: Preset | undefined) => {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    success("Preset downloaded.")
+    success("Cenario baixado.")
     safeHideAllPoppers()
 }
 // -----------------------------------------------------------------------------------------------------------------
@@ -372,14 +372,14 @@ export const usePresetManager = (particleLife: any) => {
             ...particleLife.savedPresets
         }
         localStorage.setItem("particleLife.presets", JSON.stringify(particleLife.savedPresets))
-        success("Preset saved.")
+        success("Cenario salvo.")
         safeHideAllPoppers()
     }
     const getPresetByID = (presetID: string): Preset | undefined => {
         getSavedPresets()
         const presetData: Preset | undefined = particleLife.savedPresets[presetID]
         if (!presetData) {
-            error('Preset not found.')
+            error('Cenario nao encontrado.')
             safeHideAllPoppers()
         }
         return presetData
@@ -388,10 +388,10 @@ export const usePresetManager = (particleLife: any) => {
         if (particleLife.savedPresets[presetID]) {
             delete particleLife.savedPresets[presetID]
             localStorage.setItem("particleLife.presets", JSON.stringify(particleLife.savedPresets))
-            success("Preset deleted.")
+            success("Cenario excluido.")
             safeHideAllPoppers()
         } else {
-            error("Preset not found.")
+            error("Cenario nao encontrado.")
             safeHideAllPoppers()
         }
     }
