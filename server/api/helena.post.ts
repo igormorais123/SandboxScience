@@ -4,11 +4,16 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { prompt, currentState } = body
 
-  // Try to get API key from env or runtime config
+  // OmniRouter (VPS INTEIA, custo zero) com fallback para API Anthropic
+  const omniKey = process.env.OMNIROUTE_API_KEY || ""
+  const omniUrl = process.env.OMNIROUTE_URL || "https://omniroute.srv1354997.hstgr.cloud"
   const apiKey = process.env.ANTHROPIC_API_KEY || ""
-  if (!apiKey) {
-    return { error: "Configure ANTHROPIC_API_KEY no ambiente para usar Helena." }
+
+  if (!omniKey && !apiKey) {
+    return { error: "Configure OMNIROUTE_API_KEY ou ANTHROPIC_API_KEY no ambiente para usar Helena." }
   }
+
+  const useOmni = !!omniKey
 
   const systemPrompt = `Voce e Helena, cientista-chefe da INTEIA. Voce configura simulacoes de dinamica social com particulas.
 
@@ -46,15 +51,21 @@ Estado atual da simulacao: ${JSON.stringify(currentState || {})}
 Responda APENAS com o JSON. Sem explicacao, sem markdown. JSON puro.`
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const baseUrl = useOmni ? `${omniUrl}/v1/messages` : "https://api.anthropic.com/v1/messages"
+    const headers: Record<string, string> = { "Content-Type": "application/json" }
+
+    if (useOmni) {
+      headers["Authorization"] = `Bearer ${omniKey}`
+    } else {
+      headers["x-api-key"] = apiKey
+      headers["anthropic-version"] = "2023-06-01"
+    }
+
+    const response = await fetch(baseUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
+      headers,
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 4096,
         system: systemPrompt,
         messages: [{ role: "user", content: prompt }],
