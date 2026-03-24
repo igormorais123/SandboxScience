@@ -204,23 +204,14 @@
 
         <canvas id="lifeCanvas" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
 
-        <!-- Segment Legend Overlay (from store) -->
-        <div v-if="particleLife.segmentData && particleLife.segmentData.length > 0" class="absolute bottom-12 left-3 bg-black/80 backdrop-blur-sm rounded-lg px-3 py-2.5 pointer-events-none" style="z-index: 50; min-width: 160px; border: 1px solid rgba(200,149,32,0.2);">
-            <div class="text-[10px] uppercase tracking-wider mb-1.5 font-bold" style="color: #c89520;">Segmentos Eleitorais</div>
-            <div v-for="seg in particleLife.segmentData" :key="seg.id" class="flex items-center gap-2 py-0.5">
-                <span class="inline-block w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/20" :style="{ backgroundColor: seg.color }"></span>
-                <span class="text-[11px] text-gray-100 flex-1 font-medium">{{ seg.name }}</span>
-                <span class="text-[9px] text-gray-400">{{ Math.round(seg.proportion * 100) }}%</span>
-            </div>
-        </div>
-
-        <!-- Segment Legend (from rAF computed data) -->
-        <div v-else-if="segmentLegend.length > 0" class="absolute bottom-12 left-3 bg-black/80 backdrop-blur-sm rounded-lg px-3 py-2.5 pointer-events-none" style="z-index: 50; min-width: 160px; border: 1px solid rgba(200,149,32,0.2);">
-            <div class="text-[10px] uppercase tracking-wider mb-1.5 font-bold" style="color: #c89520;">Segmentos</div>
-            <div v-for="seg in segmentLegend" :key="seg.id" class="flex items-center gap-2 py-0.5">
-                <span class="inline-block w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/20" :style="{ backgroundColor: seg.color }"></span>
-                <span class="text-[11px] text-gray-100 flex-1 font-medium">{{ seg.name }}</span>
-                <span class="text-[10px] text-gray-400 tabular-nums">{{ seg.count }}</span>
+        <!-- Segment Legend — barra horizontal fixa no topo -->
+        <div v-if="particleLife.segmentData && particleLife.segmentData.length > 0"
+             class="absolute top-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/75 backdrop-blur-sm rounded-full px-5 py-2 pointer-events-none"
+             style="z-index: 50; border: 1px solid rgba(200,149,32,0.25);">
+            <div v-for="seg in particleLife.segmentData" :key="seg.id" class="flex items-center gap-1.5">
+                <span class="inline-block w-3.5 h-3.5 rounded-full flex-shrink-0 ring-1 ring-white/30" :style="{ backgroundColor: seg.color }"></span>
+                <span class="text-[12px] text-gray-100 font-semibold whitespace-nowrap">{{ seg.name }}</span>
+                <span class="text-[10px] text-gray-400 font-mono">{{ Math.round(seg.proportion * 100) }}%</span>
             </div>
         </div>
 
