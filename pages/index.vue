@@ -10,9 +10,9 @@
                         INTE<span class="text-white">IA</span>
                     </h1>
                     <p class="text-sm sm:text-base mt-1 tracking-wider uppercase font-semibold text-[#c89520]/70">Inteligencia Artificial Estrategica</p>
-                    <h2 class="text-lg sm:text-2xl" font-bold mt-3>Simulacoes de dinamica social para inteligencia eleitoral</h2>
+                    <h2 class="text-lg sm:text-2xl" font-bold mt-3>Simulador universal de sistemas complexos</h2>
                     <p mt-4 class="text-sm sm:text-base">
-                        Simule eleicoes, conflitos corporativos, dinamicas de grupo e qualquer cenario social.
+                        Eleicoes, galaxias, ecossistemas — sistemas complexos emergem de regras simples.
                         Descreva seu caso — a IA configura. O motor simula. Voce decide.
                     </p>
                 </div>
@@ -26,7 +26,7 @@
                         <span class="text-2xl md:text-3xl" font-bold mr-2>⚛</span>
                         <h3 class="text-lg md:text-xl font-semibold">Simulador Eleitoral</h3>
                     </div>
-                    <p class="text-sm md:text-base">Observe as dinamicas entre segmentos eleitorais, teste cenarios de campanha e analise comportamento coletivo em tempo real.</p>
+                    <p class="text-sm md:text-base">3 modos de simulacao: <strong>Eleitoral</strong> (segmentos, campanhas), <strong>Galaxias</strong> (gravidade, orbitas) e <strong>Vida Microscopica</strong> (bacterias, predadores). Mesmo motor, mundos diferentes.</p>
                     <div class="absolute right-0 top-0 h-16 w-16">
                         <div class="shadow-lg absolute transform rotate-45 bg-[#c89520] bg-opacity-70 text-center text-sm text-white font-semibold py-1 right-[-38px] top-[13px] w-[128px]">
                             INTEIA
