@@ -73,18 +73,22 @@ const CLUSTERS_4: ElectoralSegment[] = [
 ]
 
 // FORCE_4_RAW: escala -100 a +100.
-// REDESIGN Helena Strategos: dinamica predador-presa eleitoral.
-// Assimetria FORTE: Mercado CACA Campo (atrai), mas Campo FOGE de Mercado (repele).
-// Base = nucleo gravitacional (atrai todos levemente, auto-coesao moderada).
-// Campo = presa volatil (coesao fraca, atraido por Base, repelido por Mercado).
-// Mercado = predador (persegue Campo agressivamente, auto-coesao baixa).
-// Alheio = inercia (bolha isolada, repele quase tudo).
-// Resultado: ciclos eternos de perseguicao, formacao de organismos politicos vivos.
+// CONVENÇÃO: POSITIVO = ATRAÇÃO, NEGATIVO = REPULSÃO (igual ao motor original).
+// Redesign Helena Strategos: dinamica predador-presa eleitoral.
+// Inspirado em Rock-Paper-Scissors (perseguicao ciclica) + Concentric Shells (coesao).
+//
+// Base = nucleo coeso (self +80), atrai Campo (+40), repele Mercado (-30)
+// Campo = volatil (self +15), atraido por Base (+50), REPELE Mercado (-60)
+// Mercado = predador (self +10), ATRAI Campo forte (+80), repele Base (-20)
+// Alheio = bolha isolada (self +90), repele todos
+//
+// Assimetria chave: Mercado→Campo = +80 (caca), Campo→Mercado = -60 (fuga)
+// Isso cria perseguicao eterna como Rock-Paper-Scissors.
 const FORCE_4_RAW = [
-  [-60,  -35,   10,   40],   // Base: coeso, atrai Campo, levemente repele Mercado, repele Alheio forte
-  [-40,  -15,   50,   20],   // Campo: atraido por Base, coesao FRACA, FOGE de Mercado (+50=repulsa), repele Alheio
-  [ 15,  -70,  -10,   25],   // Mercado: leve repulsa a Base, CACA Campo (-70=atracao forte), coesao baixa, repele Alheio
-  [ 45,   25,   30,  -80],   // Alheio: repele Base forte, repele Campo, repele Mercado, auto-coesao MAXIMA (bolha densa)
+  [ 80,   40,  -30,  -50],   // Base: coeso, atrai Campo, repele Mercado e Alheio
+  [ 50,   15,  -60,  -20],   // Campo: atrai Base, coesao FRACA, FOGE de Mercado
+  [-20,   80,   10,  -40],   // Mercado: repele Base, CACA Campo (+80), coesao fraca
+  [-50,  -30,  -40,   90],   // Alheio: repele todos, auto-coesao MAXIMA (bolha densa)
 ]
 
 // ============================================================
@@ -104,22 +108,23 @@ const SEGMENTOS_10: ElectoralSegment[] = [
   { id: 9, name: 'Fronteira/Seg.',  shortName: 'Front', description: 'PM/PC/PF, berco de Jorge Everton', proportion: 0.025, color: '#33cc77' },
 ]
 
-// FORCE_10_RAW: redesign Helena — assimetrias predador-presa por segmento
+// FORCE_10_RAW: POSITIVO = ATRAÇÃO, NEGATIVO = REPULSÃO.
+// Inspirado em Concentric Shells + Rock-Paper-Scissors ciclico.
 // Func=nucleo estavel, Comis=satelite Func, Evang=bloco coeso, Jovem=volatil (presa)
 // Merc=predador (caca Jovem+MulP), Indig=bloco isolado, CMed=repele Indig/Evang
 // Agro=pragmatico, MulP=vulneravel (Merc caca), Front=nucleo JE (coeso com Func)
 const FORCE_10_RAW = [
 //  Func  Comis Evang Jovem Merc  Indig CMed  Agro  MulP  Front
-  [-45, -55,  15,  20,  10,  25, -25,  -15,  -10, -50],  // Func: coeso, atrai Comis+Front
-  [-60, -40,  20,  15, -20,  25,  10,   20,   10, -20],  // Comis: satelite de Func
-  [ 15,  20, -55, -20,  20,  45, -40,  -30,  -30,  -5],  // Evang: bloco, repele CMed, repele Indig forte
-  [ 25,  15, -20, -15,  55,  15,  15,   20,  -25,  15],  // Jovem: volatil, FOGE de Mercado (+55)
-  [ 10, -25,  20, -60, -10,  -5,  15,   -5,  -55,  20],  // Merc: CACA Jovem (-60) e MulP (-55)
-  [ 30,  25,  50,  15,  -5, -65,  55,   -5,   10,  30],  // Indig: bloco isolado, repele CMed+Evang
-  [-30,  10, -45,  15,  15,  55, -50,  -30,   15, -35],  // CMed: repele Evang, repele Indig, coeso
-  [-15,  20, -30,  20,  -5,  -5, -30,  -45,   15, -20],  // Agro: pragmatico, atrai Func
-  [-10,  10, -30, -25, -50,  10,  15,   15,  -30,  10],  // MulP: vulneravel, atraida por Mercado
-  [-55, -20,  -5,  15,  20,  30, -35,  -20,   10, -55],  // Front: nucleo JE, coeso com Func
+  [ 70,  60, -10, -15,  -5, -20,  30,   20,   15,  55],  // Func: coeso, atrai Comis+Front+CMed
+  [ 65,  50, -15, -10,  25, -20,  -5,  -15,  -10,  25],  // Comis: satelite de Func
+  [-10, -15,  70,  25, -15, -45,  45,   35,   35,  10],  // Evang: bloco coeso, atrai CMed+Agro+MulP
+  [-20, -10,  25,  20, -60, -10, -10,  -15,   30, -10],  // Jovem: volatil, FOGE de Mercado (-60)
+  [ -5,  30, -15,  70,  15,  10, -10,   10,   60, -15],  // Merc: CACA Jovem (+70) e MulP (+60)
+  [-25, -20,  55, -10,  10,  75, -55,   10,  -10, -25],  // Indig: bloco isolado, repele CMed
+  [ 35,  -5,  50, -10, -10, -55,  60,   35,  -10,  40],  // CMed: atrai Evang, repele Indig, coeso
+  [ 20, -15,  35, -15,  10,  10,  35,   55,  -10,  25],  // Agro: pragmatico, atrai Func+CMed
+  [ 15, -10,  35,  30, -55, -10, -10,  -10,   40, -10],  // MulP: presa, FOGE de Mercado (-55)
+  [ 60,  25,  10, -10, -15, -25,  40,   25,  -10,  65],  // Front: nucleo JE, coeso com Func
 ]
 
 // ============================================================
@@ -136,21 +141,21 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.08, forceFactor: 1.3 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
       forces: normMatrix(FORCE_4_RAW),
-      // Raios assimetricos: Mercado alcanca Campo de longe, Campo so sente de perto
+      // Raios na faixa que funciona: minR [30-60], maxR [90-150]
       minRadius: [
-        [15, 20, 35, 45],   // Base: nucleo compacto, Campo proximo, distancia de Mercado/Alheio
-        [20, 25, 15, 40],   // Campo: proximo de Base, muito proximo de Mercado (foge antes)
-        [35, 10, 20, 40],   // Mercado: invade espaco do Campo (minR=10 = perseguicao agressiva)
-        [45, 40, 40, 8],    // Alheio: distante de tudo, super compacto entre si
+        [30, 35, 45, 50],   // Base: nucleo compacto
+        [35, 40, 30, 45],   // Campo: zona media, proximo de Mercado (sente cedo)
+        [45, 30, 40, 50],   // Mercado: chega perto de Campo (minR=30)
+        [50, 45, 50, 25],   // Alheio: distante de tudo, compacto entre si
       ],
       maxRadius: [
-        [100, 160, 90,  70],   // Base: busca Campo longe, ignora Mercado/Alheio
-        [130, 100, 180, 80],   // Campo: sente Mercado de MUITO longe (180=fuga antecipada)
-        [90,  200, 80,  70],   // Mercado: alcanca Campo em 200px (caca longo alcance!)
-        [70,  80,  70,  50],   // Alheio: zona curta, bolha isolada
+        [100, 130, 95,  80],   // Base: busca Campo longe
+        [120, 100, 140, 90],   // Campo: sente Mercado longe (140=fuga antecipada)
+        [95,  150, 100, 85],   // Mercado: alcanca Campo em 150px (caca!)
+        [80,  90,  85,  70],   // Alheio: zona curta, bolha isolada
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -164,11 +169,11 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     },
     segments: SEGMENTOS_10,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 10, numParticles: 5000, frictionFactor: 0.10, forceFactor: 1.2 },
+    settings: { species: 10, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
       forces: normMatrix(FORCE_10_RAW),
-      minRadius: uniformRadius(10, 12, 30),
-      maxRadius: uniformMaxRadius(10, 100, 180),
+      minRadius: uniformRadius(10, 30, 50),
+      maxRadius: uniformMaxRadius(10, 90, 140),
     },
     colors: SEGMENTOS_10.map(s => s.color),
   },
@@ -181,26 +186,26 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.08, forceFactor: 1.3 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
-      // Alianca pastoral: Base e Campo se fundem, Evang reforça Base
+      // Alianca pastoral: Base e Campo se fundem forte (ambos +60 mutuo)
       forces: normMatrix([
-        [-70, -50,   5,  35],   // Base: coesao reforçada, puxa Campo FORTE
-        [-55, -25,  40,  15],   // Campo: migra para Base, foge Mercado
-        [ 10, -55, -10,  25],   // Mercado: perde alvo (Campo protegido)
-        [ 40,  20,  30, -80],   // Alheio: bolha isolada
+        [ 85,  60, -25, -50],   // Base: SUPER coeso, puxa Campo FORTE
+        [ 60,  25, -55, -20],   // Campo: migra para Base, foge Mercado
+        [-25,  70,  10, -40],   // Mercado: perde alvo (Campo protegido pela Base)
+        [-50, -25, -40,  90],   // Alheio: bolha isolada
       ]),
       minRadius: [
-        [12, 15, 35, 45],
-        [15, 20, 15, 40],
-        [35, 10, 20, 40],
-        [45, 40, 40, 8],
+        [28, 30, 45, 50],
+        [30, 38, 32, 45],
+        [45, 32, 40, 50],
+        [50, 45, 50, 25],
       ],
       maxRadius: [
-        [100, 180, 80, 70],    // Base busca Campo ainda mais longe
-        [150, 100, 170, 80],
-        [80, 190, 80, 70],
-        [70, 80, 70, 50],
+        [100, 140, 95, 80],
+        [130, 100, 135, 90],
+        [95, 145, 100, 85],
+        [80, 90, 85, 70],
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -209,31 +214,31 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     v: 1,
     meta: {
       name: 'RR — Compra de Voto',
-      description: 'Mercado ativado: persegue Campo E Mulheres Periferia. Mercado dispersa internamente, caca aberta.',
+      description: 'Mercado ativado: persegue Campo com forca maxima, perde coesao interna.',
       category: 'Eventos RR',
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.07, forceFactor: 1.4 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
       // Mercado enloquece: persegue Campo com tudo, perde auto-coesao
       forces: normMatrix([
-        [-55, -30,  15,  40],   // Base: tenta manter nucleo
-        [-35, -10,  60,  20],   // Campo: FOGE de Mercado desesperadamente
-        [ 20, -80,  -3,  30],   // Mercado: CACA Campo -80 (maximo), sem coesao (-3)
-        [ 45,  25,  35, -75],   // Alheio: bolha
+        [ 75,  35, -25, -50],   // Base: tenta manter nucleo
+        [ 40,  15, -70, -20],   // Campo: FOGE de Mercado forte (-70)
+        [-20,  90,   5, -35],   // Mercado: CACA Campo +90 (maximo!), coesao minima
+        [-50, -25, -40,  85],   // Alheio: bolha
       ]),
       minRadius: [
-        [15, 22, 35, 45],
-        [22, 28, 12, 40],
-        [35, 8, 25, 40],       // Mercado chega MUITO perto de Campo (minR=8)
-        [45, 40, 40, 8],
+        [30, 35, 45, 50],
+        [35, 42, 30, 45],
+        [45, 28, 42, 50],      // Mercado chega perto de Campo (minR=28)
+        [50, 45, 50, 25],
       ],
       maxRadius: [
-        [100, 150, 85, 70],
-        [120, 90, 200, 80],    // Campo sente Mercado de 200px (fuga maxima)
-        [85, 220, 75, 70],     // Mercado alcanca Campo em 220px!
-        [70, 80, 70, 50],
+        [100, 125, 90, 80],
+        [115, 95, 145, 90],    // Campo sente Mercado de longe (145)
+        [90, 150, 95, 80],     // Mercado alcanca Campo em 150
+        [80, 90, 80, 70],
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -242,31 +247,31 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     v: 1,
     meta: {
       name: 'RR — Fake News Viral',
-      description: 'Desinformacao massiva. Todos repelem todos, Campo fragmenta, caos total.',
+      description: 'Desinformacao massiva. Coesao cai, repulsao sobe. Tipo Rock-Paper-Scissors descontrolado.',
       category: 'Eventos RR',
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.06, forceFactor: 1.5 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.12, forceFactor: 1.0 },
     matrices: {
-      // Caos: repulsao generalizada, apenas auto-coesao sobrevive
+      // Inspirado em anti-symmetric swirl: todos perseguem o proximo, fogem do anterior
       forces: normMatrix([
-        [-50,  20,  30,  45],   // Base: repele todos
-        [ 25, -15,  40,  30],   // Campo: coesao MINIMA, foge de tudo
-        [ 35,  45, -20,  35],   // Mercado: repele todos, persegue ninguem (confuso)
-        [ 50,  35,  40, -60],   // Alheio: repulsao maxima + auto-coesao
+        [ 40, -50,  60, -30],   // Base: repele Campo, persegue Mercado (confusao)
+        [ 60,  30, -50, -20],   // Campo: persegue Base, repele Mercado
+        [-50,  60,  20, -40],   // Mercado: persegue Campo, repele Base (caos ciclico)
+        [ 30, -30,  40,  50],   // Alheio: atrai tudo (absorve desistentes)
       ]),
       minRadius: [
-        [15, 30, 35, 50],
-        [30, 30, 30, 45],
-        [35, 30, 25, 40],
-        [50, 45, 40, 8],
+        [35, 40, 35, 45],
+        [35, 35, 40, 45],
+        [40, 35, 38, 45],
+        [45, 45, 45, 30],
       ],
       maxRadius: [
-        [90, 160, 150, 120],   // Todos sentem todos de longe (desinformacao permeia)
-        [140, 100, 170, 130],
-        [130, 180, 90, 120],
-        [120, 130, 120, 50],
+        [110, 130, 120, 100],
+        [120, 100, 130, 110],
+        [130, 120, 100, 110],
+        [100, 110, 110, 90],
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -275,30 +280,30 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     v: 1,
     meta: {
       name: 'RR — CNH Gratis',
-      description: 'Programa social: Base puxa Campo para dentro. Mercado perde alvo. Gravidade institucional.',
+      description: 'Programa social: Base puxa Campo para dentro. Organismo Base+Campo cresce.',
       category: 'Eventos RR',
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.09, forceFactor: 1.3 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
       forces: normMatrix([
-        [-65, -45,   5,  35],   // Base: atrai Campo FORTE (CNH funcionou)
-        [-50, -20,  45,  15],   // Campo: migra para Base, ainda foge Mercado
-        [ 10, -60, -12,  25],   // Mercado: perde grip no Campo
-        [ 40,  20,  30, -80],   // Alheio: estavel
+        [ 85,  55, -30, -50],   // Base: atrai Campo FORTE (CNH funcionou)
+        [ 60,  20, -55, -20],   // Campo: migra para Base, ainda foge Mercado
+        [-25,  75,  10, -40],   // Mercado: perde grip (Campo na orbita da Base)
+        [-50, -25, -40,  90],   // Alheio: estavel
       ]),
       minRadius: [
-        [12, 12, 35, 45],      // Base-Campo: minR=12 (fusao!)
-        [12, 22, 15, 40],
-        [35, 12, 20, 40],
-        [45, 40, 40, 8],
+        [28, 30, 45, 50],
+        [30, 38, 32, 45],
+        [45, 30, 40, 50],
+        [50, 45, 50, 25],
       ],
       maxRadius: [
-        [110, 190, 85, 70],    // Base busca Campo muito longe (programa social)
-        [160, 100, 170, 80],
-        [85, 190, 80, 70],
-        [70, 80, 70, 50],
+        [105, 140, 95, 80],    // Base busca Campo longe
+        [130, 100, 135, 90],
+        [95, 145, 100, 85],
+        [80, 90, 85, 70],
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -307,30 +312,31 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     v: 1,
     meta: {
       name: 'RR — Cenario Otimista JE',
-      description: 'CNH + pastoral + Denarium apoia. Base absorve Campo, Mercado perde relevancia. Organismo politico coeso.',
+      description: 'CNH + pastoral + Denarium. Base absorve Campo e ate Mercado. Organismo politico dominante.',
       category: 'Estrategia JE',
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.10, forceFactor: 1.3 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
+      // Hub and Spokes: Base e o hub, todos orbitam
       forces: normMatrix([
-        [-75, -55,  -20,  30],   // Base: SUPER coeso, puxa Campo E Mercado
-        [-60, -30,   35,  15],   // Campo: forte atracao a Base, foge Mercado menos
-        [-25, -45,  -15,  25],   // Mercado: atraido por Base E Campo (maquina funciona)
-        [ 35,  20,   30, -80],   // Alheio: irrelevante
+        [ 90,  65,   30, -45],   // Base: SUPER coeso, puxa Campo E Mercado
+        [ 70,  30,  -40, -15],   // Campo: forte atracao a Base, foge Mercado menos
+        [ 35,  50,   15, -35],   // Mercado: atraido por Base E Campo (maquina funciona)
+        [-50, -20,  -35,  85],   // Alheio: irrelevante, bolha
       ]),
       minRadius: [
-        [10, 10, 20, 45],
-        [10, 18, 15, 40],
-        [20, 12, 18, 40],
-        [45, 40, 40, 8],
+        [25, 30, 35, 50],
+        [30, 35, 35, 45],
+        [35, 32, 38, 48],
+        [50, 45, 48, 25],
       ],
       maxRadius: [
-        [120, 200, 150, 70],   // Base domina o espaco
-        [180, 100, 160, 80],
-        [130, 180, 90, 70],
-        [70, 80, 70, 50],
+        [110, 145, 130, 80],   // Base domina o espaco
+        [135, 100, 130, 85],
+        [120, 140, 100, 85],
+        [80, 85, 85, 70],
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -339,31 +345,31 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     v: 1,
     meta: {
       name: 'RR — Cenario Pessimista JE',
-      description: 'Concorrentes compram Mercado, fake news, crise. Base fragmenta, Campo dispersa, predadores dominam.',
+      description: 'Concorrentes compram Mercado, fake news, crise. Base perde coesao, Mercado domina.',
       category: 'Estrategia JE',
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.06, forceFactor: 1.5 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.13, forceFactor: 1.0 },
     matrices: {
       // Base fraca, Mercado caca livremente, Campo em panico
       forces: normMatrix([
-        [-35, -15,  15,  40],   // Base: coesao FRACA, Campo escapa
-        [-20, -10,  65,  25],   // Campo: foge de Mercado DESESPERADAMENTE
-        [ 20, -85, -25,  20],   // Mercado: SUPER predador (caca Campo -85)
-        [ 45,  30,  25, -70],   // Alheio: cresce (absorve desistentes)
+        [ 40,  20, -15, -45],   // Base: coesao FRACA, Campo escapa
+        [ 25,  10, -75, -20],   // Campo: foge de Mercado FORTE (-75)
+        [-15,  90,   5, -30],   // Mercado: SUPER predador caca Campo +90
+        [-45, -25, -35,  80],   // Alheio: cresce (absorve desistentes)
       ]),
       minRadius: [
-        [20, 25, 35, 45],
-        [25, 30, 10, 40],
-        [35, 8, 22, 40],       // Mercado invade Campo
-        [45, 40, 40, 10],
+        [35, 38, 45, 50],
+        [38, 42, 30, 45],
+        [45, 28, 40, 50],
+        [50, 45, 50, 28],
       ],
       maxRadius: [
-        [80, 120, 85, 70],     // Base perde alcance
-        [100, 80, 200, 90],
-        [85, 230, 80, 70],     // Mercado alcanca Campo em 230px!
-        [70, 90, 70, 55],
+        [95, 115, 90, 80],     // Base perde alcance
+        [105, 90, 145, 90],
+        [90, 150, 95, 85],     // Mercado alcanca Campo em 150
+        [80, 90, 85, 75],
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -372,31 +378,31 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     v: 1,
     meta: {
       name: 'RR — Cassacao Denarium',
-      description: 'Governador cassado. Maquina colapsa: Mercado enlouquece, Campo em disputa aberta, entropia maxima.',
+      description: 'Governador cassado. Maquina fragmenta. Tipo anti-symmetric swirl: todos se perseguem ciclicamente.',
       category: 'Eventos RR',
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.05, forceFactor: 1.5 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.12, forceFactor: 1.0 },
     matrices: {
-      // Caos politico: ninguem controla ninguem, todos perseguem todos
+      // Anti-symmetric: A persegue B, B persegue C, C persegue D, D persegue A
       forces: normMatrix([
-        [-40, -25,  -15,  30],   // Base: tenta manter
-        [-30, -10,   50,  20],   // Campo: foge Mercado
-        [-20, -55,   -5,  15],   // Mercado: caca Campo sem direcao, coesao zero
-        [ 35,  25,   20, -50],   // Alheio: coesao cai (caos geral)
+        [ 50,  70, -60, -40],   // Base: persegue Campo, foge de Mercado
+        [-40,  30,  70, -50],   // Campo: foge Base, persegue Mercado
+        [ 60, -50,  25,  65],   // Mercado: persegue Base, foge Campo, persegue Alheio
+        [-50,  55, -45,  40],   // Alheio: coesao cai, tudo gira
       ]),
       minRadius: [
-        [18, 22, 30, 42],
-        [22, 25, 12, 38],
-        [30, 10, 22, 38],
-        [42, 38, 38, 12],
+        [32, 35, 40, 48],
+        [35, 35, 35, 45],
+        [40, 35, 38, 42],
+        [48, 45, 42, 30],
       ],
       maxRadius: [
-        [100, 160, 120, 90],
-        [130, 90, 190, 100],
-        [100, 210, 80, 90],
-        [90, 100, 90, 60],
+        [105, 130, 120, 95],
+        [120, 100, 130, 110],
+        [120, 130, 100, 115],
+        [95, 110, 115, 85],
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -405,31 +411,31 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     v: 1,
     meta: {
       name: 'RR — Servico de Mandato',
-      description: 'JE entrega: 300 PC, CPI Saude, IPVA moto. Base cresce organicamente, Campo orbita Base.',
+      description: 'JE entrega: 300 PC, CPI Saude. Tipo Concentric Shells: Base nucleo, Campo orbita, Mercado periferia.',
       category: 'Estrategia JE',
     },
     segments: CLUSTERS_4,
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 4, numParticles: 5000, frictionFactor: 0.10, forceFactor: 1.2 },
+    settings: { species: 4, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
-      // Crescimento organico: Base forte mas sem forcar, Campo vem naturalmente
+      // Concentric Shells: Base nucleo, Campo primeira orbita, Mercado segunda, Alheio fora
       forces: normMatrix([
-        [-65, -40,   5,  35],   // Base: coeso, atrai Campo moderado
-        [-45, -20,  45,  15],   // Campo: orbita Base, foge Mercado
-        [ 10, -60, -12,  25],   // Mercado: caca Campo mas encontra resistencia
-        [ 40,  20,  30, -80],   // Alheio: isolado
+        [ 80,  45, -20, -55],   // Base: coeso, atrai Campo, repele Mercado/Alheio
+        [ 50,  20, -50, -20],   // Campo: orbita Base, foge Mercado
+        [-25,  70,  15, -40],   // Mercado: caca Campo mas Base protege
+        [-55, -25, -40,  90],   // Alheio: isolado
       ]),
       minRadius: [
-        [12, 15, 35, 45],
-        [15, 22, 15, 40],
-        [35, 10, 20, 40],
-        [45, 40, 40, 8],
+        [30, 32, 45, 50],
+        [32, 38, 32, 45],
+        [45, 30, 40, 50],
+        [50, 45, 50, 25],
       ],
       maxRadius: [
-        [110, 170, 90, 70],
-        [140, 100, 175, 80],
-        [90, 195, 80, 70],
-        [70, 80, 70, 50],
+        [100, 135, 95, 80],
+        [125, 100, 135, 90],
+        [95, 145, 100, 85],
+        [80, 90, 85, 70],
       ],
     },
     colors: CLUSTERS_4.map(s => s.color),
@@ -450,28 +456,31 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
       { id: 4, name: 'Buracos Negros', shortName: 'BHole', description: 'Atraem tudo, nada escapa', proportion: 0.07, color: '#aa22ff' },
     ],
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 5, numParticles: 6000, frictionFactor: 0.05, forceFactor: 1.5 },
+    // Hub and Spokes: Buracos Negros = hub central, tudo orbita
+    settings: { species: 5, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
+      // POSITIVO = ATRAÇÃO. Inspirado em Hub&Spokes + Concentric Shells.
+      // Buracos Negros atraem tudo. Gigantes atraem anas. Nebulosas sao neutras.
       forces: [
-        [-0.95, -0.70, -0.50, -0.30, -0.90],
-        [-0.40, -0.60, -0.20, -0.15, -0.80],
-        [-0.30, -0.10, -0.25,  0.10, -0.70],
-        [-0.20, -0.10,  0.15, -0.40, -0.50],
-        [-0.95, -0.85, -0.80, -0.60, -0.99],
+        [ 0.80,  0.50,  0.30, -0.20,  0.90],  // Gigantes: coesas, atraem anas, atraem BHole
+        [ 0.40,  0.60,  0.20,  0.10,  0.70],  // Anas: atraem gigantes, coesas, atraem BHole
+        [ 0.25,  0.15,  0.30, -0.10,  0.60],  // Nebulosas: leve atracao a todos, coesao media
+        [-0.15, -0.10,  0.10,  0.50, -0.30],  // Materia Escura: repele estrelas, coesa, repele BHole
+        [ 0.95,  0.85,  0.70,  0.40, -0.05],  // Buracos Negros: atraem TUDO, self quase neutro
       ],
       minRadius: [
-        [10, 15, 20, 25, 8],
-        [15, 12, 20, 25, 10],
-        [20, 20, 18, 30, 12],
-        [25, 25, 30, 15, 15],
-        [8, 10, 12, 15, 5],
+        [30, 35, 40, 45, 30],
+        [35, 32, 38, 42, 32],
+        [40, 38, 35, 45, 35],
+        [45, 42, 45, 30, 42],
+        [30, 32, 35, 42, 35],
       ],
       maxRadius: [
-        [150, 180, 160, 200, 120],
-        [140, 120, 140, 180, 130],
-        [130, 130, 100, 150, 140],
-        [200, 180, 150, 160, 170],
-        [200, 200, 200, 200, 80],
+        [100, 130, 120, 140, 110],
+        [120, 100, 115, 135, 120],
+        [110, 110, 95, 125, 115],
+        [140, 135, 125, 110, 130],
+        [145, 140, 135, 140, 90],
       ],
     },
     colors: ['#ffffff', '#ffdd44', '#ff66aa', '#4466cc', '#aa22ff'],
@@ -492,31 +501,33 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
       { id: 5, name: 'Amebas', shortName: 'Ameb', description: 'Predadores lentos, envolvem presas', proportion: 0.10, color: '#8888ff' },
     ],
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 6, numParticles: 4000, frictionFactor: 0.30, forceFactor: 1.0 },
+    // Rock-Paper-Scissors ciclico: Predadores cacam Bacterias, Bacterias fogem, Virus infectam
+    settings: { species: 6, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
+      // POSITIVO = ATRAÇÃO. Predadores atraem presas, presas fogem.
       forces: [
-        [-0.50,  0.20, -0.30,  0.40,  0.10, -0.20],
-        [ 0.10, -0.60, -0.20,  0.30, -0.10, -0.15],
-        [ 0.70,  0.50, -0.30, -0.10,  0.20, -0.40],
-        [-0.60, -0.50, -0.20, -0.20, -0.40, -0.30],
-        [ 0.30,  0.20,  0.10,  0.50, -0.45, -0.10],
-        [ 0.50,  0.40,  0.30,  0.20,  0.10, -0.55],
+        [ 0.60, -0.20,  0.30, -0.40,  0.10,  0.20],  // Bact: coesas, fogem de Algas, atraem Pred(!), fogem Virus
+        [ 0.15,  0.70,  0.20, -0.30,  0.15,  0.10],  // Algas: atraem Bact, coesas, fogem Virus
+        [ 0.80,  0.60, -0.10,  0.15, -0.20,  0.45],  // Pred: CACAM Bact+Algas, self neutro, cacam Amebas
+        [-0.50, -0.40, -0.15,  0.25, -0.35, -0.25],  // Virus: repelem tudo, leve coesao
+        [ 0.35,  0.25, -0.10,  0.55,  0.50,  0.10],  // Fungos: atraem Bact, atraem Virus (decompoe), coesos
+        [ 0.55,  0.45,  0.35,  0.20,  0.10,  0.65],  // Amebas: atraem TUDO (englobam), coesas
       ],
       minRadius: [
-        [15, 25, 30, 35, 25, 30],
-        [25, 12, 28, 30, 20, 25],
-        [10, 12, 20, 25, 30, 22],
-        [8, 8, 15, 15, 10, 10],
-        [20, 20, 25, 10, 15, 22],
-        [15, 15, 18, 18, 20, 10],
+        [32, 40, 35, 42, 38, 38],
+        [38, 30, 35, 40, 35, 38],
+        [30, 30, 38, 40, 42, 35],
+        [45, 45, 42, 35, 40, 42],
+        [35, 35, 40, 32, 32, 38],
+        [35, 35, 35, 38, 38, 28],
       ],
       maxRadius: [
-        [80, 90, 110, 100, 85, 95],
-        [90, 70, 100, 95, 80, 85],
-        [130, 120, 80, 90, 85, 100],
-        [140, 140, 110, 90, 130, 120],
-        [100, 95, 85, 130, 75, 90],
-        [120, 110, 100, 100, 90, 65],
+        [95, 110, 120, 105, 100, 105],
+        [105, 90, 110, 105, 100, 100],
+        [140, 130, 95, 105, 100, 115],
+        [130, 130, 115, 100, 125, 120],
+        [110, 105, 100, 135, 90, 105],
+        [125, 120, 110, 110, 105, 85],
       ],
     },
     colors: ['#44ff44', '#22ccaa', '#ff4444', '#ff88ff', '#cc8844', '#8888ff'],
@@ -536,28 +547,31 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
       { id: 4, name: 'Agua', shortName: 'H2O', description: 'Solvente universal, meio', proportion: 0.15, color: '#4488ff' },
     ],
     types: ['settings', 'forces', 'radii', 'colors'],
-    settings: { species: 5, numParticles: 5000, frictionFactor: 0.08, forceFactor: 1.2 },
+    // Chains + Dimers: moleculas formam cadeias e membranas espontaneamente
+    settings: { species: 5, numParticles: 5000, frictionFactor: 0.15, forceFactor: 1.0 },
     matrices: {
+      // POSITIVO = ATRAÇÃO. Inspirado em Chains2: self coeso, vizinho atrai, distante repele.
+      // Amino→Lipidio→RNA→Mineral→Agua→Amino (cadeia ciclica)
       forces: [
-        [-0.40, -0.70, -0.80,  0.20, -0.10],
-        [-0.60, -0.85, -0.30,  0.30, -0.05],
-        [-0.75, -0.25, -0.65, -0.40,  0.15],
-        [ 0.10,  0.20, -0.35, -0.50,  0.05],
-        [-0.05, -0.05,  0.10,  0.05, -0.15],
+        [ 0.70,  0.80,  0.30, -0.20,  0.10],  // Amino: coeso, atrai Lipidio FORTE (forma membrana)
+        [ 0.60,  0.85,  0.35, -0.25,  0.05],  // Lipidio: atrai Amino, MUITO coeso (membrana)
+        [ 0.25,  0.30,  0.70,  0.50, -0.15],  // RNA: atrai Mineral (catalise), coeso
+        [-0.15, -0.20,  0.45,  0.55, -0.05],  // Mineral: atrai RNA, coeso, repele organicos
+        [ 0.05,  0.05, -0.10,  0.05,  0.20],  // Agua: quase neutro, leve coesao (solvente)
       ],
       minRadius: [
-        [12, 10, 8, 25, 20],
-        [10, 8, 15, 25, 18],
-        [8, 15, 10, 12, 22],
-        [25, 25, 12, 15, 20],
-        [20, 18, 22, 20, 25],
+        [32, 30, 38, 45, 42],
+        [30, 28, 35, 42, 40],
+        [38, 35, 32, 32, 42],
+        [45, 42, 32, 35, 42],
+        [42, 40, 42, 42, 40],
       ],
       maxRadius: [
-        [80, 100, 120, 70, 60],
-        [100, 60, 90, 75, 55],
-        [120, 90, 85, 110, 65],
-        [70, 75, 110, 70, 60],
-        [60, 55, 65, 60, 90],
+        [95, 120, 105, 90, 85],
+        [115, 90, 105, 95, 85],
+        [105, 100, 95, 120, 90],
+        [90, 95, 120, 95, 85],
+        [85, 85, 90, 85, 100],
       ],
     },
     colors: ['#66ffcc', '#ffaa33', '#ff5577', '#aaaacc', '#4488ff'],
