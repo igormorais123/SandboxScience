@@ -204,26 +204,23 @@
 
         <canvas id="lifeCanvas" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
 
-        <!-- Segment Legend Overlay -->
-        <div v-if="segmentLegend.length > 0" class="absolute bottom-12 left-3 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 pointer-events-none" style="z-index: 10; min-width: 140px;">
-            <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-semibold">Segmentos</div>
-            <div v-for="seg in segmentLegend" :key="seg.id" class="flex items-center gap-2 py-0.5">
-                <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: seg.color }"></span>
-                <span class="text-[11px] text-gray-200 flex-1">{{ seg.name }}</span>
-                <span class="text-[10px] text-gray-400 tabular-nums">{{ seg.count }}</span>
+        <!-- Segment Legend Overlay (from store) -->
+        <div v-if="particleLife.segmentData && particleLife.segmentData.length > 0" class="absolute bottom-12 left-3 bg-black/80 backdrop-blur-sm rounded-lg px-3 py-2.5 pointer-events-none" style="z-index: 50; min-width: 160px; border: 1px solid rgba(200,149,32,0.2);">
+            <div class="text-[10px] uppercase tracking-wider mb-1.5 font-bold" style="color: #c89520;">Segmentos Eleitorais</div>
+            <div v-for="seg in particleLife.segmentData" :key="seg.id" class="flex items-center gap-2 py-0.5">
+                <span class="inline-block w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/20" :style="{ backgroundColor: seg.color }"></span>
+                <span class="text-[11px] text-gray-100 flex-1 font-medium">{{ seg.name }}</span>
+                <span class="text-[9px] text-gray-400">{{ Math.round(seg.proportion * 100) }}%</span>
             </div>
         </div>
 
-        <!-- Social Metrics Overlay -->
-        <div v-if="socialMetrics" class="absolute top-2 left-3 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 pointer-events-none" style="z-index: 10; min-width: 160px;">
-            <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-semibold">Metricas Sociais</div>
-            <div class="text-[11px] text-gray-200">Volatilidade: <span class="tabular-nums" :class="socialMetrics.volatilidade > 5 ? 'text-red-400' : socialMetrics.volatilidade > 2 ? 'text-amber-400' : 'text-green-400'">{{ socialMetrics.volatilidadeLabel }}</span></div>
-            <div class="text-[11px] text-gray-200">Grupo dominante: <span class="font-semibold">{{ socialMetrics.dominante }}</span></div>
-            <div class="mt-1">
-                <div v-for="bar in socialMetrics.distribuicao" :key="bar.name" class="flex items-center gap-1.5 py-0.5">
-                    <div class="h-1.5 rounded-full" :style="{ width: bar.pct + '%', backgroundColor: bar.color, maxWidth: '80px', minWidth: '2px' }"></div>
-                    <span class="text-[9px] text-gray-400 tabular-nums">{{ bar.pct }}%</span>
-                </div>
+        <!-- Segment Legend (from rAF computed data) -->
+        <div v-else-if="segmentLegend.length > 0" class="absolute bottom-12 left-3 bg-black/80 backdrop-blur-sm rounded-lg px-3 py-2.5 pointer-events-none" style="z-index: 50; min-width: 160px; border: 1px solid rgba(200,149,32,0.2);">
+            <div class="text-[10px] uppercase tracking-wider mb-1.5 font-bold" style="color: #c89520;">Segmentos</div>
+            <div v-for="seg in segmentLegend" :key="seg.id" class="flex items-center gap-2 py-0.5">
+                <span class="inline-block w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/20" :style="{ backgroundColor: seg.color }"></span>
+                <span class="text-[11px] text-gray-100 flex-1 font-medium">{{ seg.name }}</span>
+                <span class="text-[10px] text-gray-400 tabular-nums">{{ seg.count }}</span>
             </div>
         </div>
 
@@ -421,26 +418,40 @@ export default defineComponent({
         const segmentLegend = ref<{ id: number, name: string, color: string, count: number }[]>([])
         const socialMetrics = ref<{ volatilidade: number, volatilidadeLabel: string, dominante: string, distribuicao: { name: string, color: string, pct: number }[] } | null>(null)
         let overlayFrameCounter = 0
+        let cachedSegmentData: any[] = []
+
+        // Watch segmentData changes from store
+        watch(() => particleLife.segmentData, (newVal) => {
+            cachedSegmentData = newVal && Array.isArray(newVal) ? [...newVal] : []
+        }, { deep: true, immediate: true })
 
         function computeOverlays() {
-            const segments = particleLife.segmentData
+            // Try both cached and direct store access
+            let segments = cachedSegmentData
+            if (!segments || segments.length === 0) {
+                const raw = particleLife.segmentData
+                segments = raw && typeof raw === 'object' ? (Array.isArray(raw) ? raw : Object.values(raw)) : []
+                if (segments.length > 0) cachedSegmentData = segments
+            }
             if (!segments || segments.length === 0) {
                 segmentLegend.value = []
                 socialMetrics.value = null
                 return
             }
 
-            // Count particles per type
-            const counts = new Int32Array(numColors)
-            for (let i = 0; i < numParticles; i++) {
-                if (colors[i] >= 0 && colors[i] < numColors) {
+            // Count particles per type (use current engine state)
+            const nc = Math.min(segments.length, numColors || segments.length)
+            const np = numParticles || 0
+            const counts = new Int32Array(nc + 1)
+            for (let i = 0; i < np; i++) {
+                if (colors && colors[i] >= 0 && colors[i] < nc) {
                     counts[colors[i]]++
                 }
             }
 
             // Build segment legend
             const legend: { id: number, name: string, color: string, count: number }[] = []
-            for (let t = 0; t < Math.min(segments.length, numColors); t++) {
+            for (let t = 0; t < nc; t++) {
                 legend.push({
                     id: segments[t].id,
                     name: segments[t].name,
@@ -452,10 +463,12 @@ export default defineComponent({
 
             // Compute average velocity (volatility)
             let totalVel = 0
-            for (let i = 0; i < numParticles; i++) {
-                totalVel += Math.sqrt(velocityX[i] * velocityX[i] + velocityY[i] * velocityY[i])
+            for (let i = 0; i < np; i++) {
+                if (velocityX && velocityY) {
+                    totalVel += Math.sqrt(velocityX[i] * velocityX[i] + velocityY[i] * velocityY[i])
+                }
             }
-            const avgVel = numParticles > 0 ? totalVel / numParticles : 0
+            const avgVel = np > 0 ? totalVel / np : 0
             let volLabel = 'Baixa'
             if (avgVel > 5) volLabel = 'Alta'
             else if (avgVel > 2) volLabel = 'Media'
@@ -463,7 +476,7 @@ export default defineComponent({
             // Find dominant group and distribution
             let maxCount = 0
             let dominantIdx = 0
-            for (let t = 0; t < Math.min(segments.length, numColors); t++) {
+            for (let t = 0; t < nc; t++) {
                 if (counts[t] > maxCount) {
                     maxCount = counts[t]
                     dominantIdx = t
@@ -471,8 +484,8 @@ export default defineComponent({
             }
 
             const dist: { name: string, color: string, pct: number }[] = []
-            for (let t = 0; t < Math.min(segments.length, numColors); t++) {
-                const pct = numParticles > 0 ? Math.round((counts[t] / numParticles) * 100) : 0
+            for (let t = 0; t < nc; t++) {
+                const pct = np > 0 ? Math.round((counts[t] / np) * 100) : 0
                 dist.push({
                     name: segments[t].shortName,
                     color: segments[t].color,
@@ -1729,8 +1742,14 @@ export default defineComponent({
                 if (!isRunning) simpleDrawParticles() // Redraw the particles if the game is not running
             }
         }
-        const loadPreset = async (options: { presetRules?: number[][], presetMinRadius?: number[][], presetMaxRadius?: number[][], presetColors?: number[][] }, presetTypeCount: number, matchPresetCount: boolean) => {
-            const { presetRules, presetMinRadius, presetMaxRadius, presetColors } = options
+        const loadPreset = async (options: { presetRules?: number[][], presetMinRadius?: number[][], presetMaxRadius?: number[][], presetColors?: number[][], segmentInfo?: any[] }, presetTypeCount: number, matchPresetCount: boolean) => {
+            const { presetRules, presetMinRadius, presetMaxRadius, presetColors, segmentInfo } = options
+            // Cache segment info for overlay rendering
+            if (segmentInfo && Array.isArray(segmentInfo) && segmentInfo.length > 0) {
+                cachedSegmentData = [...segmentInfo]
+                particleLife.segmentData = [...segmentInfo]
+                particleLife.segmentNames = segmentInfo.map((s: any) => s.shortName || s.name)
+            }
 
             if (isUpdatingParticles || presetTypeCount === 0) return
             isUpdatingParticles = true

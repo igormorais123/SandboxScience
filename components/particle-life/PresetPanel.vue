@@ -185,10 +185,13 @@ export default defineComponent({
                 presetMinRadius: scenario.matrices.minRadius,
                 presetMaxRadius: scenario.matrices.maxRadius,
                 presetColors: colors,
+                segmentInfo: scenario.segments.map((s: ElectoralSegment) => ({
+                    id: s.id, name: s.name, shortName: s.shortName, color: s.color, proportion: s.proportion
+                })),
             }, scenario.settings.species, true)
 
-            // Apply settings after preset load
-            nextTick(() => {
+            // Apply settings after preset load — use setTimeout to ensure loadPreset has fully completed
+            setTimeout(() => {
                 if (scenario.settings.numParticles) particleLife.numParticles = scenario.settings.numParticles
                 if (scenario.settings.frictionFactor != null) particleLife.frictionFactor = scenario.settings.frictionFactor
                 if (scenario.settings.forceFactor != null) particleLife.forceFactor = scenario.settings.forceFactor
@@ -196,7 +199,7 @@ export default defineComponent({
                 particleLife.segmentData = scenario.segments.map((s: ElectoralSegment) => ({
                     id: s.id, name: s.name, shortName: s.shortName, color: s.color, proportion: s.proportion
                 }))
-            })
+            }, 500)
         }
 
         return {
