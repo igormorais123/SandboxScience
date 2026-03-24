@@ -25,7 +25,7 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
     const gridHeight = ref<number>(0) // Grid height
     const linkProportions = ref<boolean>(false) // Constraint x y grid proportions
 
-    const numParticles = ref<number>(1000) // Number of particles
+    const numParticles = ref<number>(5000) // Number of particles
     const particleSize = ref<number>(8) // Size of the particles at zoomFactor = 1
     const numColors = ref<number>(4) // Number of colors to be used
     const depthLimit = ref<number>(420) // Maximum Z axis depth (0 means almost 2D because there is friction with the walls && can be negative)
@@ -43,7 +43,7 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
     const minOpacity = ref<number>(0.5) // Depth effect will be stronger with lower opacity
     const cellShape = ref<number>(0) // 0: Rectangle, 1: Circle
     const wallShape = ref<number>(0) // 0: Rectangle, 1: Circle
-    const screenMultiplierForGridSize = ref<number>(3) // Multiplier for the grid size (1 means the grid will be the same size as the screen)
+    const screenMultiplierForGridSize = ref<number>(1.5) // Multiplier for the grid size (1 means the grid will be the same size as the screen)
 
     const cellGroupSize = ref<number>(0) // Minimum number of particles to be considered a group (0 to visualize all cells)
     const cellSizeFactor = ref<number>(1) // Size of the cells at zoomFactor = 1
