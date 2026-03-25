@@ -204,15 +204,23 @@
 
         <canvas id="lifeCanvas" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
 
-        <!-- Segment Legend — barra horizontal fixa no topo -->
-        <div v-if="particleLife.segmentData && particleLife.segmentData.length > 0"
+        <!-- Color Legend — barra horizontal fixa no topo, sempre visível -->
+        <div v-if="colorLegend.length > 0"
              class="absolute top-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/75 backdrop-blur-sm rounded-full px-5 py-2 pointer-events-none"
-             style="z-index: 50; border: 1px solid rgba(200,149,32,0.25);">
-            <div v-for="seg in particleLife.segmentData" :key="seg.id" class="flex items-center gap-1.5">
-                <span class="inline-block w-3.5 h-3.5 rounded-full flex-shrink-0 ring-1 ring-white/30" :style="{ backgroundColor: seg.color }"></span>
-                <span class="text-[12px] text-gray-100 font-semibold whitespace-nowrap">{{ seg.name }}</span>
-                <span class="text-[10px] text-gray-400 font-mono">{{ Math.round(seg.proportion * 100) }}%</span>
+             style="z-index: 50; border: 1px solid rgba(255,255,255,0.15);">
+            <div v-for="(item, idx) in colorLegend" :key="idx" class="flex items-center gap-1.5">
+                <span class="inline-block w-3.5 h-3.5 rounded-full flex-shrink-0 ring-1 ring-white/30" :style="{ backgroundColor: item.color }"></span>
+                <span class="text-[12px] text-gray-100 font-semibold whitespace-nowrap">{{ item.name }}</span>
+                <span v-if="item.pct != null" class="text-[10px] text-gray-400 font-mono">{{ item.pct }}%</span>
             </div>
+        </div>
+
+        <!-- Hover Tooltip -->
+        <div v-if="hoverTooltip"
+             class="absolute pointer-events-none bg-black/85 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center gap-2"
+             :style="{ left: hoverTooltip.x + 16 + 'px', top: hoverTooltip.y - 12 + 'px', zIndex: 60 }">
+            <span class="inline-block w-3 h-3 rounded-full ring-1 ring-white/40" :style="{ backgroundColor: hoverTooltip.color }"></span>
+            <span class="text-[13px] text-white font-semibold">{{ hoverTooltip.name }}</span>
         </div>
 
         <SaveModal :store="particleLife"></SaveModal>
@@ -411,9 +419,35 @@ export default defineComponent({
         let overlayFrameCounter = 0
         let cachedSegmentData: any[] = []
 
+        // Hover tooltip state
+        const hoverTooltip = ref<{ x: number, y: number, name: string, color: string } | null>(null)
+        // Color legend (always visible) — updated whenever colors or segments change
+        const colorLegend = ref<{ name: string, color: string, pct: number | null }[]>([])
+        function updateColorLegend() {
+            const sd = particleLife.segmentData
+            if (sd && Array.isArray(sd) && sd.length > 0) {
+                colorLegend.value = sd.map((s: any) => ({
+                    name: s.name || s.shortName || `Tipo ${s.id + 1}`,
+                    color: s.color,
+                    pct: s.proportion ? Math.round(s.proportion * 100) : null,
+                }))
+                return
+            }
+            if (currentColors.length > 0 && numColors > 0) {
+                colorLegend.value = currentColors.slice(0, numColors).map((c, i) => ({
+                    name: particleLife.segmentNames?.[i] || `Tipo ${i + 1}`,
+                    color: `hsl(${c[0]}, ${c[1]}%, ${c[2]}%)`,
+                    pct: null,
+                }))
+                return
+            }
+            colorLegend.value = []
+        }
+
         // Watch segmentData changes from store
         watch(() => particleLife.segmentData, (newVal) => {
             cachedSegmentData = newVal && Array.isArray(newVal) ? [...newVal] : []
+            updateColorLegend()
         }, { deep: true, immediate: true })
 
         function computeOverlays() {
@@ -542,6 +576,8 @@ export default defineComponent({
                 else if (e.buttons === 0) {
                     isDragging = false
                     isMagnetActive = false
+                    // Hover: find nearest particle under cursor
+                    findParticleUnderCursor(pointerX, pointerY)
                 }
             })
             useEventListener(lifeCanvas, ['mouseup'], (e) => {
@@ -572,6 +608,9 @@ export default defineComponent({
                 isDragging = false
             })
 
+            useEventListener(lifeCanvas, 'mouseleave', () => {
+                hoverTooltip.value = null
+            })
             useEventListener(lifeCanvas, 'wheel', (e) => {
                 if (e.deltaY < 0) { // Zoom in
                     handleZoom(1, pointerX, pointerY)
@@ -581,6 +620,46 @@ export default defineComponent({
             })
         })
         // -------------------------------------------------------------------------------------------------------------
+        let hoverThrottleTimer = 0
+        function findParticleUnderCursor(cx: number, cy: number) {
+            const now = performance.now()
+            if (now - hoverThrottleTimer < 100) return // throttle to 10fps
+            hoverThrottleTimer = now
+
+            // Convert screen coords to grid coords
+            const gx = cx / zoomFactor - gridOffsetX
+            const gy = cy / zoomFactor - gridOffsetY
+            const searchRadius = 30 / zoomFactor // 30px screen radius
+
+            let bestDist = searchRadius * searchRadius
+            let bestType = -1
+
+            // Sample up to 2000 particles for performance
+            const step = Math.max(1, Math.floor(numParticles / 2000))
+            for (let i = 0; i < numParticles; i += step) {
+                const dx = positionX[i] - gx
+                const dy = positionY[i] - gy
+                const d2 = dx * dx + dy * dy
+                if (d2 < bestDist) {
+                    bestDist = d2
+                    bestType = colors[i]
+                }
+            }
+
+            if (bestType >= 0 && bestType < numColors) {
+                const seg = particleLife.segmentData?.[bestType]
+                const c = currentColors[bestType]
+                hoverTooltip.value = {
+                    x: cx,
+                    y: cy,
+                    name: seg?.name || seg?.shortName || `Tipo ${bestType + 1}`,
+                    color: seg?.color || (c ? `hsl(${c[0]}, ${c[1]}%, ${c[2]}%)` : '#fff'),
+                }
+            } else {
+                hoverTooltip.value = null
+            }
+        }
+
         function handleResize() {
             canvasWidth = lifeCanvas!.width = lifeCanvas!.clientWidth
             canvasHeight = lifeCanvas!.height = lifeCanvas!.clientHeight
@@ -637,6 +716,7 @@ export default defineComponent({
             console.table(minRadiusMatrix)
             console.table(maxRadiusMatrix)
             console.table(rulesMatrix)
+            updateColorLegend()
         }
         function regenerateLife() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId)
@@ -651,6 +731,7 @@ export default defineComponent({
 
             if (!isRunning) simpleDrawParticles()
             animationFrameId = requestAnimationFrame(update) // Start the game loop
+            updateColorLegend()
         }
         function initColors() {
             setColors(generateHSLColors(particleLife.selectedColorPaletteOption, numColors))
@@ -1885,6 +1966,7 @@ export default defineComponent({
         function setColors(newColors: number[][]) {
             currentColors = newColors
             particleLife.currentColors = currentColors
+            updateColorLegend()
             particleLife.brushes = []
         }
         function setRulesMatrix(newRules: number[][]) {
@@ -2057,7 +2139,7 @@ export default defineComponent({
             shareOptions, rulesOptions, paletteOptions,
             updateColors, updateRulesMatrix, loadPreset, setNewNumTypes, applyHelenaConfig,
             openDonationModal,
-            segmentLegend, socialMetrics
+            segmentLegend, socialMetrics, colorLegend, hoverTooltip
         }
     }
 })
