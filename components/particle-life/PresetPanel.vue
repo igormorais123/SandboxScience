@@ -156,6 +156,19 @@ export default defineComponent({
         const electoralScenarios = ELECTORAL_SCENARIOS
 
         const openTab = ref<number>(1)
+        const hasAutoLoaded = ref(false)
+
+        // Auto-load primeiro cenario eleitoral para mostrar legenda de cores
+        onMounted(() => {
+            if (!hasAutoLoaded.value && ELECTORAL_SCENARIOS.length > 0) {
+                hasAutoLoaded.value = true
+                setTimeout(() => {
+                    // Carregar "RR — Modelo Documental" (index 2) por padrao, ou fallback para o primeiro
+                    const docIdx = ELECTORAL_SCENARIOS.findIndex(s => s.meta.name.includes('JE'))
+                    loadElectoralScenario(ELECTORAL_SCENARIOS[docIdx >= 0 ? docIdx : 0])
+                }, 1500)
+            }
+        })
 
         const updateColors = async (useRandomGenerator: boolean | Event = false) => {
             emit('updateColors', useRandomGenerator)

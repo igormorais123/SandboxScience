@@ -301,7 +301,6 @@ import SaveModal from "~/components/particle-life/SaveModal.vue";
 import HelenaPanel from "~/components/particle-life/HelenaPanel.vue";
 import { RULES_OPTIONS, generateRules } from '~/helpers/utils/rulesGenerator';
 import { PALETTE_OPTIONS, generateHSLColors } from "~/helpers/utils/colorsGenerator";
-
 export default defineComponent({
     components: { SaveModal, PresetPanel, MatrixSettings, RulesMatrix, Memory, BrushSettings, WallStateSelection, SidebarLeft, HelenaPanel },
     setup() {

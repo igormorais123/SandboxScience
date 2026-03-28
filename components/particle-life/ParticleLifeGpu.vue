@@ -281,6 +281,18 @@
             </template>
         </SidebarLeft>
         <canvas ref="canvasRef" id="canvasRef" @contextmenu.prevent w-full h-full cursor-crosshair></canvas>
+
+        <!-- Color Legend — barra horizontal fixa no topo -->
+        <div v-if="colorLegend.length > 0"
+             class="absolute top-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/75 backdrop-blur-sm rounded-full px-5 py-2 pointer-events-none"
+             style="z-index: 50; border: 1px solid rgba(255,255,255,0.15);">
+            <div v-for="(item, idx) in colorLegend" :key="idx" class="flex items-center gap-1.5">
+                <span class="inline-block w-3.5 h-3.5 rounded-full flex-shrink-0 ring-1 ring-white/30" :style="{ backgroundColor: item.color }"></span>
+                <span class="text-[12px] text-gray-100 font-semibold whitespace-nowrap">{{ item.name }}</span>
+                <span v-if="item.pct != null" class="text-[10px] text-gray-400 font-mono">{{ item.pct }}%</span>
+            </div>
+        </div>
+
         <ClientOnly>
             <TrackerOverlay v-if="particleLife.isTrackerSelectionActive" @tracker-zone-selected="onTrackerZoneSelected"></TrackerOverlay>
         </ClientOnly>
@@ -391,6 +403,20 @@ export default defineComponent({
         const positionOptions = POSITION_OPTIONS
         const fps = useFps()
         const executionTime = ref<number>(0)
+
+        // Color legend reativa — atualiza quando segmentData muda
+        const colorLegend = ref<{ name: string, color: string, pct: number | null }[]>([])
+        watch(() => particleLife.segmentData, (sd) => {
+            if (sd && Array.isArray(sd) && sd.length > 0) {
+                colorLegend.value = sd.map((s: any) => ({
+                    name: s.name || s.shortName || `Tipo ${s.id + 1}`,
+                    color: s.color,
+                    pct: s.proportion ? Math.round(s.proportion * 100) : null,
+                }))
+            } else {
+                colorLegend.value = []
+            }
+        }, { deep: true, immediate: true })
         const canvasRef = ref<HTMLCanvasElement | null>(null)
         let ctx: GPUCanvasContext
         let DEVICE_PIXEL_RATIO: number = 1
@@ -3512,7 +3538,7 @@ export default defineComponent({
         })
 
         return {
-            particleLife, canvasRef, fps, executionTime, colorRgbStrings,
+            particleLife, canvasRef, fps, executionTime, colorRgbStrings, colorLegend,
             handleZoom, toggleFullscreen, isFullscreen, regenerateLife, step,
             updateSimWidth, updateSimHeight, updateNumParticles, setNewNumParticles, setNewNumTypes,
             updateRulesMatrixValue, updateMinMatrixValue, updateMaxMatrixValue, newRandomRulesMatrix,

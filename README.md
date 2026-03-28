@@ -1,81 +1,181 @@
-# <img src="./public/icon.svg" alt="Sandbox Science Icon" width="40" style="vertical-align: middle;" /> Sandbox Science
+<div align="center">
 
-**Sandbox Science** is an interactive platform designed to make learning and exploring scientific concepts fun and accessible. The platform offers a variety of simulations, from cellular automata like Game of Life to complex particle interactions in Particle Life, allowing users to dive deep into the fascinating world of science through hands-on, visual experiences.
+# ⚛️ INTEIA Simulador — Sistemas Complexos Interativos
+
+### Eleições, galáxias, ecossistemas — sistemas complexos emergem de regras simples
+
+[![Nuxt 3](https://img.shields.io/badge/Nuxt-3.20-00DC82?style=flat-square&logo=nuxt.js&logoColor=white)](https://nuxt.com)
+[![Vue 3](https://img.shields.io/badge/Vue-3.5-4FC08D?style=flat-square&logo=vue.js&logoColor=white)](https://vuejs.org)
+[![WebGPU](https://img.shields.io/badge/WebGPU-Shaders-8B5CF6?style=flat-square)](https://www.w3.org/TR/webgpu/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000?style=flat-square&logo=vercel)](https://inteia-simulador.vercel.app)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-d69e2e?style=flat-square)](LICENSE)
+
+*Simulador universal de partículas com modos Eleitoral, Planetário e Vida Microscópica.*
+
+**[Demo ao vivo](https://inteia-simulador.vercel.app)** · [Simulador Eleitoral](https://inteia-simulador.vercel.app/particle-life) · [Jogo da Vida](https://inteia-simulador.vercel.app/game-of-life) · [Hash Life](https://inteia-simulador.vercel.app/hash-life)
+
+</div>
 
 ---
 
-## 🚀 Features
+## O que é
 
-- **Game of Life**: Explore cellular automata and understand the basics of computational biology.
-- **Particle Life**: Simulate and observe the behavior of particle systems.
-- **More Simulations**: Dive into various scientific simulations, with more being added regularly.
+O **INTEIA Simulador** é uma plataforma interativa de simulação de sistemas complexos. O motor de partículas permite explorar como **regras simples de interação** produzem **comportamentos emergentes** — de dinâmicas eleitorais a galáxias.
 
-## 🎯 Goals
+Fork do [Sandbox Science](https://github.com/DicSo92/SandboxScience) de Charly Luzzi, adaptado pela INTEIA para simulação político-eleitoral e análise estratégica.
 
-Sandbox Science aims to:
+## Simulações
 
-- Make complex scientific concepts easier to understand through visual and interactive experiences.
-- Provide an open platform where science enthusiasts can explore, learn, and contribute.
-- Encourage collaboration and community-driven development.
+### Particle Life — 3 Modos
 
-## 🛠 Installation
+| Modo | Descrição |
+|------|-----------|
+| **Eleitoral/Social** | Segmentos eleitorais como partículas — aliados se atraem, adversários se repelem. Cenários reais calibrados (Roraima 2026, DF 2026). |
+| **Planetário** | Gravidade, órbitas e sistemas solares emergentes. Física newtoniana simplificada. |
+| **Vida Microscópica** | Bactérias, predadores e ecossistemas. Dinâmica predador-presa com partículas. |
 
-To run Sandbox Science locally, follow these steps:
+**Características:**
+- **WebGPU** (27 shaders WGSL) para milhares de partículas em tempo real
+- **CPU fallback** compatível com todos os dispositivos
+- **27+ presets** pré-calibrados
+- **Helena IA** — a cientista-chefe da INTEIA configura simulações via linguagem natural (OmniRoute, custo zero)
+- **Legenda interativa** com tooltip em hover nas partículas
+- **Gravação GIF** nativa
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/DicSo92/SandboxScience.git
-   cd sandbox-science
-   ```
+### Game of Life
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+Autômato celular clássico de John Conway com controles interativos.
 
-3. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
+### Hash Life
 
-4. **Open your browser:**
-   Visit http://localhost:3000 to explore the site locally.
+Implementação otimizada do algoritmo HashLife para simulações de larga escala.
 
-## 📦 Build
+## Arquitetura
 
-To build the project for production, use the following command:
-
-```bash
-npm run build
+```
+inteia-simulador/
+├── pages/                        # Páginas Nuxt
+│   ├── index.vue                 # Landing page INTEIA
+│   ├── particle-life.vue         # Simulador de partículas
+│   ├── game-of-life.vue          # Jogo da Vida
+│   ├── hash-life.vue             # Hash Life
+│   └── about.vue                 # Sobre
+│
+├── components/                   # 48 componentes Vue
+│   ├── particle-life/            # 19 componentes do simulador
+│   │   ├── ParticleLifeCpu.vue   # Renderizador CPU
+│   │   ├── ParticleLifeGpu.vue   # Renderizador WebGPU
+│   │   ├── PresetPanel.vue       # Painel de presets
+│   │   └── ...
+│   └── game-of-life/             # Componentes do GoL
+│
+├── stores/                       # Estado (Pinia)
+│   ├── particleLifeStore.ts      # Física CPU
+│   ├── particleLifeGPUStore.ts   # Física GPU
+│   ├── gameStore.ts              # Game of Life
+│   └── quadStore.ts              # Quadtree
+│
+├── assets/particle-life-gpu/     # Shaders WebGPU
+│   └── shaders/
+│       ├── compute/              # Física (forças, sort, compact)
+│       ├── compose/              # HDR, compositor infinito
+│       └── render/               # Glow, partículas
+│
+├── constants/                    # Cenários e configurações
+│   ├── electoralScenarios.ts     # Cenários eleitorais calibrados
+│   └── index.ts                  # Presets padrão
+│
+├── helpers/utils/                # Geradores
+│   ├── colorsGenerator.ts        # Paletas de cores
+│   ├── positionsGenerator.ts     # Distribuição inicial
+│   ├── rulesGenerator.ts         # Matrizes de interação
+│   └── themes.ts                 # Temas visuais
+│
+├── server/api/                   # API backend (Nitro)
+│   ├── helena.post.ts            # Helena IA (OmniRoute)
+│   └── pageView.ts              # Analytics
+│
+├── docs-eleitoral/               # Documentação de design
+├── nuxt.config.ts                # Configuração Nuxt
+└── uno.config.ts                 # UnoCSS (Tailwind-like)
 ```
 
-This will create an optimized version of the project in the \`dist\` directory, ready for deployment.
+## Como Rodar
 
-## 🤝 Contributing
+### Requisitos
 
-Sandbox Science is open-source and we welcome contributions from the community! Here's how you can get involved:
+- Node.js 18+
+- npm
 
-1. **Fork the repository**
-2. **Create a new branch**
-   ```bash
-   git checkout -b feature/YourFeatureName
-   ```
-3. **Make your changes**
-4. **Submit a pull request**
+### Instalação
 
-Please ensure your changes adhere to our [contribution guidelines](CONTRIBUTING.md) and respect the project's code of conduct.
+```bash
+git clone https://github.com/igormorais123/SandboxScience.git
+cd SandboxScience
+npm install
+npm run dev
+```
 
-## 💬 Community & Support
+Acesse `http://localhost:3000`.
 
-Join our [Discord community](https://discord.com/invite/z5yuzkFpCA) to share feedback, suggest new features, and engage with other science enthusiasts. Your insights and contributions help us improve Sandbox Science.
+### Build para produção
 
-## 📜 License
+```bash
+npm run build     # SSR
+npm run generate  # Estático (SSG)
+```
 
-Copyright (C) 2024-2026 Charly Luzzi (DicSo92)
+### Variáveis de ambiente (opcionais)
 
-This project is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE). You can use, modify, and distribute the software, but modifications must also be shared under AGPL-3.0. See the [LICENSE](LICENSE) file for more details.
+```env
+# Helena IA (análise via linguagem natural)
+OMNIROUTE_API_KEY=sua_chave          # OmniRoute (custo zero)
+OMNIROUTE_URL=http://localhost:20128 # URL do gateway
 
-## 🌟 Acknowledgments
+# Fallback
+ANTHROPIC_API_KEY=sua_chave          # Caso OmniRoute indisponível
 
-- Thanks to everyone who has contributed to this project.
-- Special thanks to the open-source community for their continuous support and inspiration.
+# Analytics
+NUXT_PUBLIC_GTAG_ID=G-XXXXXXXXXX
+```
+
+## Stack Técnica
+
+| Camada | Tecnologia |
+|--------|-----------|
+| Framework | Nuxt 3 + Vue 3 |
+| Linguagem | TypeScript |
+| Gráficos | WebGPU (WGSL shaders) + Canvas 2D (fallback) |
+| Estado | Pinia |
+| CSS | UnoCSS (Tailwind-compatible) |
+| IA | Helena via OmniRoute / Anthropic |
+| Deploy | Vercel (SSR + edge) |
+| Licença | AGPL-3.0 |
+
+## Helena IA
+
+A cientista-chefe da INTEIA pode configurar simulações via linguagem natural:
+
+> *"Simule a eleição de Roraima 2026 com 7 segmentos: base do governador, oposição, evangélicos..."*
+
+Helena retorna uma configuração completa (segmentos, forças, raios) que o motor aplica instantaneamente. Funciona via OmniRoute (custo zero) com fallback para Anthropic.
+
+## Projetos Relacionados
+
+- **[Vila INTEIA](https://github.com/igormorais123/vila-inteia)** — Campus 3D com 144 consultores lendários simulados
+- **[MiroFish INTEIA](https://github.com/igormorais123/MiroFish)** — Motor de simulação social multiagente
+
+## Créditos
+
+Fork de [Sandbox Science](https://github.com/DicSo92/SandboxScience) por [Charly Luzzi (DicSo92)](https://github.com/DicSo92), licenciado sob AGPL-3.0.
+
+---
+
+<div align="center">
+
+**Fork mantido por [Igor Morais Vasconcelos](https://github.com/igormorais123)**
+
+*[INTEIA](https://inteia.com.br) — Inteligência Artificial Estratégica*
+
+</div>
