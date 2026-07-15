@@ -1,0 +1,339 @@
+{
+  "cenario": "Pre-eleitoral Jorge Everton - Dep. Estadual RR 2026",
+  "segmentos": [
+    {
+      "id": 0,
+      "nome": "Base JE",
+      "proporcao": 0.18,
+      "cor": "#00ccff",
+      "je_pct": 0.45,
+      "sampaio_pct": 0.15,
+      "catarina_pct": 0.05,
+      "homogeneidade": 0.85,
+      "organizacao": 0.7
+    },
+    {
+      "id": 1,
+      "nome": "Convertivel",
+      "proporcao": 0.2,
+      "cor": "#44ee88",
+      "je_pct": 0.0,
+      "sampaio_pct": 0.25,
+      "catarina_pct": 0.1,
+      "homogeneidade": 0.3,
+      "organizacao": 0.15
+    },
+    {
+      "id": 2,
+      "nome": "Evang. Sampaio",
+      "proporcao": 0.14,
+      "cor": "#ffcc33",
+      "je_pct": 0.16,
+      "sampaio_pct": 0.42,
+      "catarina_pct": 0.21,
+      "homogeneidade": 0.75,
+      "organizacao": 0.9
+    },
+    {
+      "id": 3,
+      "nome": "Mulheres BV",
+      "proporcao": 0.12,
+      "cor": "#ff66aa",
+      "je_pct": 0.3,
+      "sampaio_pct": 0.23,
+      "catarina_pct": 0.28,
+      "homogeneidade": 0.35,
+      "organizacao": 0.25
+    },
+    {
+      "id": 4,
+      "nome": "Interior Disp.",
+      "proporcao": 0.1,
+      "cor": "#ff9933",
+      "je_pct": 0.29,
+      "sampaio_pct": 0.22,
+      "catarina_pct": 0.19,
+      "homogeneidade": 0.3,
+      "organizacao": 0.4
+    },
+    {
+      "id": 5,
+      "nome": "Jovens Volateis",
+      "proporcao": 0.12,
+      "cor": "#bb77ff",
+      "je_pct": 0.32,
+      "sampaio_pct": 0.23,
+      "catarina_pct": 0.21,
+      "homogeneidade": 0.2,
+      "organizacao": 0.1
+    },
+    {
+      "id": 6,
+      "nome": "Adversarios",
+      "proporcao": 0.08,
+      "cor": "#ff4444",
+      "je_pct": 0.03,
+      "sampaio_pct": 0.0,
+      "catarina_pct": 0.9,
+      "homogeneidade": 0.9,
+      "organizacao": 0.7
+    },
+    {
+      "id": 7,
+      "nome": "Mercado Voto",
+      "proporcao": 0.06,
+      "cor": "#888888",
+      "je_pct": 0.2,
+      "sampaio_pct": 0.15,
+      "catarina_pct": 0.1,
+      "homogeneidade": 0.1,
+      "organizacao": 0.2
+    }
+  ],
+  "matriz_forcas": [
+    [
+      60,
+      55,
+      20,
+      35,
+      40,
+      25,
+      -50,
+      -15
+    ],
+    [
+      45,
+      4,
+      25,
+      30,
+      20,
+      35,
+      -20,
+      -25
+    ],
+    [
+      10,
+      30,
+      68,
+      45,
+      35,
+      30,
+      -45,
+      -20
+    ],
+    [
+      20,
+      25,
+      30,
+      9,
+      5,
+      30,
+      15,
+      -35
+    ],
+    [
+      30,
+      15,
+      30,
+      5,
+      12,
+      -10,
+      -35,
+      -20
+    ],
+    [
+      15,
+      30,
+      15,
+      25,
+      -15,
+      2,
+      10,
+      -40
+    ],
+    [
+      -55,
+      -15,
+      -40,
+      25,
+      -25,
+      20,
+      63,
+      -30
+    ],
+    [
+      5,
+      45,
+      -10,
+      40,
+      35,
+      50,
+      -5,
+      2
+    ]
+  ],
+  "min_radius": [
+    [
+      30,
+      31,
+      37,
+      34,
+      34,
+      36,
+      47,
+      42
+    ],
+    [
+      33,
+      43,
+      36,
+      35,
+      37,
+      34,
+      43,
+      43
+    ],
+    [
+      38,
+      35,
+      28,
+      33,
+      34,
+      35,
+      46,
+      43
+    ],
+    [
+      37,
+      36,
+      35,
+      42,
+      39,
+      35,
+      37,
+      45
+    ],
+    [
+      35,
+      37,
+      35,
+      39,
+      42,
+      41,
+      45,
+      43
+    ],
+    [
+      37,
+      35,
+      37,
+      36,
+      42,
+      44,
+      38,
+      46
+    ],
+    [
+      48,
+      42,
+      46,
+      36,
+      43,
+      37,
+      29,
+      44
+    ],
+    [
+      39,
+      33,
+      41,
+      34,
+      34,
+      32,
+      40,
+      44
+    ]
+  ],
+  "max_radius": [
+    [
+      97,
+      123,
+      118,
+      120,
+      121,
+      118,
+      107,
+      112
+    ],
+    [
+      113,
+      81,
+      110,
+      111,
+      110,
+      112,
+      104,
+      103
+    ],
+    [
+      130,
+      133,
+      100,
+      135,
+      134,
+      133,
+      122,
+      126
+    ],
+    [
+      110,
+      110,
+      111,
+      82,
+      107,
+      111,
+      109,
+      101
+    ],
+    [
+      115,
+      113,
+      115,
+      111,
+      83,
+      109,
+      105,
+      108
+    ],
+    [
+      125,
+      127,
+      125,
+      126,
+      120,
+      80,
+      124,
+      117
+    ],
+    [
+      106,
+      112,
+      109,
+      118,
+      111,
+      118,
+      98,
+      110
+    ],
+    [
+      119,
+      125,
+      117,
+      125,
+      124,
+      126,
+      118,
+      80
+    ]
+  ]
+}

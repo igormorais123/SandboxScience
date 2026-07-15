@@ -28,3 +28,4 @@ public/assets/fonts/
 .vercel
 *.png
 test-*.png
+.playwright-mcp/

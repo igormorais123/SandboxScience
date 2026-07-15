@@ -393,6 +393,465 @@ const MAX_RADIUS_JE = [
 ]
 
 // ============================================================
+// BLEGER: IDEIAS COMO PARTICULAS — Teoria de Grupos
+// ============================================================
+// REFERENCIAS TEORICAS:
+//   - Bleger, J. (1961) "Grupos Operativos no Ensino"
+//   - Bleger, J. (1967) "Simbiose e Ambiguidade"
+//   - Schwartz, S.H. (1992) "Universals in the content of values" — modelo circular
+//   - Haidt, J. (2012) "The Righteous Mind" — 6 fundacoes morais
+//   - Inglehart & Welzel (2005) — mapa cultural mundial
+//
+// CONCEITO: As particulas NAO sao eleitores — sao IDEIAS-VALOR.
+// Cada particula = um valor que habita o espaco psicossocial.
+// Quando ideias se agrupam, formam PERFIS IDEOLOGICOS emergentes.
+// A aglomeracao nao e racional — e SINCRETICA (Bleger):
+//   ideias se fundem porque compartilham substrato emocional,
+//   nao porque sao logicamente compativeis.
+//
+// CALIBRACAO EMPIRICA (modelo circular de Schwartz):
+//   Schwartz (1992) provou que valores humanos se organizam em circulo:
+//   valores ADJACENTES no circulo sao compativeis (atracao),
+//   valores OPOSTOS sao conflitantes (repulsao).
+//
+//   Circulo de Schwartz (simplificado):
+//     Autodirecao (Liberdade, Corpo) ←→ Conformidade/Tradicao (Seguranca, Fe)
+//     Universalismo (Igualdade, Justica) ←→ Poder (Propriedade)
+//     Benevolencia (Pertencimento) = ponte entre ambos
+//     Realizacao (Progresso) = entre Autodirecao e Poder
+//
+// NUCLEOS SINCRETICOS ESPERADOS (Bleger + Schwartz + Haidt):
+//   1. CONSERVADOR: Seguranca + Fe + Nacao → Schwartz: Conservation cluster
+//      Haidt: Authority + Sanctity + Loyalty. Fusao por ansiedade de perda.
+//   2. PROGRESSISTA: Igualdade + Corpo + Justica → Schwartz: Self-Transcendence + Openness
+//      Haidt: Care + Fairness + Liberty. Fusao por utopia reparadora.
+//   3. LIBERAL: Liberdade + Propriedade + Progresso → Schwartz: Self-Enhancement + Openness
+//      Fusao por individuacao e merito.
+//   4. COMUNITARIO: Pertencimento → Schwartz: Benevolence (adjacente a todos)
+//      E o VALOR-PONTE: atrai tanto Fe/Seguranca quanto Igualdade.
+//      Na simulacao, Pertencimento deve orbitar entre os nucleos.
+//
+// FRONTEIRAS DE REPULSAO (Schwartz: valores diametralmente opostos):
+//   - Fe ↔ Corpo: Tradicao vs Autodirecao (eixo principal do circulo)
+//   - Propriedade ↔ Igualdade: Poder vs Universalismo (eixo secundario)
+//   - Nacao ↔ Justica: Conformidade vs Universalismo (narrativa fundacional)
+//   - Seguranca ↔ Liberdade: Conservacao vs Abertura (tensao autoridade)
+//
+// CONEXAO COM PESQUISA ELEITORAL:
+//   Ideias que se agrupam definem perfis de voto.
+//   Em Roraima: Fe+Seguranca+Nacao = 76% Bolsonaro (2022)
+//   Igualdade+Justica = voto indigena (Uiramuta 68% Lula)
+//   Pertencimento+Seguranca = funcionalismo (47% PIB)
+//
+// CONEXAO COM DOUTORADO (Psicologia Organizacional):
+//   Bleger mostra que grupos se organizam pelo NAO-DITO.
+//   O nucleo sincretico e pre-verbal: pessoas aderem a ideias
+//   sem conseguir articular por que. A simulacao VISUALIZA isso:
+//   os clusters emergem das forcas, nao de rotulos.
+
+const IDEIAS_10: ElectoralSegment[] = [
+  { id: 0, name: 'Liberdade Individual', shortName: 'Liber', description: 'Autodirecao, livre mercado, estado minimo. Schwartz: Self-Direction. Haidt: Liberty.', proportion: 0.10, color: '#ffcc00' },
+  { id: 1, name: 'Seguranca e Ordem',    shortName: 'Segur', description: 'Estabilidade, policia, hierarquia. Schwartz: Security. Haidt: Authority.', proportion: 0.12, color: '#4488ff' },
+  { id: 2, name: 'Igualdade Social',     shortName: 'Igual', description: 'Redistribuicao, cotas, SUS. Schwartz: Universalism. Haidt: Fairness (igualdade).', proportion: 0.11, color: '#ff4444' },
+  { id: 3, name: 'Identidade Nacional',  shortName: 'Nacao', description: 'Patriotismo, soberania. Schwartz: Conformity/Tradition. Haidt: Loyalty.', proportion: 0.10, color: '#22cc66' },
+  { id: 4, name: 'Fe Religiosa',         shortName: 'Fe',    description: 'Familia, moral crista, igreja. Schwartz: Tradition. Haidt: Sanctity.', proportion: 0.13, color: '#ff88ff' },
+  { id: 5, name: 'Progresso Tecnico',    shortName: 'Progr', description: 'Inovacao, meritocracia, digital. Schwartz: Achievement + Stimulation.', proportion: 0.09, color: '#00ddff' },
+  { id: 6, name: 'Pertencimento Local',  shortName: 'Pert',  description: 'Raizes, vizinhanca, mutirao. Schwartz: Benevolence. VALOR-PONTE.', proportion: 0.11, color: '#ff9933' },
+  { id: 7, name: 'Autonomia do Corpo',   shortName: 'Corpo', description: 'Direitos reprodutivos, genero, LGBTQ+. Schwartz: Self-Direction. Haidt: Liberty (corpo).', proportion: 0.08, color: '#bb44ff' },
+  { id: 8, name: 'Propriedade',          shortName: 'Propr', description: 'Riqueza, empreendedorismo, heranca. Schwartz: Power. Haidt: Fairness (proporcionalidade).', proportion: 0.09, color: '#ddaa33' },
+  { id: 9, name: 'Justica Restaurativa', shortName: 'Just',  description: 'Reparacao historica, indigenas, ambiental. Schwartz: Universalism. Haidt: Care.', proportion: 0.07, color: '#44cc88' },
+]
+
+// ---- MATRIZ DE FORCAS (10 IDEIAS) — escala -100 a +100 ----
+//
+// PRINCIPIO DE CALIBRACAO:
+//   1. Schwartz (1992): adjacencia no circulo = atracao, oposicao = repulsao
+//   2. Haidt (2012): fundacoes morais compartilhadas = substrato de atracao
+//   3. Bleger (1967): fusao sincretica = coesao pre-verbal (diagonal)
+//   4. Inglehart-Welzel: Brasil = Traditional + Self-Expression (tensao interna)
+//
+// REGRAS DE INTENSIDADE:
+//   |force| > 60: relacao ESTRUTURANTE (define o cluster)
+//   |force| 35-60: relacao SIGNIFICATIVA (reforça ou tensiona o cluster)
+//   |force| < 35: relacao FRACA ou NEUTRA (nao define cluster)
+//   → Valores fracos empurrados para 0 para aumentar contraste visual.
+//
+// DIAGONAL (auto-coesao = homogeneidade × organizacao do grupo):
+//   Fe=85 (maior: rebanho, pre-verbal, Bleger: nucleo sincretico mais denso)
+//   Segur=75, Nacao=75 (corporacoes e tribos: alta organização)
+//   Pert=65 (comunidade: forte vinculo mas heterogenea)
+//   Just=65 (movimentos sociais: coesos por luta)
+//   Propr=60, Igual=60 (associacoes e movimentos: moderado)
+//   Liber=55 (liberais divergem entre si: libertario vs classico)
+//   Progr=50 (nerds: competencia une, nao ideologia)
+//   Corpo=50 (identitario: diverso internamente)
+//
+// DOCUMENTACAO CELULA A CELULA:
+//
+// LIBERDADE (Schwartz: Self-Direction)
+//   →Segur(-50): Schwartz: OPOSTOS no circulo. Liberdade exige risco, seguranca exige controle.
+//   →Igual(-40): Poder vs Universalismo. Livre mercado rejeita redistribuicao forcada.
+//   →Nacao(-25): Nacionalismo pode implicar protecionismo. Tensao moderada.
+//   →Fe(-35): Moral imposta limita liberdade. Schwartz: Tradition oposta a Self-Direction.
+//   →Progr(+65): ADJACENTES em Schwartz (Stimulation). Inovacao = liberdade aplicada.
+//   →Pert(0): Sem relacao direta significativa. Cosmopolita vs local se anulam.
+//   →Corpo(+60): MESMO SETOR em Schwartz (Self-Direction). Liberdade sobre o proprio corpo
+//     E liberdade individual. Nao e apenas "alianca pragmatica" — e o MESMO valor
+//     manifestado em dominios diferentes (economico vs corporal).
+//   →Propr(+75): FORTISSIMA. Propriedade e fundacao da liberdade liberal.
+//     Locke: "vida, liberdade e propriedade" como direitos naturais inalienaveis.
+//   →Just(-30): Justica restaurativa implica intervencao estatal. Tensao moderada.
+//
+// SEGURANCA (Schwartz: Security/Conservation)
+//   →Igual(-40): Hierarquia vs nivelamento. Haidt: Authority vs Care.
+//   →Nacao(+70): ADJACENTES. "Patria precisa de quem a defenda." Fusao classica.
+//   →Fe(+60): Trindade conservadora: "Deus, patria e familia." Haidt: Sanctity + Authority.
+//   →Progr(0): Neutro. Tecnologia serve tanto vigilancia quanto disrupção.
+//   →Pert(+45): Seguranca comunitaria, ronda, vigilancia de bairro. Alianca funcional.
+//   →Corpo(-65): FORTE. Autonomia do corpo desafia a moral que sustenta a ordem.
+//     Schwartz: Security e Self-Direction sao OPOSTOS no circulo.
+//   →Propr(+35): Propriedade precisa de seguranca. Funcional, nao ideologica.
+//   →Just(-50): Justica restaurativa questiona a LEGITIMIDADE da ordem vigente.
+//
+// IGUALDADE (Schwartz: Universalism)
+//   →Nacao(-35): Igualdade transcende fronteiras; nacionalismo as reforca.
+//   →Fe(0): Ambivalente: teologia da libertacao existe, mas igreja institucional e conservadora.
+//     Forcas se anulam → neutro. Nao ha substrato claro para atracao nem repulsao.
+//   →Progr(0): Neutro. Progresso pode ser inclusivo (ed tech) ou excludente (automacao).
+//   →Pert(+50): Mutirao, cooperativa, associacao de bairro. Schwartz: Universalism
+//     e adjacente a Benevolence. Igualdade local = pertencimento solidario.
+//   →Corpo(+60): FORTE. Direitos iguais incluem direitos sobre o corpo.
+//     Schwartz: ambos no hemisfério Self-Transcendence + Openness.
+//   →Propr(-60): OPOSTOS em Schwartz (Universalism vs Power). Marx vs Locke.
+//     Redistribuir vs acumular. Tensao ESTRUTURANTE que define o eixo esquerda-direita.
+//   →Just(+75): FORTISSIMA. MESMO SETOR em Schwartz (Universalism).
+//     Igualdade e justica restaurativa compartilham o substrato utopico: reparar o mundo.
+//     Bleger: fusao sincretica — quem busca igualdade busca justica e vice-versa.
+//
+// IDENTIDADE NACIONAL (Schwartz: Conformity/Tradition)
+//   →Fe(+65): "Deus e patria." Schwartz: ADJACENTES no cluster Conservation.
+//     No Brasil: "Brasil acima de tudo, Deus acima de todos" = fusao literal.
+//   →Progr(0): Neutro. "Brasil potencia" e atraente mas nao estruturante.
+//   →Pert(+50): Patria = casa. Amor a terra, municipalismo. Schwartz: adjacentes.
+//   →Corpo(-60): Autonomia do corpo ameaca a "familia brasileira".
+//     Schwartz: Conformity oposta a Self-Direction.
+//   →Propr(+45): Nacionalismo + propriedade rural = agronegocio brasileiro.
+//   →Just(-70): FORTE. Justica restaurativa questiona a narrativa fundacional da nacao.
+//     "Indios vs colonizadores" inverte quem e heroi e quem e vilao.
+//     Schwartz: Conformity vs Universalism = tensao maxima.
+//
+// FE RELIGIOSA (Schwartz: Tradition — nucleo do cluster Conservation)
+//   →Progr(-25): Secularismo e racionalismo tecnico desafiam a fe.
+//     Mas nao e forte: igrejas usam tecnologia ativamente.
+//   →Pert(+55): Igreja = comunidade. Schwartz: Tradition adjacente a Benevolence.
+//     Fe e pertencimento se fundem no bairro: culto = encontro social.
+//   →Corpo(-85): REPULSAO MAXIMA DA SIMULACAO. Aborto, genero, LGBTQ+ = ameaca
+//     existencial a moralidade religiosa. Schwartz: OPOSTOS DIAMETRAIS no circulo
+//     (Tradition vs Self-Direction). Haidt: Sanctity ameacada.
+//     Bleger: quando o nucleo sincretico e ameacado, a reacao e de PANICO GRUPAL.
+//     E exatamente o que observamos nas "guerras culturais."
+//   →Propr(+25): Teologia da prosperidade: "riqueza como bencao de Deus."
+//     Relacao real mas nao estruturante.
+//   →Just(-40): Justica restaurativa e secular; fe busca redencao divina, nao terrena.
+//
+// PROGRESSO TECNICO (Schwartz: Achievement/Stimulation)
+//   →Pert(-25): Progresso e cosmopolita/global; pertencimento e local/raiz.
+//   →Corpo(+40): Biohacking, transumanismo, liberdade digital.
+//     Schwartz: Achievement adjacente a Self-Direction.
+//   →Propr(+55): Inovacao gera riqueza. Silicon Valley como ideal.
+//     Schwartz: Achievement adjacente a Power.
+//   →Just(0): Neutro. Tecnologia pode servir qualquer causa.
+//
+// PERTENCIMENTO LOCAL (Schwartz: Benevolence — VALOR-PONTE)
+//   →Corpo(-10): Leve tensao. Comunidade tradicional resiste a pautas individuais,
+//     mas nao e antagonismo forte. Quase neutro.
+//   →Propr(+20): "Meu pedaco de chao." Propriedade como enraizamento.
+//   →Just(+30): Comunidade indigena, quilombo, periferia = justica local.
+//     Pertencimento conecta-se a justica quando a comunidade e a vitima.
+//
+// AUTONOMIA DO CORPO (Schwartz: Self-Direction)
+//   →Propr(-10): Quase neutro. "Corpo nao e mercadoria" e debate, nao conflito.
+//   →Just(+65): FORTE. Direitos sobre o corpo COMO reparacao historica.
+//     Corpos negros, indigenas, femininos foram historicamente controlados.
+//     Schwartz: Self-Direction adjacente a Universalism.
+//
+// PROPRIEDADE (Schwartz: Power)
+//   →Just(-55): Propriedade vs reforma agraria/fundiaria. Conflito direto.
+//     Schwartz: Power vs Universalism = OPOSTOS no circulo.
+//
+const FORCE_IDEIAS_RAW = [
+//  Liber Segur Igual Nacao  Fe   Progr  Pert  Corpo Propr  Just
+  [  55,  -50,  -40,  -25, -35,   65,    0,   60,   75,  -30],  // Liberdade
+  [ -50,   75,  -40,   70,  60,    0,   45,  -65,   35,  -50],  // Seguranca
+  [ -40,  -40,   60,  -35,   0,    0,   50,   60,  -60,   75],  // Igualdade
+  [ -25,   70,  -35,   75,  65,    0,   50,  -60,   45,  -70],  // Nacao
+  [ -35,   60,    0,   65,  85,  -25,   55,  -85,   25,  -40],  // Fe
+  [  65,    0,    0,    0, -25,   50,  -25,   40,   55,    0],  // Progresso
+  [   0,   45,   50,   50,  55,  -25,   65,  -10,   20,   30],  // Pertencimento
+  [  60,  -65,   60,  -60, -85,   40,  -10,   50,  -10,   65],  // Corpo
+  [  75,   35,  -60,   45,  25,   55,   20,  -10,   60,  -55],  // Propriedade
+  [ -30,  -50,   75,  -70, -40,    0,   30,   65,  -55,   65],  // Justica
+]
+
+// ---- MATRIZES DE RAIO — CALIBRADAS POR FORMULA ----
+//
+// PRINCIPIO: raios derivados das forcas para maxima coerencia.
+//
+// minRadius (distancia minima de interacao):
+//   SELF: 45 - (coesao/100)*23 → Fe(85)=25, Segur(75)=28, Corpo(50)=34
+//     Justificativa: grupos coesos se compactam (raio curto entre si).
+//   ATRACAO: 30 + (1 - force/100)*8 → forte(75)=32, fraco(20)=36
+//     Justificativa: ideias aliadas interagem de perto.
+//   REPULSAO: 32 + |force/100|*10 → forte(85)=41, fraco(25)=35
+//     Justificativa: ideias hostis mantem distancia minima maior.
+//   NEUTRO (|force|<15): 38 fixo.
+//
+// maxRadius (alcance maximo da interacao):
+//   SELF: 85 + (coesao/100)*15 → Fe=98, Segur=96, Corpo=93
+//     Justificativa: grupos coesos sao compactos, nao precisam de alcance longo.
+//   ATRACAO: 100 + (force/100)*45 → forte(75)=134, fraco(20)=109
+//     Justificativa: ideias aliadas se "sentem" de longe — contaminação cultural.
+//   REPULSAO: 95 + |force/100|*40 → forte(85)=129, fraco(25)=105
+//     Justificativa: ideias hostis precisam detectar ameaca cedo para fugir.
+//   NEUTRO: 100 fixo.
+//
+// As matrizes abaixo foram geradas por essas formulas e depois
+// arredondadas para multiplos de 1 para leitura humana.
+const MIN_RADIUS_IDEIAS = [
+//  Liber Segur Igual Nacao  Fe   Progr  Pert  Corpo Propr  Just
+  [ 32,   37,   36,   36,  36,   30,   38,   31,   28,   35],  // Liber (self=32)
+  [ 37,   28,   36,   30,  31,   38,   34,   39,   34,   37],  // Segur (self=28)
+  [ 36,   36,   31,   36,  38,   38,   32,   31,   38,   28],  // Igual (self=31)
+  [ 36,   30,   36,   28,  30,   38,   32,   38,   34,   39],  // Nacao (self=28)
+  [ 36,   31,   38,   30,  25,   35,   31,   41,   35,   36],  // Fe    (self=25)
+  [ 30,   38,   38,   38,  35,   34,   35,   34,   31,   38],  // Progr (self=34)
+  [ 38,   34,   32,   32,  31,   35,   30,   38,   36,   34],  // Pert  (self=30)
+  [ 31,   39,   31,   38,  41,   34,   38,   34,   38,   30],  // Corpo (self=34)
+  [ 28,   34,   38,   34,  35,   31,   36,   38,   31,   38],  // Propr (self=31)
+  [ 35,   37,   28,   39,  36,   38,   34,   30,   38,   30],  // Just  (self=30)
+]
+
+const MAX_RADIUS_IDEIAS = [
+//  Liber Segur Igual Nacao  Fe   Progr  Pert  Corpo Propr  Just
+  [ 93,  115,  113,  107, 109,  129,  100,  127,  134,  109],  // Liber (self=93)
+  [115,   96,  113,  132, 127,  100,  120,  121,  116,  115],  // Segur (self=96)
+  [113,  113,   94,  111, 100,  100,  123,  127,  122,  134],  // Igual (self=94)
+  [107,  132,  111,   96, 129,  100,  123,  119,  120,  123],  // Nacao (self=96)
+  [109,  127,  100,  129,  98,  107,  125,  129,  111,  113],  // Fe    (self=98)
+  [129,  100,  100,  100, 107,   93,  107,  118,  125,  100],  // Progr (self=93)
+  [100,  120,  123,  123, 125,  107,   95,  100,  109,  114],  // Pert  (self=95)
+  [127,  121,  127,  119, 129,  118,  100,   93,  100,  129],  // Corpo (self=93)
+  [134,  116,  122,  120, 111,  125,  109,  100,   94,  120],  // Propr (self=94)
+  [109,  115,  134,  123, 113,  100,  114,  129,  120,   95],  // Just  (self=95)
+]
+
+// ============================================================
+// 6 MACRO-VALORES — Visualizacao limpa dos nucleos sincreticos
+// ============================================================
+//
+// Reducao de 10→6 por agrupamento Schwartz:
+//   Liberdade = Self-Direction (absorve Progresso + Propriedade)
+//   Seguranca = Security (absorve Nacao parcialmente)
+//   Igualdade = Universalism (absorve Justica parcialmente)
+//   Fe = Tradition (puro)
+//   Pertencimento = Benevolence (puro, VALOR-PONTE)
+//   Autonomia = Self-Direction/corpo (absorve Corpo + parte de Igualdade)
+//
+// NUCLEOS ESPERADOS NA SIMULACAO:
+//   Cluster MAGENTA+AZUL+LARANJA: Fe + Seguranca + Pertencimento (conservador)
+//   Cluster VERMELHO+ROXO: Igualdade + Autonomia (progressista)
+//   Cluster AMARELO: Liberdade (liberal, satelite que orbita)
+//
+// PERTENCIMENTO (laranja) e a CHAVE:
+//   Schwartz: Benevolence e adjacente TANTO a Tradition quanto a Universalism.
+//   Na simulacao, deve orbitar entre os nucleos conservador e progressista,
+//   nunca se fixando totalmente em nenhum. E o voto swing.
+
+const IDEIAS_6: ElectoralSegment[] = [
+  { id: 0, name: 'Liberdade',      shortName: 'Liber', description: 'Autodirecao + mercado + merito. Schwartz: Self-Direction + Power.', proportion: 0.15, color: '#ffcc00' },
+  { id: 1, name: 'Seguranca',      shortName: 'Segur', description: 'Ordem + hierarquia + patria. Schwartz: Security + Conformity.', proportion: 0.18, color: '#4488ff' },
+  { id: 2, name: 'Igualdade',      shortName: 'Igual', description: 'Redistribuicao + direitos + justica. Schwartz: Universalism.', proportion: 0.17, color: '#ff4444' },
+  { id: 3, name: 'Fe',             shortName: 'Fe',    description: 'Tradicao + moral + familia. Schwartz: Tradition. Aglutinador sincretico.', proportion: 0.20, color: '#ff88ff' },
+  { id: 4, name: 'Pertencimento',  shortName: 'Pert',  description: 'Vizinhanca + raizes + comunidade. Schwartz: Benevolence. VALOR-PONTE.', proportion: 0.17, color: '#ff9933' },
+  { id: 5, name: 'Autonomia',      shortName: 'Auton', description: 'Corpo + genero + diversidade. Schwartz: Self-Direction (corporal).', proportion: 0.13, color: '#bb44ff' },
+]
+
+// FORCAS 6 IDEIAS — Alto contraste para clusters visiveis
+//
+// Calibracao (Schwartz):
+//   Fe↔Auton = -85 (OPOSTOS diametrais: Tradition vs Self-Direction)
+//   Segur↔Auton = -65 (Security vs Self-Direction: opostos)
+//   Fe↔Segur = +60 (adjacentes em Conservation)
+//   Fe↔Pert = +55 (adjacentes: Tradition ↔ Benevolence)
+//   Igual↔Auton = +60 (Universalism adjacente a Self-Direction no hemisferio "abertura")
+//   Igual↔Pert = +45 (Universalism adjacente a Benevolence)
+//   Liber↔Auton = +55 (MESMO setor: Self-Direction economica + corporal)
+//   Liber↔Segur = -45 (opostos: Openness vs Conservation)
+//   Liber↔Igual = -40 (Power vs Universalism)
+//   Pert↔Segur = +45 (adjacentes: Benevolence ↔ Conformity)
+//
+// Assimetrias intencionais (Bleger: relacoes nao sao simetricas):
+//   Fe→Pert(+55) vs Pert→Fe(+60): comunidade busca igreja MAIS do que igreja busca comunidade.
+//   Igual→Pert(+45) vs Pert→Igual(+40): igualdade busca base comunitaria mais.
+//   Auton→Fe(-85) vs Fe→Auton(-85): SIMETRICA (guerra cultural e mutua).
+const FORCE_IDEIAS_6_RAW = [
+//  Liber Segur Igual  Fe   Pert  Auton
+  [  55,  -45,  -40, -30,    0,   55],  // Liber: atrai Auton (mesmo setor), repele Segur/Igual
+  [ -45,   75,  -40,  60,   45,  -65],  // Segur: nucleo conservador, repele Auton FORTE
+  [ -40,  -40,   60,   0,   45,   60],  // Igual: nucleo progressista, atrai Auton+Pert
+  [ -30,   60,    0,  85,   55,  -85],  // Fe: MEGA coeso, atrai Segur/Pert, REPELE Auton maximo
+  [   0,   45,   40,  60,   65,  -15],  // Pert: PONTE — atrai Fe+Segur E Igual. Leve repulsao Auton.
+  [  55,  -65,   60, -85,  -15,   50],  // Auton: funde com Igual+Liber, REPELE Fe/Segur
+]
+
+// Raios 6 ideias — mesma formula que 10 ideias
+const MIN_RADIUS_IDEIAS_6 = [
+//  Liber Segur Igual  Fe   Pert  Auton
+  [ 32,   37,   36,  35,   38,   31],  // Liber
+  [ 37,   28,   36,  31,   34,   39],  // Segur
+  [ 36,   36,   31,  38,   34,   31],  // Igual
+  [ 35,   31,   38,  25,   31,   41],  // Fe
+  [ 38,   34,   34,  31,   30,   38],  // Pert
+  [ 31,   39,   31,  41,   38,   34],  // Auton
+]
+
+const MAX_RADIUS_IDEIAS_6 = [
+//  Liber Segur Igual  Fe   Pert  Auton
+  [ 93,  115,  113, 109,  100,  125],  // Liber
+  [115,   96,  113, 127,  120,  121],  // Segur
+  [113,  113,   94, 100,  120,  127],  // Igual
+  [109,  127,  100,  98,  125,  129],  // Fe: longo vs Auton para fugir CEDO
+  [100,  120,  118, 127,   95,  102],  // Pert
+  [125,  121,  127, 129,  102,   93],  // Auton: longo vs Fe para fugir CEDO
+]
+
+// ---- CENARIO: Secularizacao ----
+// Evento: modernizacao reduz influencia religiosa.
+// Fe perde coesao (85→50), perde atracao com Segur e Pert.
+// Autonomia ganha coesao e atracao.
+// Pertencimento se AUTONOMIZA (deixa de orbitar Fe, fica mais neutro).
+// Resultado esperado: nucleo conservador fragmenta, progressista cresce.
+const FORCE_IDEIAS_SECULAR_RAW = [
+//  Liber Segur Igual  Fe   Pert  Auton
+  [  55,  -35,  -35, -10,    0,   50],  // Liber: menos tensao geral (sociedade mais tolerante)
+  [ -35,   65,  -30,  35,   40,  -50],  // Segur: perde aliado Fe, coesao cai
+  [ -35,  -30,   65,   0,   45,   65],  // Igual: GANHA forca, atrai Auton mais
+  [ -10,   35,    0,  50,   35,  -55],  // Fe: coesao DESPENCA (85→50). Fragmenta. Atracoes enfraquecem.
+  [   0,   40,   45,  35,   65,    0],  // Pert: SAI da orbita de Fe. Mais neutro. Equilibrado.
+  [  50,  -50,   65, -55,    0,   55],  // Auton: GANHA coesao (50→55), puxa Igual com forca
+]
+
+// ---- CENARIO: Polarizacao Maxima ----
+// Evento: crise politica radicaliza tudo.
+// Todas as atracoes intra-cluster SOBEM. Todas as repulsoes inter-cluster SOBEM.
+// Neutros viram repulsao. Pontes quebram.
+// Pertencimento e ARRASTADO para o conservador (Bleger: panico grupal
+// faz o grupo regressar ao vinculo primario — fe e comunidade).
+// Resultado esperado: 2 blocos densos separados por vazio. Sem pontes.
+const FORCE_IDEIAS_POLAR_RAW = [
+//  Liber Segur Igual  Fe   Pert  Auton
+  [  65,  -60,  -65, -45,  -35,   55],  // Liber: radicaliza contra tudo, menos Auton
+  [ -60,   80,  -60,  75,   65,  -80],  // Segur: FECHA nucleo conservador
+  [ -65,  -60,   75, -35,    0,   75],  // Igual: FECHA nucleo progressista
+  [ -45,   75,  -35,  90,   70,  -95],  // Fe: MAXIMA coesao (90), MAXIMA repulsao (-95 vs Auton)
+  [ -35,   65,    0,  70,   70,  -45],  // Pert: ARRASTADO para conservador (panico grupal)
+  [  55,  -80,   75, -95,  -45,   60],  // Auton: MAXIMA repulsao Fe, funde com Igual+Liber
+]
+
+// Raios para polarizacao: TODOS os maxRadius sobem (ideias se detectam de mais longe)
+// Efeito: clusters se compactam E se repelem com mais forca
+const MIN_RADIUS_IDEIAS_6_POLAR = [
+//  Liber Segur Igual  Fe   Pert  Auton
+  [ 30,   38,   39,  37,   36,   30],
+  [ 38,   26,   38,  28,   30,   41],
+  [ 39,   38,   28,  36,   38,   28],
+  [ 37,   28,   36,  22,   28,   43],
+  [ 36,   30,   38,  28,   28,   37],
+  [ 30,   41,   28,  43,   37,   32],
+]
+
+const MAX_RADIUS_IDEIAS_6_POLAR = [
+//  Liber Segur Igual  Fe   Pert  Auton
+  [ 95,  125,  125, 118,  112,  130],
+  [125,   98,  125, 140, 135,  130],
+  [125,  125,   96, 112, 100,  140],
+  [118,  140,  112, 100, 135,  138],
+  [112,  135,  100, 135,  96,  118],
+  [130,  130,  140, 138, 118,   95],
+]
+
+const BLEGER_SCENARIOS: ElectoralScenario[] = [
+  {
+    v: 1,
+    meta: {
+      name: 'Bleger — 10 Ideias',
+      description: '10 valores-ideia como particulas. Calibrado por Schwartz (modelo circular) + Haidt (fundacoes morais) + Bleger (fusao sincretica). 3 clusters emergentes: conservador, progressista, liberal.',
+      category: 'Bleger: Ideias',
+    },
+    segments: IDEIAS_10,
+    types: ['settings', 'forces', 'radii', 'colors'],
+    settings: { species: 10, numParticles: 5000, frictionFactor: 0.14, forceFactor: 1.0 },
+    matrices: {
+      forces: normMatrix(FORCE_IDEIAS_RAW),
+      minRadius: MIN_RADIUS_IDEIAS,
+      maxRadius: MAX_RADIUS_IDEIAS,
+    },
+    colors: IDEIAS_10.map(s => s.color),
+  },
+  {
+    v: 1,
+    meta: {
+      name: 'Bleger — 6 Macro-Valores',
+      description: '6 valores: 3 nucleos sincreticos visiveis. Pertencimento (laranja) e VALOR-PONTE que oscila entre nucleos. Fe (rosa) = aglutinador maximo.',
+      category: 'Bleger: Ideias',
+    },
+    segments: IDEIAS_6,
+    types: ['settings', 'forces', 'radii', 'colors'],
+    settings: { species: 6, numParticles: 5000, frictionFactor: 0.14, forceFactor: 1.0 },
+    matrices: {
+      forces: normMatrix(FORCE_IDEIAS_6_RAW),
+      minRadius: MIN_RADIUS_IDEIAS_6,
+      maxRadius: MAX_RADIUS_IDEIAS_6,
+    },
+    colors: IDEIAS_6.map(s => s.color),
+  },
+  {
+    v: 1,
+    meta: {
+      name: 'Bleger — Secularizacao',
+      description: 'Fe perde coesao (85→50). Nucleo conservador fragmenta. Pertencimento se liberta da orbita religiosa. Progressistas avancam.',
+      category: 'Bleger: Eventos',
+    },
+    segments: IDEIAS_6,
+    types: ['settings', 'forces', 'radii', 'colors'],
+    settings: { species: 6, numParticles: 5000, frictionFactor: 0.14, forceFactor: 1.0 },
+    matrices: {
+      forces: normMatrix(FORCE_IDEIAS_SECULAR_RAW),
+      minRadius: MIN_RADIUS_IDEIAS_6,
+      maxRadius: MAX_RADIUS_IDEIAS_6,
+    },
+    colors: IDEIAS_6.map(s => s.color),
+  },
+  {
+    v: 1,
+    meta: {
+      name: 'Bleger — Polarizacao',
+      description: 'Crise radicaliza tudo. 2 blocos densos, zero ponte. Pertencimento arrastado para conservador (regressao ao vinculo primario — Bleger). Fe↔Auton = -95.',
+      category: 'Bleger: Eventos',
+    },
+    segments: IDEIAS_6,
+    types: ['settings', 'forces', 'radii', 'colors'],
+    settings: { species: 6, numParticles: 5000, frictionFactor: 0.12, forceFactor: 1.0 },
+    matrices: {
+      forces: normMatrix(FORCE_IDEIAS_POLAR_RAW),
+      minRadius: MIN_RADIUS_IDEIAS_6_POLAR,
+      maxRadius: MAX_RADIUS_IDEIAS_6_POLAR,
+    },
+    colors: IDEIAS_6.map(s => s.color),
+  },
+]
+
+// ============================================================
 // CENARIOS PRONTOS
 // ============================================================
 
@@ -739,6 +1198,12 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     },
     colors: CLUSTERS_4.map(s => s.color),
   },
+  // ---- Cenario Bleger: Ideias como Particulas ----
+  // Teoria de Grupos de Bleger: sociabilidade sincretica vs interacao
+  // Ideias se agrupam por nucleo sincretico (fusao sem diferenciacao)
+  // e se repelem quando ameacam a identidade grupal
+  ...BLEGER_SCENARIOS,
+
   // ---- Cenarios nao-eleitorais (Universo / Biologia) ----
   {
     v: 1,

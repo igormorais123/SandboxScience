@@ -118,8 +118,20 @@ fn particleAdvance(@builtin(global_invocation_id) id : vec3u) {
 //        particle.vy += totalForce.y * deltaTime;
 //    }
 
-    particle.vx *= (1.0 - options.frictionFactor);
-    particle.vy *= (1.0 - options.frictionFactor);
+    // Fricao exponencial no tempo (independente de FPS)
+    let dtNorm = clamp(deltaTime * 60.0, 0.25, 3.0);
+    let frictionScale = pow(max(0.0, 1.0 - options.frictionFactor), dtNorm);
+    particle.vx *= frictionScale;
+    particle.vy *= frictionScale;
+
+    // Limite de velocidade (mesma regra do particleAdvance)
+    let maxSpeed = options.cellSize / max(deltaTime, 1e-4);
+    let speedSq = particle.vx * particle.vx + particle.vy * particle.vy;
+    if (speedSq > maxSpeed * maxSpeed) {
+        let scale = maxSpeed / sqrt(speedSq);
+        particle.vx *= scale;
+        particle.vy *= scale;
+    }
 
     particle.x += particle.vx * deltaTime;
     particle.y += particle.vy * deltaTime;

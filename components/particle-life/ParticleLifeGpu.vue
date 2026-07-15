@@ -359,6 +359,7 @@ import TrackerToggle from "~/components/particle-life/TrackerToggle.vue";
 import { RULES_OPTIONS, generateRules } from '~/helpers/utils/rulesGenerator';
 import { PALETTE_OPTIONS, generateColors } from "~/helpers/utils/colorsGenerator";
 import { POSITION_OPTIONS, generatePositions } from "~/helpers/utils/positionsGenerator";
+import { buildProportionalTypes } from "~/helpers/utils/proportions";
 
 import heatmapImage from 'assets/particle-life-gpu/images/heatmap_red4x_256x1.png';
 
@@ -417,6 +418,24 @@ export default defineComponent({
                 colorLegend.value = []
             }
         }, { deep: true, immediate: true })
+
+        // Proporcoes dos segmentos do cenario carregado (spawn representativo)
+        let cachedSegmentData: any[] = []
+        function segmentProportions(): number[] | undefined {
+            if (cachedSegmentData.length === NUM_TYPES && cachedSegmentData.every((s: any) => typeof s?.proportion === 'number')) {
+                return cachedSegmentData.map((s: any) => s.proportion)
+            }
+            return undefined
+        }
+        // Sobrescreve os tipos do array de particulas (stride 5, tipo no indice 4)
+        // com contagem exata por proporcao — a legenda passa a bater com a populacao.
+        function applyProportionalTypes(particlesArray: Float32Array) {
+            const props = segmentProportions()
+            if (!props) return
+            const types = buildProportionalTypes(NUM_PARTICLES, NUM_TYPES, props)
+            for (let i = 0; i < NUM_PARTICLES; i++) particlesArray[i * 5 + 4] = types[i]
+        }
+
         const canvasRef = ref<HTMLCanvasElement | null>(null)
         let ctx: GPUCanvasContext
         let DEVICE_PIXEL_RATIO: number = 1
@@ -1280,6 +1299,7 @@ export default defineComponent({
             computePass.setPipeline(bruteForceComputePipeline)
             computePass.setBindGroup(0, bruteForceBindGroup)
             computePass.setBindGroup(1, simOptionsBindGroup)
+            computePass.setBindGroup(2, deltaTimeBindGroup)
             computePass.dispatchWorkgroups(Math.ceil(NUM_PARTICLES / 64))
             computePass.end()
         }
@@ -1312,6 +1332,7 @@ export default defineComponent({
             forcesComputePass.setPipeline(particleComputeForcesPipeline)
             forcesComputePass.setBindGroup(0, particleComputeForcesBindGroup)
             forcesComputePass.setBindGroup(1, simOptionsBindGroup)
+            forcesComputePass.setBindGroup(2, deltaTimeBindGroup)
             forcesComputePass.dispatchWorkgroups(Math.ceil(NUM_PARTICLES / 64))
             forcesComputePass.end()
         }
@@ -2289,6 +2310,7 @@ export default defineComponent({
                     bindGroupLayouts: [
                         particleComputeForcesBindGroupLayout,
                         simOptionsBindGroupLayout,
+                        deltaTimeBindGroupLayout,
                     ],
                 }),
                 compute: { module: particleComputeForcesShader, entryPoint: 'computeForces' }
@@ -2299,6 +2321,7 @@ export default defineComponent({
                     bindGroupLayouts: [
                         bruteForceBindGroupLayout,
                         simOptionsBindGroupLayout,
+                        deltaTimeBindGroupLayout,
                     ],
                 }),
                 compute: { module: bruteForceShader, entryPoint: 'main' }
@@ -2973,8 +2996,15 @@ export default defineComponent({
                 isUpdateNumTypesPending = NEW_NUM_TYPES !== NUM_TYPES
             }
         }
-        const loadPreset = async (options: { presetRules?: number[][], presetMinRadius?: number[][], presetMaxRadius?: number[][], presetColors?: Float32Array }, presetTypeCount: number, matchPresetCount: boolean) => {
-            const { presetRules, presetMinRadius, presetMaxRadius, presetColors } = options
+        const loadPreset = async (options: { presetRules?: number[][], presetMinRadius?: number[][], presetMaxRadius?: number[][], presetColors?: Float32Array, segmentInfo?: any[] }, presetTypeCount: number, matchPresetCount: boolean) => {
+            const { presetRules, presetMinRadius, presetMaxRadius, presetColors, segmentInfo } = options
+
+            // Cache das proporcoes do cenario para spawn representativo
+            if (segmentInfo && Array.isArray(segmentInfo) && segmentInfo.length > 0) {
+                cachedSegmentData = [...segmentInfo]
+                particleLife.segmentData = [...segmentInfo]
+                particleLife.segmentNames = segmentInfo.map((s: any) => s.shortName || s.name)
+            }
 
             if (isUpdatingParticles) return
             isUpdatingParticles = true
@@ -3029,9 +3059,21 @@ export default defineComponent({
                 updateColorBuffer()
                 updateInteractionMatrixBuffer()
                 if (matchPresetCount && (newNumTypes !== oldNumTypes)) updateParticleBindGroups()
+
+                // Redistribui os tipos pelas proporcoes do cenario (mantem posicoes)
+                if (segmentInfo && Array.isArray(segmentInfo) && segmentInfo.length === NUM_TYPES) {
+                    const props = segmentProportions()
+                    if (props) {
+                        const particleDataBuffer = await readBufferFromGPU(particleBuffer!, NUM_PARTICLES * 5 * 4)
+                        const particles = new Float32Array(particleDataBuffer)
+                        const types = buildProportionalTypes(NUM_PARTICLES, NUM_TYPES, props)
+                        for (let i = 0; i < NUM_PARTICLES; i++) particles[i * 5 + 4] = types[i]
+                        device.queue.writeBuffer(particleBuffer!, 0, particles)
+                    }
+                }
             } finally {
                 isUpdatingParticles = false
-                success("Preset loaded.")
+                success("Cenario carregado.")
             }
         }
         const applyPresetSubMatrix = (current: number[][], preset: number[][], numTypes: number, typesToUpdate: number,): number[][] => {
@@ -3119,6 +3161,7 @@ export default defineComponent({
         }
         function initParticles() {
             initialParticles = generatePositions(particleLife.selectedColorPaletteOption, NUM_PARTICLES, NUM_TYPES, SIM_WIDTH, SIM_HEIGHT)
+            applyProportionalTypes(initialParticles)
         }
         function makeRandomMinRadiusMatrix() {
             let matrix: number[][] = []
@@ -3166,6 +3209,7 @@ export default defineComponent({
             if (shouldRandom) particleLife.selectedSpawnPositionOption = positionOptions[Math.floor(Math.random() * positionOptions.length)].id
 
             initialParticles = generatePositions(particleLife.selectedSpawnPositionOption, NUM_PARTICLES, NUM_TYPES, SIM_WIDTH, SIM_HEIGHT)
+            applyProportionalTypes(initialParticles)
             device.queue.writeBuffer(particleBuffer!, 0, initialParticles)
         }
         // -------------------------------------------------------------------------------------------------------------

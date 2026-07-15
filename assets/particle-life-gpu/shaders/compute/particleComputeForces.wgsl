@@ -65,6 +65,7 @@ fn get_interaction(index: u32) -> vec3<f32> {
 @group(0) @binding(3) var<storage, read> interactions: InteractionMatrix;
 
 @group(1) @binding(0) var<uniform> options : SimOptions;
+@group(2) @binding(0) var<uniform> deltaTime: f32;
 
 @compute @workgroup_size(64)
 fn computeForces(@builtin(global_invocation_id) id : vec3u) {
@@ -164,8 +165,11 @@ fn computeForces(@builtin(global_invocation_id) id : vec3u) {
         }
     }
 
-    particle.vx += totalForce.x * options.forceFactor;
-    particle.vy += totalForce.y * options.forceFactor;
+    // Impulso escalado pelo tempo do frame (dtNorm = 1 a 60 FPS):
+    // sem isso a dinamica acelera em monitores de 120/144 Hz.
+    let dtNorm = clamp(deltaTime * 60.0, 0.25, 3.0);
+    particle.vx += totalForce.x * options.forceFactor * dtNorm;
+    particle.vy += totalForce.y * options.forceFactor * dtNorm;
 
     particlesDestination[id.x] = particle;
 }

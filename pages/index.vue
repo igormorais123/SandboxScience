@@ -19,7 +19,7 @@
             </div>
         </section>
         <section container>
-            <div grid gap-4 grid-cols-1 class="sm:grid-cols-3">
+            <div grid gap-4 grid-cols-1 class="sm:grid-cols-2 xl:grid-cols-4">
                 <NuxtLink to="/particle-life" bg="gray-900 hover:gray-800"
                           class="relative overflow-hidden rounded-lg border border-gray-800 shadow-lg p-6 sm:p-5 md:p-6 pt-3 sm:pt-4 md:pt-4">
                     <div flex items-center mb-2>
@@ -30,6 +30,19 @@
                     <div class="absolute right-0 top-0 h-16 w-16">
                         <div class="shadow-lg absolute transform rotate-45 bg-[#c89520] bg-opacity-70 text-center text-sm text-white font-semibold py-1 right-[-38px] top-[13px] w-[128px]">
                             INTEIA
+                        </div>
+                    </div>
+                </NuxtLink>
+                <NuxtLink to="/particle-life-df" bg="gray-900 hover:gray-800"
+                          class="relative overflow-hidden rounded-lg border border-gray-800 shadow-lg p-6 sm:p-5 md:p-6 pt-3 sm:pt-4 md:pt-4">
+                    <div flex items-center mb-2>
+                        <span class="text-2xl md:text-3xl" font-bold mr-2>🏛️</span>
+                        <h3 class="text-lg md:text-xl font-semibold">Particle Life DF</h3>
+                    </div>
+                    <p class="text-sm md:text-base">O <strong>Distrito Federal</strong> como organismo politico: territorios reais, <strong>candidatos disputando voto</strong>, opinioes que migram e um placar que <strong>emerge da fisica</strong>. Versao 2 do simulador.</p>
+                    <div class="absolute right-0 top-0 h-16 w-16">
+                        <div class="shadow-lg absolute transform rotate-45 bg-indigo-600 bg-opacity-70 text-center text-sm text-white font-semibold py-1 right-[-38px] top-[13px] w-[128px]">
+                            NOVO
                         </div>
                     </div>
                 </NuxtLink>

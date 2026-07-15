@@ -14,7 +14,7 @@ export const useParticleLifeStore = defineStore('particleLife', () => {
     const brushType = ref<number>(1) // Brush type (0: Add, 1: Remove)
     const attractForce = ref<number>(10) // Attract force for the brush
     const repulseForce = ref<number>(10) // Repulse force for the brush
-    const wallRepelForce = ref<number>(1.8) // Repulse force for the walls (velocity will be multiplied by this value negative)
+    const wallRepelForce = ref<number>(0.95) // Restituicao da parede (<=1 conserva/dissipa energia; >1 injeta energia a cada quique)
 
     const currentColors = ref<number[][]>([]) // Current colors for the particles
     const rulesMatrix = ref<number[][]>([]) // Rules matrix for each color

@@ -34,7 +34,9 @@
                             class="text-left px-2.5 py-2 rounded-lg text-xs transition-all border"
                             :class="scenario.meta.category === 'Eventos RR'
                               ? 'bg-amber-900/20 border-amber-500/20 hover:bg-amber-900/40 hover:border-amber-500/40'
-                              : 'bg-indigo-900/20 border-indigo-500/20 hover:bg-indigo-900/40 hover:border-indigo-500/40'">
+                              : scenario.meta.category.startsWith('Bleger')
+                                ? 'bg-fuchsia-900/20 border-fuchsia-500/20 hover:bg-fuchsia-900/40 hover:border-fuchsia-500/40'
+                                : 'bg-indigo-900/20 border-indigo-500/20 hover:bg-indigo-900/40 hover:border-indigo-500/40'">
                             <div font-semibold class="text-white/90">{{ scenario.meta.name }}</div>
                             <div class="text-gray-400 mt-0.5 leading-tight" style="font-size:10px">{{ scenario.meta.description }}</div>
                         </button>

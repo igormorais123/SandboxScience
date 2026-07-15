@@ -29,6 +29,11 @@
                 <p class="text-sm text-gray-300">
                     <span class="font-bold text-fuchsia-500">WebGPU</span> oferece <strong>FPS mais alto</strong>, <strong>movimento mais suave</strong> e <strong>mais particulas</strong> quando suportado, enquanto o <span class="font-bold text-sky-500">renderizador CPU</span> permanece <em>compativel</em> em todos os dispositivos.
                 </p>
+                <NuxtLink to="/particle-life-df" class="mt-2 flex items-center gap-2 rounded-lg bg-indigo-600/15 ring-1 ring-indigo-400/30 hover:bg-indigo-600/25 transition-all px-3 py-2">
+                    <span class="text-lg">🏛️</span>
+                    <span class="text-sm text-indigo-100"><strong>Novo:</strong> Particle Life DF v2 — o Distrito Federal com territorios, candidatos e placar emergente.</span>
+                    <span class="ml-auto text-indigo-300">→</span>
+                </NuxtLink>
             </header>
 
             <div v-if="isWebGPUSupported && currentRenderer === 'cpu'" class="rounded-lg ring-1 ring-gray-500/30 bg-slate-700/20 text-gray-50 text-sm p-4">

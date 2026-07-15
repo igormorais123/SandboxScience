@@ -42,6 +42,7 @@ fn get_interaction(index: u32, numTypes: u32) -> vec3<f32> {
 @group(0) @binding(1) var<storage, read_write> particlesDestination : array<Particle>;
 @group(0) @binding(2) var<storage, read> interactions: InteractionMatrix;
 @group(1) @binding(0) var<uniform> options: SimOptions;
+@group(2) @binding(0) var<uniform> deltaTime: f32;
 
 @compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {
@@ -93,8 +94,10 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         }
     }
 
-    particle.vx += velocitySum.x * options.forceFactor;
-    particle.vy += velocitySum.y * options.forceFactor;
+    // Impulso escalado pelo tempo do frame (fisica independente de FPS)
+    let dtNorm = clamp(deltaTime * 60.0, 0.25, 3.0);
+    particle.vx += velocitySum.x * options.forceFactor * dtNorm;
+    particle.vy += velocitySum.y * options.forceFactor * dtNorm;
 
     particlesDestination[i] = particle;
 };

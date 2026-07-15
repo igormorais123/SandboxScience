@@ -1,0 +1,536 @@
+{
+  "metodologia": {
+    "proxies": [
+      "V=alinhamento_eleitoral",
+      "G=sobreposicao_geografica",
+      "E=dependencia_economica",
+      "S=proximidade_social",
+      "I=alinhamento_ideologico"
+    ],
+    "pesos": {
+      "V": 0.3,
+      "G": 0.15,
+      "E": 0.2,
+      "S": 0.15,
+      "I": 0.2
+    },
+    "formula_off_diagonal": "F = (wV*V + wG*G_adj + wE*E + wS*S + wI*I) * 100",
+    "formula_diagonal": "F = homogeneidade * organizacao * 100",
+    "fontes": [
+      "TSE 2022 — resultados por município (Bolsonaro 76.08%)",
+      "Censo IBGE 2022 — população, religião, cor/raça, urbanização",
+      "IBGE PIB 2023 — composição setorial (47.1% admin pública)",
+      "Pesquisa INTEIA (n=200) — intenção de voto, influências, temas",
+      "Relatório Jorge Everton — cross-tabs demográficos",
+      "Dados demográficos RR 2026 (arquivo projeto)"
+    ]
+  },
+  "segmentos": [
+    {
+      "id": 0,
+      "nome": "Funcionalismo",
+      "proporcao": 0.108,
+      "justificativa": "35.000 servidores / ~340.000 adultos. PIB 47.1% admin pública (IBGE 2023)"
+    },
+    {
+      "id": 1,
+      "nome": "Comissionados",
+      "proporcao": 0.038,
+      "justificativa": "~13.000 cargos de confiança (est. 10-15% do funcionalismo). Dado: RR tem maior razão comissionados/efetivos do Norte"
+    },
+    {
+      "id": 2,
+      "nome": "Evangélicos",
+      "proporcao": 0.141,
+      "justificativa": "Censo 2022: 35.0% evangélicos, mas nem todos votam em bloco. Pesquisa INTEIA: pastor influencia 25.5%. Fator bloco = 35% * 0.40 = 14.1%"
+    },
+    {
+      "id": 3,
+      "nome": "Jovens Urbanos",
+      "proporcao": 0.251,
+      "justificativa": "TSE 2022: 18-34 anos = 38.7% eleitorado. Urbanização 76.5%. Fator urbano-jovem = 38.7% * 0.65 = 25.1%"
+    },
+    {
+      "id": 4,
+      "nome": "Mercado do Voto",
+      "proporcao": 0.128,
+      "justificativa": "50% classes D/E, vulnerabilidade ~25%. Fator compra efetiva = 50% * 0.256 = 12.8%. Valor R$800/voto (documentado em RR)"
+    },
+    {
+      "id": 5,
+      "nome": "Indígena Org.",
+      "proporcao": 0.09,
+      "justificativa": "Censo 2022: 14.1% indígena (maior do Brasil), mas CIR organiza ~64%. Fator bloco = 14.1% * 0.64 = 9.0%"
+    },
+    {
+      "id": 6,
+      "nome": "Classe Média",
+      "proporcao": 0.09,
+      "justificativa": "Renda > 3 SM: ~12% da população. Fator urbano-político = 12% * 0.75 = 9.0%. Núcleo bolsonarista"
+    },
+    {
+      "id": 7,
+      "nome": "Interior Agro",
+      "proporcao": 0.077,
+      "justificativa": "Agropecuária cresceu 118.6% (IBGE 2019-2023). Pop rural 23.5%. Fator organizado = 23.5% * 0.33 = 7.7%"
+    },
+    {
+      "id": 8,
+      "nome": "Mulheres Perif.",
+      "proporcao": 0.052,
+      "justificativa": "Feminino 51.33% (TSE). Periferia BV: ~20% do eleitorado feminino. Fator vulnerável = 51.33% * 0.20 * 0.50 = 5.2%"
+    },
+    {
+      "id": 9,
+      "nome": "Fronteira/Seg.",
+      "proporcao": 0.025,
+      "justificativa": "PM+PC+PF+Bombeiro+Militar: ~8.000 efetivos / 340.000 adultos = 2.4%. Arredondado 2.5%"
+    }
+  ],
+  "proxies_por_segmento": {
+    "bolsonaro_pct": {
+      "Funcionalismo": 0.78,
+      "Comissionados": 0.85,
+      "Evangélicos": 0.88,
+      "Jovens Urbanos": 0.62,
+      "Mercado do Voto": 0.5,
+      "Indígena Org.": 0.18,
+      "Classe Média": 0.92,
+      "Interior Agro": 0.84,
+      "Mulheres Perif.": 0.55,
+      "Fronteira/Seg.": 0.9
+    },
+    "bv_pct": {
+      "Funcionalismo": 0.9,
+      "Comissionados": 0.95,
+      "Evangélicos": 0.7,
+      "Jovens Urbanos": 0.85,
+      "Mercado do Voto": 0.55,
+      "Indígena Org.": 0.15,
+      "Classe Média": 0.92,
+      "Interior Agro": 0.1,
+      "Mulheres Perif.": 0.8,
+      "Fronteira/Seg.": 0.6
+    },
+    "ideologia": {
+      "Funcionalismo": 0.65,
+      "Comissionados": 0.75,
+      "Evangélicos": 0.8,
+      "Jovens Urbanos": 0.5,
+      "Mercado do Voto": 0.5,
+      "Indígena Org.": 0.2,
+      "Classe Média": 0.88,
+      "Interior Agro": 0.78,
+      "Mulheres Perif.": 0.45,
+      "Fronteira/Seg.": 0.85
+    },
+    "homogeneidade": {
+      "Funcionalismo": 0.7,
+      "Comissionados": 0.8,
+      "Evangélicos": 0.85,
+      "Jovens Urbanos": 0.25,
+      "Mercado do Voto": 0.15,
+      "Indígena Org.": 0.9,
+      "Classe Média": 0.82,
+      "Interior Agro": 0.65,
+      "Mulheres Perif.": 0.4,
+      "Fronteira/Seg.": 0.88
+    },
+    "organizacao": {
+      "Funcionalismo": 0.8,
+      "Comissionados": 0.6,
+      "Evangélicos": 0.9,
+      "Jovens Urbanos": 0.15,
+      "Mercado do Voto": 0.1,
+      "Indígena Org.": 0.9,
+      "Classe Média": 0.5,
+      "Interior Agro": 0.6,
+      "Mulheres Perif.": 0.3,
+      "Fronteira/Seg.": 0.85
+    },
+    "alcance": {
+      "Funcionalismo": 0.5,
+      "Comissionados": 0.6,
+      "Evangélicos": 0.8,
+      "Jovens Urbanos": 0.7,
+      "Mercado do Voto": 0.9,
+      "Indígena Org.": 0.2,
+      "Classe Média": 0.5,
+      "Interior Agro": 0.4,
+      "Mulheres Perif.": 0.3,
+      "Fronteira/Seg.": 0.6
+    }
+  },
+  "matriz_forcas": [
+    [
+      56,
+      74,
+      52,
+      48,
+      32,
+      -24,
+      56,
+      40,
+      40,
+      63
+    ],
+    [
+      82,
+      48,
+      55,
+      38,
+      35,
+      -27,
+      59,
+      38,
+      31,
+      50
+    ],
+    [
+      52,
+      55,
+      76,
+      44,
+      26,
+      -42,
+      61,
+      52,
+      41,
+      60
+    ],
+    [
+      44,
+      38,
+      38,
+      4,
+      32,
+      6,
+      30,
+      18,
+      62,
+      27
+    ],
+    [
+      32,
+      33,
+      26,
+      62,
+      2,
+      22,
+      13,
+      20,
+      66,
+      15
+    ],
+    [
+      -26,
+      -27,
+      -44,
+      6,
+      22,
+      81,
+      -55,
+      -28,
+      13,
+      -31
+    ],
+    [
+      56,
+      59,
+      61,
+      30,
+      13,
+      -55,
+      41,
+      47,
+      22,
+      59
+    ],
+    [
+      42,
+      38,
+      52,
+      18,
+      20,
+      -24,
+      45,
+      39,
+      13,
+      47
+    ],
+    [
+      48,
+      31,
+      42,
+      62,
+      38,
+      13,
+      22,
+      13,
+      12,
+      22
+    ],
+    [
+      63,
+      50,
+      60,
+      27,
+      13,
+      -31,
+      59,
+      47,
+      22,
+      75
+    ]
+  ],
+  "min_radius": [
+    [
+      31,
+      28,
+      32,
+      32,
+      35,
+      43,
+      31,
+      34,
+      34,
+      30
+    ],
+    [
+      27,
+      33,
+      31,
+      34,
+      34,
+      44,
+      31,
+      34,
+      35,
+      32
+    ],
+    [
+      32,
+      31,
+      25,
+      33,
+      36,
+      46,
+      30,
+      32,
+      33,
+      31
+    ],
+    [
+      33,
+      34,
+      34,
+      44,
+      35,
+      39,
+      35,
+      37,
+      30,
+      35
+    ],
+    [
+      35,
+      35,
+      36,
+      30,
+      44,
+      36,
+      38,
+      37,
+      30,
+      37
+    ],
+    [
+      43,
+      44,
+      46,
+      39,
+      36,
+      24,
+      48,
+      44,
+      38,
+      44
+    ],
+    [
+      31,
+      31,
+      30,
+      35,
+      38,
+      48,
+      34,
+      32,
+      36,
+      31
+    ],
+    [
+      33,
+      34,
+      32,
+      37,
+      37,
+      43,
+      33,
+      35,
+      38,
+      32
+    ],
+    [
+      32,
+      35,
+      33,
+      30,
+      34,
+      38,
+      36,
+      38,
+      42,
+      36
+    ],
+    [
+      30,
+      32,
+      31,
+      35,
+      38,
+      44,
+      31,
+      32,
+      36,
+      26
+    ]
+  ],
+  "max_radius": [
+    [
+      96,
+      126,
+      122,
+      122,
+      119,
+      111,
+      123,
+      121,
+      121,
+      124
+    ],
+    [
+      131,
+      94,
+      127,
+      124,
+      124,
+      114,
+      127,
+      124,
+      123,
+      126
+    ],
+    [
+      134,
+      135,
+      102,
+      133,
+      130,
+      120,
+      136,
+      134,
+      133,
+      136
+    ],
+    [
+      129,
+      128,
+      128,
+      81,
+      127,
+      123,
+      127,
+      125,
+      132,
+      127
+    ],
+    [
+      135,
+      135,
+      134,
+      140,
+      80,
+      134,
+      132,
+      134,
+      140,
+      133
+    ],
+    [
+      99,
+      98,
+      96,
+      103,
+      106,
+      104,
+      94,
+      98,
+      104,
+      98
+    ],
+    [
+      123,
+      123,
+      124,
+      119,
+      116,
+      106,
+      92,
+      122,
+      118,
+      123
+    ],
+    [
+      117,
+      116,
+      118,
+      113,
+      114,
+      107,
+      117,
+      91,
+      112,
+      118
+    ],
+    [
+      114,
+      111,
+      113,
+      116,
+      112,
+      108,
+      110,
+      108,
+      83,
+      110
+    ],
+    [
+      128,
+      126,
+      128,
+      123,
+      120,
+      114,
+      127,
+      126,
+      122,
+      102
+    ]
+  ],
+  "physics": {
+    "species": 10,
+    "numParticles": 5000,
+    "frictionFactor": 0.14,
+    "forceFactor": 1.0
+  }
+}

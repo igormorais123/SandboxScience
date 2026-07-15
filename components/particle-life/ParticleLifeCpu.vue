@@ -301,6 +301,7 @@ import SaveModal from "~/components/particle-life/SaveModal.vue";
 import HelenaPanel from "~/components/particle-life/HelenaPanel.vue";
 import { RULES_OPTIONS, generateRules } from '~/helpers/utils/rulesGenerator';
 import { PALETTE_OPTIONS, generateHSLColors } from "~/helpers/utils/colorsGenerator";
+import { buildProportionalTypes, sampleTypeByProportion } from "~/helpers/utils/proportions";
 export default defineComponent({
     components: { SaveModal, PresetPanel, MatrixSettings, RulesMatrix, Memory, BrushSettings, WallStateSelection, SidebarLeft, HelenaPanel },
     setup() {
@@ -417,6 +418,19 @@ export default defineComponent({
         const socialMetrics = ref<{ volatilidade: number, volatilidadeLabel: string, dominante: string, distribuicao: { name: string, color: string, pct: number }[] } | null>(null)
         let overlayFrameCounter = 0
         let cachedSegmentData: any[] = []
+
+        // Normalizacao de tempo: dtNorm = 1 a 60 FPS. Mantem a fisica identica
+        // em monitores de 60/120/144 Hz e em quedas de FPS (clamp evita saltos).
+        let dtNorm = 1
+        let lastUpdateTime = 0
+
+        // Proporcoes dos segmentos do cenario carregado (para spawn representativo)
+        function segmentProportions(): number[] | undefined {
+            if (cachedSegmentData.length === numColors && cachedSegmentData.every((s: any) => typeof s?.proportion === 'number')) {
+                return cachedSegmentData.map((s: any) => s.proportion)
+            }
+            return undefined
+        }
 
         // Hover tooltip state
         const hoverTooltip = ref<{ x: number, y: number, name: string, color: string } | null>(null)
@@ -736,8 +750,10 @@ export default defineComponent({
             setColors(generateHSLColors(particleLife.selectedColorPaletteOption, numColors))
         }
         function initParticles() {
+            // Tipos com contagem exata por proporcao do cenario (representatividade)
+            const types = buildProportionalTypes(numParticles, numColors, segmentProportions())
             for (let i = 0; i < numParticles; ++i) {
-                colors[i] = Math.floor(Math.random() * numColors)
+                colors[i] = types[i]
                 const newPositions = getRandomPositions()
                 positionX[i] = newPositions.x
                 positionY[i] = newPositions.y
@@ -813,6 +829,11 @@ export default defineComponent({
         // -------------------------------------------------------------------------------------------------------------
         const update = () => {
             const startExecutionTime = performance.now()
+            // dtNorm = 1 a 60 FPS; clamp [0.25, 3] evita explosao apos aba em background
+            if (lastUpdateTime > 0) {
+                dtNorm = Math.min(3, Math.max(0.25, (startExecutionTime - lastUpdateTime) / (1000 / 60)))
+            }
+            lastUpdateTime = startExecutionTime
             if (isUpdateNumTypesPending) updateNumColors(NEW_NUM_TYPES)
             if (isRunning) {
                 processRules()
@@ -937,12 +958,15 @@ export default defineComponent({
         // -------------------------------------------------------------------------------------------------------------
         function getForce(ruleFactor: number, colorMinRadius: number, colorMaxRadius: number, distance: number) {
             if (distance < colorMinRadius) {
-                return (repel / colorMinRadius) * distance - repel
+                // Repulsao de nucleo: -repel em d=0, zero em d=minR (evita sobreposicao)
+                return colorMinRadius > 1e-6 ? (repel / colorMinRadius) * distance - repel : -repel
             } else if (distance > colorMaxRadius) {
                 return 0
             } else {
-                let mid = (colorMinRadius + colorMaxRadius) / 2
-                let slope = ruleFactor / (mid - colorMinRadius)
+                const mid = (colorMinRadius + colorMaxRadius) / 2
+                const denom = mid - colorMinRadius
+                if (denom < 1e-6) return 0 // minR == maxR: sem zona de interacao
+                const slope = ruleFactor / denom
                 return -(slope * Math.abs(distance - mid)) + ruleFactor
             }
         }
@@ -1016,7 +1040,7 @@ export default defineComponent({
                             const colorMaxRadius = maxRadiusMatrix[colorA][colorB]
 
                             // Apply force if the particles are close enough
-                            if (distance < colorMaxRadius) {
+                            if (distance > 1e-6 && distance < colorMaxRadius) {
                                 const force = getForce(rulesMatrix[colorA][colorB], minRadiusMatrix[colorA][colorB], colorMaxRadius, distance)
 
                                 velocityXSum += dx / distance * force
@@ -1025,8 +1049,8 @@ export default defineComponent({
                         }
                     }
                     // Update the velocity of the particle
-                    velocityX[indexA] += velocityXSum * forceFactor
-                    velocityY[indexA] += velocityYSum * forceFactor
+                    velocityX[indexA] += velocityXSum * forceFactor * dtNorm
+                    velocityY[indexA] += velocityYSum * forceFactor * dtNorm
                 }
             }
             cellCount.value = cells.size
@@ -1116,7 +1140,7 @@ export default defineComponent({
                             const colorMaxRadius = maxRadiusMatrix[colorA][colorB]
 
                             // Apply force if the particles are close enough
-                            if (distance < colorMaxRadius) {
+                            if (distance > 1e-6 && distance < colorMaxRadius) {
                                 const force = getForce(rulesMatrix[colorA][colorB], minRadiusMatrix[colorA][colorB], colorMaxRadius, distance)
 
                                 velocityXSum += dx / distance * force
@@ -1125,8 +1149,8 @@ export default defineComponent({
                         }
                     }
                     // Update the velocity of the particle
-                    velocityX[indexA] += velocityXSum * forceFactor
-                    velocityY[indexA] += velocityYSum * forceFactor
+                    velocityX[indexA] += velocityXSum * forceFactor * dtNorm
+                    velocityY[indexA] += velocityYSum * forceFactor * dtNorm
                 }
             }
             cellCount.value = cells.size
@@ -1202,7 +1226,7 @@ export default defineComponent({
                             const colorMaxRadius = maxRadiusMatrix[colorA][colorB]
 
                             // Apply force if the particles are close enough
-                            if (distance < colorMaxRadius) {
+                            if (distance > 1e-6 && distance < colorMaxRadius) {
                                 const force = getForce(rulesMatrix[colorA][colorB], minRadiusMatrix[colorA][colorB], colorMaxRadius, distance)
 
                                 velocityXSum += dx / distance * force
@@ -1212,9 +1236,9 @@ export default defineComponent({
                         }
                     }
                     // Update the velocity of the particle
-                    velocityX[indexA] += velocityXSum * forceFactor
-                    velocityY[indexA] += velocityYSum * forceFactor
-                    velocityZ[indexA] += velocityZSum * forceFactor
+                    velocityX[indexA] += velocityXSum * forceFactor * dtNorm
+                    velocityY[indexA] += velocityYSum * forceFactor * dtNorm
+                    velocityZ[indexA] += velocityZSum * forceFactor * dtNorm
                 }
             }
             cellCount.value = cells.size
@@ -1306,7 +1330,7 @@ export default defineComponent({
                             const colorMaxRadius = maxRadiusMatrix[colorA][colorB]
 
                             // Apply force if the particles are close enough
-                            if (distance < colorMaxRadius) {
+                            if (distance > 1e-6 && distance < colorMaxRadius) {
                                 const force = getForce(rulesMatrix[colorA][colorB], minRadiusMatrix[colorA][colorB], colorMaxRadius, distance)
 
                                 velocityXSum += dx / distance * force
@@ -1316,9 +1340,9 @@ export default defineComponent({
                         }
                     }
                     // Update the velocity of the particle
-                    velocityX[indexA] += velocityXSum * forceFactor
-                    velocityY[indexA] += velocityYSum * forceFactor
-                    velocityZ[indexA] += velocityZSum * forceFactor
+                    velocityX[indexA] += velocityXSum * forceFactor * dtNorm
+                    velocityY[indexA] += velocityYSum * forceFactor * dtNorm
+                    velocityZ[indexA] += velocityZSum * forceFactor * dtNorm
                 }
             }
             cellCount.value = cells.size
@@ -1329,34 +1353,56 @@ export default defineComponent({
             ctx!.clearRect(0, 0, canvasWidth, canvasHeight)
             ctx!.fillStyle = backgroundColor
             ctx!.fillRect(0, 0, canvasWidth, canvasHeight)
+            // Fricao exponencial no tempo (independente de FPS) e limite de velocidade:
+            // deslocamento por tick <= cellSize, senao a particula "atravessa" o hash espacial
+            const frictionScale = Math.pow(1 - frictionFactor, dtNorm)
+            const maxSpeed = cellSize > 0 ? cellSize / dtNorm : Infinity
+            const maxSpeedSq = maxSpeed * maxSpeed
             for (let i = 0; i < numParticles; i++) {
-                velocityX[i] *= (1 - frictionFactor)
-                velocityY[i] *= (1 - frictionFactor)
-                positionX[i] += velocityX[i]
-                positionY[i] += velocityY[i]
+                velocityX[i] *= frictionScale
+                velocityY[i] *= frictionScale
+                const speedSq = velocityX[i] * velocityX[i] + velocityY[i] * velocityY[i]
+                if (speedSq > maxSpeedSq) {
+                    const scale = maxSpeed / Math.sqrt(speedSq)
+                    velocityX[i] *= scale
+                    velocityY[i] *= scale
+                }
+                positionX[i] += velocityX[i] * dtNorm
+                positionY[i] += velocityY[i] * dtNorm
 
                 // Bounce off the walls
                 if (isWallRepel) {
-                    if (wallShape === 0) { // Rectangle Shape
-                        if (positionX[i] > gridWidth || positionX[i] < 0) {
-                            positionX[i] -= velocityX[i]
-                            velocityX[i] *= -wallRepelForce
+                    if (wallShape === 0) { // Rectangle: reflexao axial + clamp para dentro (sem prender fora)
+                        if (positionX[i] < 0) {
+                            positionX[i] = 0
+                            velocityX[i] = Math.abs(velocityX[i]) * wallRepelForce
+                        } else if (positionX[i] > gridWidth) {
+                            positionX[i] = gridWidth
+                            velocityX[i] = -Math.abs(velocityX[i]) * wallRepelForce
                         }
-                        if (positionY[i] > gridHeight || positionY[i] < 0) {
-                            positionY[i] -= velocityY[i]
-                            velocityY[i] *= -wallRepelForce
+                        if (positionY[i] < 0) {
+                            positionY[i] = 0
+                            velocityY[i] = Math.abs(velocityY[i]) * wallRepelForce
+                        } else if (positionY[i] > gridHeight) {
+                            positionY[i] = gridHeight
+                            velocityY[i] = -Math.abs(velocityY[i]) * wallRepelForce
                         }
                     }
-                    else { // Circle Shape
-                        const dx = positionX[i] - circleCenterX // X distance between the particle and the center of the circle
-                        const dy = positionY[i] - circleCenterY // Y distance between the particle and the center of the circle
-                        const distanceSquared = dx * dx + dy * dy // Square of the distance between the particle and the center of the circle
+                    else { // Circle: reflexao especular na normal (v' = v - (1+e)(v.n)n) + projecao para dentro
+                        const dx = positionX[i] - circleCenterX
+                        const dy = positionY[i] - circleCenterY
+                        const distanceSquared = dx * dx + dy * dy
 
                         if (distanceSquared > circleRadius * circleRadius) {
-                            positionX[i] -= velocityX[i]
-                            positionY[i] -= velocityY[i]
-                            velocityX[i] *= -wallRepelForce
-                            velocityY[i] *= -wallRepelForce
+                            const dist = Math.sqrt(distanceSquared) || 1
+                            const nx = dx / dist, ny = dy / dist
+                            positionX[i] = circleCenterX + nx * circleRadius
+                            positionY[i] = circleCenterY + ny * circleRadius
+                            const vDotN = velocityX[i] * nx + velocityY[i] * ny
+                            if (vDotN > 0) {
+                                velocityX[i] -= (1 + wallRepelForce) * vDotN * nx
+                                velocityY[i] -= (1 + wallRepelForce) * vDotN * ny
+                            }
                         }
                     }
                 }
@@ -1375,36 +1421,57 @@ export default defineComponent({
             ctx!.clearRect(0, 0, canvasWidth, canvasHeight)
             ctx!.fillStyle = backgroundColor
             ctx!.fillRect(0, 0, canvasWidth, canvasHeight)
+            const frictionScale = Math.pow(1 - frictionFactor, dtNorm)
+            const maxSpeed = cellSize > 0 ? cellSize / dtNorm : Infinity
+            const maxSpeedSq = maxSpeed * maxSpeed
             for (let i = 0; i < numParticles; i++) {
-                velocityX[i] *= (1 - frictionFactor)
-                velocityY[i] *= (1 - frictionFactor)
-                velocityZ[i] *= (1 - frictionFactor)
-                positionX[i] += velocityX[i]
-                positionY[i] += velocityY[i]
-                positionZ[i] += velocityZ[i]
+                velocityX[i] *= frictionScale
+                velocityY[i] *= frictionScale
+                velocityZ[i] *= frictionScale
+                const speedSq = velocityX[i] * velocityX[i] + velocityY[i] * velocityY[i] + velocityZ[i] * velocityZ[i]
+                if (speedSq > maxSpeedSq) {
+                    const scale = maxSpeed / Math.sqrt(speedSq)
+                    velocityX[i] *= scale
+                    velocityY[i] *= scale
+                    velocityZ[i] *= scale
+                }
+                positionX[i] += velocityX[i] * dtNorm
+                positionY[i] += velocityY[i] * dtNorm
+                positionZ[i] += velocityZ[i] * dtNorm
 
                 // Bounce off the walls
                 if (isWallRepel) {
-                    if (wallShape === 0) { // Rectangle Shape
-                        if (positionX[i] > gridWidth || positionX[i] < 0) {
-                            positionX[i] -= velocityX[i]
-                            velocityX[i] *= -wallRepelForce
+                    if (wallShape === 0) { // Rectangle: reflexao axial + clamp para dentro
+                        if (positionX[i] < 0) {
+                            positionX[i] = 0
+                            velocityX[i] = Math.abs(velocityX[i]) * wallRepelForce
+                        } else if (positionX[i] > gridWidth) {
+                            positionX[i] = gridWidth
+                            velocityX[i] = -Math.abs(velocityX[i]) * wallRepelForce
                         }
-                        if (positionY[i] > gridHeight || positionY[i] < 0) {
-                            positionY[i] -= velocityY[i]
-                            velocityY[i] *= -wallRepelForce
+                        if (positionY[i] < 0) {
+                            positionY[i] = 0
+                            velocityY[i] = Math.abs(velocityY[i]) * wallRepelForce
+                        } else if (positionY[i] > gridHeight) {
+                            positionY[i] = gridHeight
+                            velocityY[i] = -Math.abs(velocityY[i]) * wallRepelForce
                         }
                     }
-                    else { // Circle Shape
-                        const dx = positionX[i] - circleCenterX // X distance between the particle and the center of the circle
-                        const dy = positionY[i] - circleCenterY // Y distance between the particle and the center of the circle
-                        const distanceSquared = dx * dx + dy * dy // Square of the distance between the particle and the center of the circle
+                    else { // Circle: reflexao especular na normal + projecao para dentro
+                        const dx = positionX[i] - circleCenterX
+                        const dy = positionY[i] - circleCenterY
+                        const distanceSquared = dx * dx + dy * dy
 
                         if (distanceSquared > circleRadius * circleRadius) {
-                            positionX[i] -= velocityX[i]
-                            positionY[i] -= velocityY[i]
-                            velocityX[i] *= -wallRepelForce
-                            velocityY[i] *= -wallRepelForce
+                            const dist = Math.sqrt(distanceSquared) || 1
+                            const nx = dx / dist, ny = dy / dist
+                            positionX[i] = circleCenterX + nx * circleRadius
+                            positionY[i] = circleCenterY + ny * circleRadius
+                            const vDotN = velocityX[i] * nx + velocityY[i] * ny
+                            if (vDotN > 0) {
+                                velocityX[i] -= (1 + wallRepelForce) * vDotN * nx
+                                velocityY[i] -= (1 + wallRepelForce) * vDotN * ny
+                            }
                         }
                     }
                 }
@@ -1416,12 +1483,13 @@ export default defineComponent({
                     else if (positionY[i] < 0) positionY[i] += gridHeight
                 }
 
-                // Bounce off the depth limit
+                // Bounce off the depth limit (reflexao nas duas bordas do eixo Z)
                 if (positionZ[i] > depthLimit) {
                     positionZ[i] = depthLimit
+                    velocityZ[i] = -Math.abs(velocityZ[i]) * wallRepelForce
                 } else if (positionZ[i] < 0) {
-                    positionZ[i] -= velocityZ[i] // or positionZ[i] = 0
-                    velocityZ[i] *= -wallRepelForce
+                    positionZ[i] = 0
+                    velocityZ[i] = Math.abs(velocityZ[i]) * wallRepelForce
                 }
 
                 drawParticle(positionX[i], positionY[i], positionZ[i], currentColors[colors[i]], particleSize)
@@ -1761,7 +1829,7 @@ export default defineComponent({
                         newVelocityY[i] = velocityY[i]
                         newVelocityZ[i] = velocityZ[i]
                     } else {
-                        newColors[i] = Math.floor(Math.random() * numColors)
+                        newColors[i] = sampleTypeByProportion(numColors, segmentProportions())
                         const newPositions = getRandomPositions()
                         newPositionX[i] = newPositions.x
                         newPositionY[i] = newPositions.y
@@ -1865,6 +1933,13 @@ export default defineComponent({
                         if (presetMinRadius) setMinRadiusMatrix(presetMinRadius)
                         if (presetMaxRadius) setMaxRadiusMatrix(presetMaxRadius)
                     }
+                }
+
+                // Redistribui os tipos pelas proporcoes do cenario (mantem posicoes).
+                // Sem isso a legenda mostra 25% Jovens mas a populacao fica uniforme.
+                if (segmentInfo && Array.isArray(segmentInfo) && segmentInfo.length === numColors) {
+                    const types = buildProportionalTypes(numParticles, numColors, segmentProportions())
+                    for (let i = 0; i < numParticles; i++) colors[i] = types[i]
                 }
             } finally {
                 isUpdatingParticles = false
