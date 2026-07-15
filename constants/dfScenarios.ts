@@ -267,19 +267,19 @@ const CANDIDATES_2026: DfCandidate[] = [
     id: 0, name: 'Celina', party: 'PP', color: '#ffd75e',
     x: 400, y: 420, charismaRadius: 95, reachRadius: 240, machine: 0.9, lean: 0.45,
     //      Eli  FFe  FDi  EvP  EvC  Per  Vul  Pro  Jov  Maq  Emp  Ent
-    pull: [  35,  10,  55,  50,  45,  35,  40, -20,  15,  90,  45,   0],
+    pull: [  30,  10,  55,  50,  40,  22,  40, -20,  15,  95,  38,   0],
     description: 'Vice que herdou a maquina. Ancorada nos administradores regionais, evangelicos (ponte Damares) e no funcionalismo distrital.',
   },
   {
     id: 1, name: 'Arruda', party: 'PSD', color: '#ff7733',
     x: 760, y: 470, charismaRadius: 85, reachRadius: 210, machine: 0.6, lean: 0.65,
-    pull: [  55,  -5,  20,  25,  35,  30,  30, -45,  10,  10,  40,   0],
+    pull: [  70,  -5,  25,  30,  50,  40,  38, -45,  10,  10,  50,   0],
     description: 'Ex-governador de volta pela Lei 219/2025. Atrai o anti-petismo e a elite — mas carrega a cicatriz da Caixa de Pandora.',
   },
   {
     id: 2, name: 'Grass', party: 'PT', color: '#ee3355',
     x: 640, y: 260, charismaRadius: 75, reachRadius: 180, machine: 0.35, lean: -0.75,
-    pull: [ -60,  45,   0,  -25, -40,  20,  25,  85,  30, -30, -10,   0],
+    pull: [ -60,  55,   5,  -20, -35,  30,  30,  90,  45, -30, -10,   0],
     description: 'Forte na Asa Norte e no funcionalismo federal. O desafio visivel: atravessar a cidade ate Ceilandia.',
   },
 ]
@@ -348,7 +348,7 @@ const EVENTS_DF: DfEvent[] = [
 // ============================================================
 
 const SETTINGS_DEFAULT: DfScenario['settings'] = {
-  numParticles: 4500,
+  numParticles: 3200,
   frictionFactor: 0.14,
   forceFactor: 0.9,
   homeStrength: 0.0022,
@@ -468,7 +468,7 @@ const SCENARIO_CEILANDIA: DfScenario = {
     y: c.id === 0 ? 380 : c.id === 1 ? 500 : 240,
   })),
   events: remapEvents(EVENTS_DF.filter(e => ['regularizacao', 'pesquisa', 'debate', 'escandalo'].includes(e.id)), CEILANDIA_IDS),
-  settings: { ...SETTINGS_DEFAULT, numParticles: 4000, homeStrength: 0.0012 },
+  settings: { ...SETTINGS_DEFAULT, numParticles: 3000, homeStrength: 0.0012 },
   matrices: {
     forces: normMatrix(CEILANDIA_M.force),
     minRadius: CEILANDIA_M.minR,
@@ -628,7 +628,7 @@ const SCENARIO_CAPITAL_RACHADA: DfScenario = {
       narration: 'Secularizacao em curso: a Fe afrouxa, o Pertencimento se autonomiza e a Igualdade se adensa.',
     },
   ],
-  settings: { ...SETTINGS_DEFAULT, numParticles: 4000, homeStrength: 0.0008 },
+  settings: { ...SETTINGS_DEFAULT, numParticles: 3000, homeStrength: 0.0008 },
   matrices: {
     forces: normMatrix(FORCE_VALUES_RAW),
     minRadius: RADII_VALUES.minR,

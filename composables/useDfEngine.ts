@@ -52,11 +52,12 @@ export interface RuntimeCandidate extends DfCandidate {
 }
 
 const REPEL_STRENGTH = 1.6
-const CAPTURE_RATE = 0.016
+const CAPTURE_RATE = 0.005
 const AFFINITY_DECAY = 0.999
 const VOTE_THRESHOLD = 0.28
-/** peso da "campanha aerea" (TV/radio/redes): captura fraca independente de distancia */
-const AIR_CAMPAIGN = 0.08
+/** peso da "campanha aerea" (TV/radio/redes): canal dominante de captura —
+ * faz o placar seguir os pulls calibrados; proximidade fisica e um bonus, nao o motor */
+const AIR_CAMPAIGN = 0.4
 const CELL = 60
 
 export class DfEngine {
@@ -354,7 +355,13 @@ export class DfEngine {
         for (let gx = x0; gx <= x1; gx++) {
           const c = gy * gridW + gx
           const start = cellStart[c], end = cellStart[c + 1]
-          for (let e = start; e < end; e++) {
+          const count = end - start
+          // celulas densas: amostragem com passo + reescala da forca (estatisticamente
+          // equivalente, corta o custo O(n*vizinhos) nos aglomerados)
+          const stride = count > 48 ? 3 : count > 24 ? 2 : 1
+          const scale = stride
+          const offset = stride > 1 ? (i + this.frame) % stride : 0
+          for (let e = start + offset; e < end; e += stride) {
             const j = cellEntries[e]
             if (j === i) continue
             const dx = px[j] - xi
@@ -374,7 +381,7 @@ export class DfEngine {
               const mid = (mn + mx) * 0.5
               f = curForce[mIdx] * (1 - Math.abs(d - mid) / (mid - mn))
             }
-            const inv = f / d
+            const inv = f * scale / d
             fx += dx * inv
             fy += dy * inv
           }
@@ -437,7 +444,7 @@ export class DfEngine {
         // captura de voto (camada 3): gosto idiossincratico dispersa o segmento
         if (!nonVoter && pull > 0) {
           const leanFit = 1 - Math.abs(lean[i] - cand.lean) * 0.5
-          affinity[aIdx] += CAPTURE_RATE * captureW * this.taste[aIdx] * (0.25 + volatility[i]) * pull * leanFit * (0.6 + cand.machine * 0.4)
+          affinity[aIdx] += CAPTURE_RATE * captureW * this.taste[aIdx] * (0.25 + volatility[i]) * pull * leanFit * (0.8 + cand.machine * 0.2)
           if (affinity[aIdx] > 1.6) affinity[aIdx] = 1.6
         }
         affinity[aIdx] *= AFFINITY_DECAY
@@ -447,7 +454,9 @@ export class DfEngine {
         }
       }
       // decisao de voto + transicao suave de cor (voteStr)
-      const target = (!nonVoter && bestAff > VOTE_THRESHOLD) ? this.candidates[bestC].id : -1
+      // limiar por particula: engajado decide cedo, desligado decide tarde (indecisos estruturais)
+      const threshold = VOTE_THRESHOLD + 0.55 * (1 - this.engagement[i])
+      const target = (!nonVoter && bestAff > threshold) ? this.candidates[bestC].id : -1
       this.voteFor[i] = target as any
       const targetStr = target >= 0 ? Math.min(1, bestAff) : 0
       this.voteStr[i] += (targetStr - this.voteStr[i]) * 0.04

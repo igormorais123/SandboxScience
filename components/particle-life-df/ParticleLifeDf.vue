@@ -173,7 +173,7 @@ let viewOy = 0
 function fitCanvas() {
     const cv = canvasEl.value
     if (!cv) return
-    const dpr = Math.min(2, window.devicePixelRatio || 1)
+    const dpr = Math.min(1.25, window.devicePixelRatio || 1)
     cv.width = cv.clientWidth * dpr
     cv.height = cv.clientHeight * dpr
     viewScale = Math.min(cv.width / DF_WORLD_W, cv.height / DF_WORLD_H)
@@ -241,12 +241,9 @@ function draw() {
     }
     for (const [key, arr] of buckets) {
         ctx.fillStyle = bucketColor(key)
-        ctx.beginPath()
         for (const i of arr) {
-            ctx.moveTo(px[i] + 2.1, py[i])
-            ctx.arc(px[i], py[i], 2.1, 0, Math.PI * 2)
+            ctx.fillRect(px[i] - 1.8, py[i] - 1.8, 3.6, 3.6)
         }
-        ctx.fill()
     }
 
     // candidatos: losango + raio de carisma
