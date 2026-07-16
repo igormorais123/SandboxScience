@@ -32,7 +32,7 @@ export const useParticleLifeGPUStore = defineStore('particleLifeGPU', () => {
     const isMirrorWrap = ref<boolean>(false) // Enable mirrors for the particles (only works if isWallWrap is true)
     const isInfiniteMirrorWrap = ref<boolean>(false) // Enable infinite mirrors for the particles (only works if isWallWrap is true)
     const mirrorWrapCount = ref<number>(5) // Number of mirrors (5 or 9)
-    const screenMultiplierForGridSize = ref<number>(3) // Multiplier for the grid size (1 means the grid will be the same size as the screen)
+    const screenMultiplierForGridSize = ref<number>(2) // Multiplier for the grid size (1 means the grid will be the same size as the screen)
     const isDebugBinsActive = ref<boolean>(false) // Show bins for the particles
     const debugMaxParticleCount = ref<number>(1600) // Maximum number of particles for debugging purposes
     const isDebugHeatmapActive = ref<boolean>(true) // Enable debug heatmap for the particles

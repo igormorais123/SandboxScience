@@ -855,7 +855,7 @@ const BLEGER_SCENARIOS: ElectoralScenario[] = [
 // CENARIOS PRONTOS
 // ============================================================
 
-export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
+const RAW_ELECTORAL_SCENARIOS: ElectoralScenario[] = [
   {
     v: 1,
     meta: {
@@ -1341,6 +1341,72 @@ export const ELECTORAL_SCENARIOS: ElectoralScenario[] = [
     colors: ['#66ffcc', '#ffaa33', '#ff5577', '#aaaacc', '#4488ff'],
   },
 ]
+
+// ============================================================
+// CALIBRACAO ANTI-CAOS (literatura de Particle Life)
+// ============================================================
+// Referencias: lisyarus (WebGPU particle life), Physion "Introducing Particle
+// Life", hunar4321/particle-life, framework de Tom Mohr.
+// Principios aplicados:
+//  1. "Too much force strength or too little friction creates chaos" (Physion)
+//     → escala global de forcas reduzida + friccao maior.
+//  2. Clusters estaveis exigem AUTO-COESAO forte na diagonal; segmentos com
+//     diagonal ~0 viram "gas" e poluem a tela → piso na diagonal.
+//  3. Pares perseguidores fortes (A atrai B, B repele A) geram perseguicao
+//     perpetua → repulsao limitada e assimetria extrema amortecida.
+//  4. Interacao de curto alcance = estruturas locais legiveis → rmax reduzido.
+// A ESTRUTURA relativa das matrizes documentadas e preservada (quem atrai
+// quem continua igual); apenas a ENERGIA da dinamica e domada.
+
+const CALIBRATION = {
+  forceScale: 0.72,     // escala global das forcas fora da diagonal
+  diagFloor: 0.5,       // auto-coesao minima (diagonal) — forma nucleos
+  repulsionCap: -0.55,  // repulsao maxima entre grupos (evita explosoes)
+  chaseDamping: 0.6,    // amortece o par (i,j) quando F_ij e F_ji tem sinais opostos
+  maxRScale: 0.8,       // reduz o alcance de interacao (estruturas locais)
+  minGapR: 12,          // garante maxR >= minR + gap apos o rescale
+  forceFactor: 0.55,    // impulso global por tick (era 1.0)
+  frictionFloor: 0.17,  // friccao minima (era 0.12-0.15)
+}
+
+function calibrateScenario(sc: ElectoralScenario): ElectoralScenario {
+  const n = sc.settings.species
+  const F = sc.matrices.forces
+  const forces = F.map(row => row.slice())
+
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (i === j) {
+        // Piso de auto-coesao: nucleos estaveis (mantem sinal se ja for maior)
+        forces[i][j] = Math.max(F[i][j], CALIBRATION.diagFloor)
+      } else {
+        let v = F[i][j] * CALIBRATION.forceScale
+        // Amortece pares perseguidores (sinais opostos = perseguicao perpetua)
+        if (F[i][j] * F[j][i] < 0) v *= CALIBRATION.chaseDamping
+        // Teto de repulsao
+        if (v < CALIBRATION.repulsionCap) v = CALIBRATION.repulsionCap
+        forces[i][j] = Math.round(v * 1000) / 1000
+      }
+    }
+  }
+
+  const minRadius = sc.matrices.minRadius.map(row => row.slice())
+  const maxRadius = sc.matrices.maxRadius.map((row, i) => row.map((v, j) =>
+    Math.max(Math.round(v * CALIBRATION.maxRScale), minRadius[i][j] + CALIBRATION.minGapR)
+  ))
+
+  return {
+    ...sc,
+    settings: {
+      ...sc.settings,
+      forceFactor: CALIBRATION.forceFactor,
+      frictionFactor: Math.max(sc.settings.frictionFactor, CALIBRATION.frictionFloor),
+    },
+    matrices: { forces, minRadius, maxRadius },
+  }
+}
+
+export const ELECTORAL_SCENARIOS: ElectoralScenario[] = RAW_ELECTORAL_SCENARIOS.map(calibrateScenario)
 
 // ============================================================
 // CANDIDATOS / STAKEHOLDERS (dados do TSE + pesquisa INTEIA)

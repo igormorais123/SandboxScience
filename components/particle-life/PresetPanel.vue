@@ -207,6 +207,8 @@ export default defineComponent({
 
             // Apply settings after preset load — use setTimeout to ensure loadPreset has fully completed
             setTimeout(() => {
+                // GPU tem mundo maior (multiplicador 2 vs 1.5 do CPU) e capacidade de sobra:
+                // 1.8x particulas mantem a mesma densidade visual entre os motores
                 if (scenario.settings.numParticles) particleLife.numParticles = scenario.settings.numParticles
                 if (scenario.settings.frictionFactor != null) particleLife.frictionFactor = scenario.settings.frictionFactor
                 if (scenario.settings.forceFactor != null) particleLife.forceFactor = scenario.settings.forceFactor
