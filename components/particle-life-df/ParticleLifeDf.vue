@@ -75,6 +75,7 @@ const scenario = computed<DfScenario>(() => scenarios.find(s => s.meta.id === sc
 
 const engine = new DfEngine()
 const narrator = reactive(new DfNarrator()) as DfNarrator
+if (import.meta.dev && typeof window !== 'undefined') (window as any).__dfEngine = engine
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
 const running = ref(true)
@@ -128,6 +129,8 @@ function resetScenario() {
     activeEventIds.value = []
     focusSegment.value = null
     engineReady.value = true
+    lastMetricsFrame = 0
+    accum = 0
     prepareColors()
     prepareBackground()
     fitCanvas()
@@ -142,11 +145,27 @@ function fireEvent(id: string) {
 // loop principal
 // ------------------------------------------------------------------
 
-function loop() {
+let lastTime = 0
+let accum = 0
+let lastMetricsFrame = 0
+const STEP_MS = 1000 / 60
+
+function loop(now: number = 0) {
     raf = requestAnimationFrame(loop)
+    if (!lastTime) lastTime = now
+    accum += Math.min(250, now - lastTime)   // janela oculta/throttled: nao "explode" ao voltar
+    lastTime = now
     if (running.value) {
-        for (let s = 0; s < speed.value; s++) engine.step()
-        if (engine.frame % 30 === 0) {
+        // passo fixo de 1/60s independente do FPS do monitor (60/120/144Hz iguais)
+        let steps = 0
+        while (accum >= STEP_MS && steps < 4) {
+            for (let s = 0; s < speed.value; s++) engine.step()
+            accum -= STEP_MS
+            steps++
+        }
+        if (steps === 4) accum = 0
+        if (engine.frame - lastMetricsFrame >= 30) {
+            lastMetricsFrame = engine.frame
             const m = engine.computeMetrics()
             metrics.value = m
             narrator.observe(m, scenario.value)

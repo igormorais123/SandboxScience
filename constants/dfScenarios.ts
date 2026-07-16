@@ -145,13 +145,16 @@ const norm = (raw: number) => Math.max(-1, Math.min(1, raw / FORCE_SCALE))
 const normMatrix = (raw: number[][]) => raw.map(row => row.map(norm))
 
 /**
- * Gera matrizes de raio a partir da diagonal de coesao (mesma heuristica validada no RR):
- *   minR(diag) = 45 - coesao*0.25  → blocos coesos ficam densos
- *   maxR(diag) = 80 + coesao*0.30  → blocos coesos se enxergam de longe
- * Off-diagonal: padrao 30/95, com overrides pontuais [i, j, minR, maxR]
+ * Gera matrizes de raio a partir da diagonal de coesao.
+ * Calibracao anti-caos (literatura Particle Life, 2026-07):
+ *  - densidade saudavel ~1-5 particulas por maxR² → raios encolhidos ~35%
+ *  - razao minR/maxR ≈ 0.2 (antes estava 0.4-0.6: zona de atracao fina = poeira)
+ *   minR(diag) = 16 - coesao*0.06  (~10-16)
+ *   maxR(diag) = 50 + coesao*0.28  (~50-75)
+ * Off-diagonal: padrao 14/58, com overrides pontuais [i, j, minR, maxR]
  * (perseguicoes e pontes precisam de alcance maior para a forma emergir).
  */
-function makeRadii(forceRaw: number[][], overrides: Array<[number, number, number, number]> = []) {
+function makeRadii(forceRaw: number[][], overrides: Array<[number, number, number, number]> = [], scale = 1) {
   const n = forceRaw.length
   const minR: number[][] = []
   const maxR: number[][] = []
@@ -161,11 +164,11 @@ function makeRadii(forceRaw: number[][], overrides: Array<[number, number, numbe
     for (let j = 0; j < n; j++) {
       if (i === j) {
         const c = Math.max(0, forceRaw[i][i])
-        minR[i].push(Math.round(45 - c * 0.25))
-        maxR[i].push(Math.round(80 + c * 0.30))
+        minR[i].push(Math.round((16 - c * 0.06) * scale))
+        maxR[i].push(Math.round((50 + c * 0.28) * scale))
       } else {
-        minR[i].push(30)
-        maxR[i].push(95)
+        minR[i].push(Math.round(14 * scale))
+        maxR[i].push(Math.round(58 * scale))
       }
     }
   }
@@ -230,30 +233,33 @@ const SEGMENTS_DF: DfSegment[] = [
 //  BOLHA Entorno (11): auto 70 na borda, quase nao interage
 // ============================================================
 
+// MATRIZ ESPARSA (calibracao anti-caos): ~60% das celulas off-diagonal = 0.
+// Licao da literatura de Particle Life: matrizes densas com acoplamentos fracos
+// geram "sopa" — so as relacoes PROTAGONISTAS de cada forma recebem forca.
 const FORCE_DF_BASE_RAW = [
   //          0Eli  1FFe  2FDi  3EvP  4EvC  5Per  6Vul  7Pro  8Jov  9Maq 10Emp 11Ent
-  /* 0 Eli */ [ 75,  -25,   10,   20,   45,  -10,  -20,  -70,    5,   25,   40,   15],
-  /* 1 FFe */ [-25,   65,   35,    0,   -5,   10,    5,   45,   15,  -15,   10,  -10],
-  /* 2 FDi */ [ 15,   35,   60,   15,   10,   20,   10,    0,    5,   55,   10,   -5],
-  /* 3 EvP */ [ 20,    0,   15,   75,   60,   45,   35,  -35,   20,   15,    5,   10],
-  /* 4 EvC */ [ 45,   -5,   10,   60,   70,   15,    5,  -50,   10,   15,   20,   10],
-  /* 5 Per */ [-15,   10,   20,   40,    5,   45,   30,   -5,   25,   10,    5,    0],
-  /* 6 Vul */ [-20,    5,   10,   30,    0,   35,   40,    0,   15,  -35,    0,    5],
-  /* 7 Pro */ [-70,   40,    0,  -30,  -50,   10,   15,   80,   30,  -25,   -5,  -20],
-  /* 8 Jov */ [ -5,   10,    5,   10,    0,   20,   10,   25,   10,  -20,    5,   -5],
-  /* 9 Maq */ [ 25,  -10,   45,   20,   15,   35,   75,  -20,   30,   50,   20,    0],
-  /*10 Emp */ [ 40,    5,   10,    5,   15,    5,    0,  -10,    5,   30,   65,   20],
-  /*11 Ent */ [ 10,  -15,   -5,   15,   10,    5,    5,  -25,    0,    0,   15,   70],
+  /* 0 Eli */ [ 80,    0,    0,    0,   45,    0,  -25,  -75,    0,   20,   35,    0],
+  /* 1 FFe */ [  0,   70,   35,    0,    0,    0,    0,   45,    0,  -20,    0,    0],
+  /* 2 FDi */ [  0,   35,   65,    0,    0,    0,    0,    0,    0,   55,    0,    0],
+  /* 3 EvP */ [  0,    0,    0,   80,   60,   45,   30,  -35,    0,    0,    0,    0],
+  /* 4 EvC */ [ 45,    0,    0,   60,   75,    0,    0,  -50,    0,    0,    0,    0],
+  /* 5 Per */ [-20,    0,    0,   40,    0,   55,   30,    0,   20,    0,    0,    0],
+  /* 6 Vul */ [-25,    0,    0,   30,    0,   35,   50,    0,    0,  -35,    0,    0],
+  /* 7 Pro */ [-75,   40,    0,  -30,  -50,    0,    0,   85,   30,  -25,    0,    0],
+  /* 8 Jov */ [  0,    0,    0,    0,    0,   20,    0,   25,   20,  -20,    0,    0],
+  /* 9 Maq */ [ 20,    0,   50,    0,    0,   30,   75,  -20,    0,   60,    0,    0],
+  /*10 Emp */ [ 35,    0,    0,    0,    0,    0,    0,    0,    0,   25,   70,    0],
+  /*11 Ent */ [  0,    0,    0,    0,    0,    0,    0,  -25,    0,    0,    0,   75],
 ]
 
 // Overrides de raio: perseguicoes e pontes precisam de alcance longo para a forma aparecer.
 const RADII_DF_BASE = makeRadii(FORCE_DF_BASE_RAW, [
-  [9, 6, 28, 150],   // Maquina enxerga Vulneraveis de longe (caca)
-  [6, 9, 28, 140],   // Vulneraveis sentem a Maquina chegando (fuga)
-  [3, 5, 30, 120],   // Ponte evangelica alcanca a periferia
-  [3, 4, 30, 120],   // ... e a classe media evangelica
-  [0, 7, 35, 130],   // Membrana: os blocos opostos se "veem" e mantem o muro
-  [7, 0, 35, 130],
+  [9, 6, 16, 110],   // Maquina enxerga Vulneraveis de longe (caca)
+  [6, 9, 16, 100],   // Vulneraveis sentem a Maquina chegando (fuga)
+  [3, 5, 16, 85],    // Ponte evangelica alcanca a periferia
+  [3, 4, 16, 85],    // ... e a classe media evangelica
+  [0, 7, 20, 95],    // Membrana: os blocos opostos se "veem" e mantem o muro
+  [7, 0, 20, 95],
 ])
 
 // ============================================================
@@ -267,13 +273,13 @@ const CANDIDATES_2026: DfCandidate[] = [
     id: 0, name: 'Celina', party: 'PP', color: '#ffd75e',
     x: 400, y: 420, charismaRadius: 95, reachRadius: 240, machine: 0.9, lean: 0.45,
     //      Eli  FFe  FDi  EvP  EvC  Per  Vul  Pro  Jov  Maq  Emp  Ent
-    pull: [  30,  10,  55,  50,  40,  22,  40, -20,  15,  95,  38,   0],
+    pull: [  30,  10,  60,  60,  40,  30,  50, -20,  15,  95,  38,   0],
     description: 'Vice que herdou a maquina. Ancorada nos administradores regionais, evangelicos (ponte Damares) e no funcionalismo distrital.',
   },
   {
     id: 1, name: 'Arruda', party: 'PSD', color: '#ff7733',
     x: 760, y: 470, charismaRadius: 85, reachRadius: 210, machine: 0.6, lean: 0.65,
-    pull: [  70,  -5,  25,  30,  50,  40,  38, -45,  10,  10,  50,   0],
+    pull: [  70,  -5,  25,  30,  50,  32,  35, -45,  10,  10,  50,   0],
     description: 'Ex-governador de volta pela Lei 219/2025. Atrai o anti-petismo e a elite — mas carrega a cicatriz da Caixa de Pandora.',
   },
   {
@@ -349,10 +355,10 @@ const EVENTS_DF: DfEvent[] = [
 
 const SETTINGS_DEFAULT: DfScenario['settings'] = {
   numParticles: 3200,
-  frictionFactor: 0.14,
+  frictionFactor: 0.20,
   forceFactor: 0.9,
-  homeStrength: 0.0022,
-  noise: 0.09,
+  homeStrength: 0.0045,
+  noise: 0.03,
   opinion: { mu: 0.08, epsilon: 0.45, everyNFrames: 12 },
 }
 
@@ -442,8 +448,8 @@ const CEILANDIA_M = subsetMatrices(FORCE_DF_BASE_RAW, RADII_DF_BASE.minR, RADII_
 // intensifica a disputa: todos os predadores com alcance maior sobre Perif/Vuln
 CEILANDIA_M.force[5][3] = 85   // Maq -> Vuln (caca maxima)
 CEILANDIA_M.force[5][2] = 50   // Maq -> Perif
-CEILANDIA_M.maxR[5][3] = 160
-CEILANDIA_M.maxR[5][2] = 140
+CEILANDIA_M.maxR[5][3] = 115
+CEILANDIA_M.maxR[5][2] = 100
 
 const SCENARIO_CEILANDIA: DfScenario = {
   v: 2,
@@ -486,7 +492,7 @@ FORCE_RACHADURA[0][0] = 45   // elite perde coesao (racha interna)
 FORCE_RACHADURA[4][0] = 30   // evangelicos CM hesitam com a elite dividida
 FORCE_RACHADURA[3][4] = 40   // ponte evangelica afrouxa
 const RADII_RACHADURA = makeRadii(FORCE_RACHADURA, [
-  [9, 6, 28, 150], [6, 9, 28, 140], [3, 5, 30, 120], [0, 7, 35, 130], [7, 0, 35, 130],
+  [9, 6, 16, 110], [6, 9, 16, 100], [3, 5, 16, 85], [0, 7, 20, 95], [7, 0, 20, 95],
 ])
 
 const SCENARIO_RACHADURA: DfScenario = {
@@ -579,22 +585,28 @@ const VALUE_SEGMENTS: DfSegment[] = [
   { id: 6, name: 'Liberdade',     shortName: 'Liber',  description: 'Anti-regulacao para uns, liberdades civis para outros: valor em disputa.', proportion: 0.12, color: '#bb77ff', volatility: 0.6, lean: 0.1,  engagement: 0.5, homes: [[0, 0.5], [1, 0.5]] },
 ]
 
+// Blocos como ARQUIPELAGO de celulas adjacentes (anti-colapso):
+// diagonal forte cristaliza cada valor; ligacoes cruzadas FRACAS (10-20)
+// apenas aproximam celulas aliadas — atracao cruzada forte somada sobre
+// centenas de vizinhos vence a repulsao curta e colapsa tudo numa bola.
 const FORCE_VALUES_RAW = [
   //          Ordem   Fe  Prosp Igual Estado Pert  Liber
-  /* Ordem */ [  80,  55,   40,  -75,  -20,   30,  -40],
-  /* Fe    */ [  50,  85,   45,  -30,  -10,   55,  -35],
-  /* Prosp */ [  35,  40,   65,  -45,  -35,   15,   40],
-  /* Igual */ [ -75, -25,  -45,   80,   50,   35,   20],
-  /* Estado*/ [ -20, -10,  -35,   50,   70,   20,  -15],
-  /* Pert  */ [  30,  55,   10,   40,   15,   40,   10],
-  /* Liber */ [ -40, -30,   45,   15,  -20,   10,   55],
+  /* Ordem */ [  80,  18,   12,  -45,  -10,   10,  -15],
+  /* Fe    */ [  18,  85,   15,  -15,   -5,   20,  -12],
+  /* Prosp */ [  12,  15,   70,  -20,  -15,    5,   15],
+  /* Igual */ [ -45, -12,  -20,   80,   18,   12,    8],
+  /* Estado*/ [ -10,  -5,  -15,   18,   75,    8,   -8],
+  /* Pert  */ [  10,  20,    5,   14,    8,   55,    5],
+  /* Liber */ [ -15, -12,   15,    8,   -8,    5,   65],
 ]
+// raios 1.15x: celulas um pouco maiores que o Panorama, sem colapso global
+// (1.5x testado: atracao somada de vizinhos demais vence a repulsao curta → bola unica)
 const RADII_VALUES = makeRadii(FORCE_VALUES_RAW, [
-  [5, 1, 30, 125],   // Pertencimento alcanca a Fe de longe...
-  [5, 3, 30, 125],   // ...e a Igualdade tambem: e a corda do cabo de guerra
-  [0, 3, 35, 130],   // membrana Ordem x Igualdade
-  [3, 0, 35, 130],
-])
+  [5, 1, 18, 95],    // Pertencimento alcanca a Fe de longe...
+  [5, 3, 18, 95],    // ...e a Igualdade tambem: e a corda do cabo de guerra
+  [0, 3, 22, 100],   // membrana Ordem x Igualdade
+  [3, 0, 22, 100],
+], 1.15)
 
 const SCENARIO_CAPITAL_RACHADA: DfScenario = {
   v: 2,
@@ -628,7 +640,7 @@ const SCENARIO_CAPITAL_RACHADA: DfScenario = {
       narration: 'Secularizacao em curso: a Fe afrouxa, o Pertencimento se autonomiza e a Igualdade se adensa.',
     },
   ],
-  settings: { ...SETTINGS_DEFAULT, numParticles: 3000, homeStrength: 0.0008 },
+  settings: { ...SETTINGS_DEFAULT, numParticles: 3600, homeStrength: 0.0012 },
   matrices: {
     forces: normMatrix(FORCE_VALUES_RAW),
     minRadius: RADII_VALUES.minR,

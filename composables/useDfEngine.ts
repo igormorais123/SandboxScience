@@ -52,7 +52,7 @@ export interface RuntimeCandidate extends DfCandidate {
 }
 
 const REPEL_STRENGTH = 1.6
-const CAPTURE_RATE = 0.005
+const CAPTURE_RATE = 0.008
 const AFFINITY_DECAY = 0.999
 const VOTE_THRESHOLD = 0.28
 /** peso da "campanha aerea" (TV/radio/redes): canal dominante de captura —
@@ -433,7 +433,7 @@ export class DfEngine {
           // atracao fisica triangular (pico no meio do alcance), escalada pela maquina
           const mid = reach * 0.45
           const shape = d < mid ? d / mid : Math.max(0, 1 - (d - mid) / (reach - mid))
-          const f = pull * shape * (0.5 + cand.machine * 0.5) * 0.9
+          const f = pull * shape * (0.5 + cand.machine * 0.5) * 0.45
           const inv = f / Math.max(8, d)
           vx[i] += dx * inv * ff
           vy[i] += dy * inv * ff
@@ -455,7 +455,7 @@ export class DfEngine {
       }
       // decisao de voto + transicao suave de cor (voteStr)
       // limiar por particula: engajado decide cedo, desligado decide tarde (indecisos estruturais)
-      const threshold = VOTE_THRESHOLD + 0.55 * (1 - this.engagement[i])
+      const threshold = VOTE_THRESHOLD + 0.7 * (1 - this.engagement[i])
       const target = (!nonVoter && bestAff > threshold) ? this.candidates[bestC].id : -1
       this.voteFor[i] = target as any
       const targetStr = target >= 0 ? Math.min(1, bestAff) : 0
@@ -475,11 +475,18 @@ export class DfEngine {
     const noise = this.noiseNow
     const margin = 12
 
+    const VMAX = 2.4   // clamp de velocidade: evita "fervura" numerica
     for (let i = 0; i < n; i++) {
       // ruido termico: eleitor desengajado e browniano
       const shake = noise * (1.2 - this.engagement[i])
       vx[i] = vx[i] * keep + (this.rng() - 0.5) * shake
       vy[i] = vy[i] * keep + (this.rng() - 0.5) * shake
+      const sp2 = vx[i] * vx[i] + vy[i] * vy[i]
+      if (sp2 > VMAX * VMAX) {
+        const s = VMAX / Math.sqrt(sp2)
+        vx[i] *= s
+        vy[i] *= s
+      }
       px[i] += vx[i]
       py[i] += vy[i]
       // paredes com repique suave
